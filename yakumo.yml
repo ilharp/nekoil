@@ -1,0 +1,20 @@
+- id: 42vrci
+  name: yakumo
+  config:
+    pipeline:
+      build:
+        - tsc
+        - esbuild
+        - client
+      clean:
+        - tsc --clean
+- id: ms995y
+  name: yakumo-esbuild
+- id: n8jber
+  name: yakumo-tsc
+- id: pq5h4d
+  name: '@koishijs/client/lib'
+- id: 9j20pt
+  name: yakumo/upgrade
+- id: mvq0br
+  name: yakumo/run
