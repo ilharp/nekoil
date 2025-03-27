@@ -7996,6 +7996,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"koishi-plugin-nekoil-core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
+  peerDependencies:
+    koishi: ^4.18.7
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-puppeteer@npm:^3.9.0":
   version: 3.9.0
   resolution: "koishi-plugin-puppeteer@npm:3.9.0"
