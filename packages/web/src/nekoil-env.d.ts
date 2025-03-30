@@ -1,0 +1,1 @@
+declare const __DEFINE_NEKOIL_VERSION_STRING__: string
