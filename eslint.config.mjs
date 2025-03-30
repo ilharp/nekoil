@@ -25,7 +25,8 @@ export default typescriptEslint.config(
   },
   eslintPluginImport.flatConfigs.recommended,
   eslintPluginImport.flatConfigs.typescript,
-  eslintPluginReact.configs.flat.all,
+  eslintPluginReact.configs.flat.recommended,
+  eslintPluginReact.configs.flat['jsx-runtime'],
   eslintPluginReactHooks.configs['recommended-latest'],
   eslintPluginPrettierRecommended,
   // {
