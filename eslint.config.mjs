@@ -32,4 +32,26 @@ export default typescriptEslint.config(
   // {
   //   files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}'],
   // },
+  {
+    rules: {
+      'import/no-default-export': 'error',
+      'import/consistent-type-specifier-style': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/consistent-type-exports': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+    },
+  },
 )
