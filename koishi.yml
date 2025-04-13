@@ -1,71 +1,71 @@
 plugins:
   group:server:
-    server:
-      port: 5140
-      maxPort: 5149
-    ~server-satori: {}
-    ~server-temp: {}
+    server:bctbjh:
+      host: 0.0.0.0
+      port: 80
+      maxPort: 80
+      selfUrl: ${{ env.SELF_URL_PUBLIC }}
+    server-temp:qmvgdc:
+      selfUrl: ${{ env.SELF_URL_PRIVATE }}
   group:basic:
-    ~admin: {}
-    ~bind: {}
-    commands: {}
-    help: {}
-    http: {}
-    ~inspect: {}
-    locales: {}
-    proxy-agent: {}
-    rate-limit: {}
-    telemetry: {}
+    admin:2rjo0n: {}
+    bind:p5l0qm: {}
+    commands:vnzxf1: {}
+    help:k2t2x6: {}
+    http:nsrnpu: {}
+    inspect:jqy2ce: {}
+    locales:4c5ybf: {}
+    proxy-agent:5vu9st: {}
+    rate-limit:28qb91: {}
+    telemetry:o4z0ig: {}
   group:console:
-    actions: {}
-    analytics: {}
-    android:
-      $if: env.KOISHI_AGENT?.includes('Android')
-    ~auth: {}
-    config: {}
-    console:
+    actions:cgn8zu: {}
+    analytics:pnhijg: {}
+    auth:kprrf4:
+      admin:
+        password: ${{ env.ADMIN_PASSWORD }}
+    config:0n6vxu: {}
+    console:zsv61x:
       open: true
-    dataview: {}
-    desktop:
-      $if: env.KOISHI_AGENT?.includes('Desktop')
-    explorer: {}
-    logger: {}
-    insight: {}
-    market:
+    dataview:j608ho: {}
+    explorer:u2zb6t: {}
+    logger:cir834: {}
+    insight:hat3yy: {}
+    market:3yl89x:
       search:
-        endpoint: https://registry.koishi.chat/index.json
-    notifier: {}
-    oobe: {}
-    sandbox: {}
-    status: {}
-    theme-vanilla: {}
+        endpoint: https://kp.itzdrli.cc
+    notifier:02ioyo: {}
+    oobe:7ht2tf: {}
+    sandbox:ia3k3p: {}
+    status:89xflo: {}
+    theme-vanilla:sm47n0: {}
   group:storage:
-    ~database-mongo:
-      database: koishi
-    ~database-mysql:
-      database: koishi
-    ~database-postgres:
-      database: koishi
-    database-sqlite:
+    ~database-postgres:rb61b6:
+      host: ${{ env.POSTGRES_HOST }}
+      port: 5432
+      user: ${{ env.POSTGRES_USER }}
+      password: ${{ env.POSTGRES_PASSWORD }}
+      database: ${{ env.POSTGRES_DATABASE }}
+    database-sqlite:v9xs5g:
       path: data/koishi.db
-    assets-local: {}
+    assets-local:rk7cb2: {}
   group:adapter:
-    ~adapter-dingtalk: {}
-    ~adapter-discord: {}
-    ~adapter-kook: {}
-    ~adapter-lark: {}
-    ~adapter-line: {}
-    ~adapter-mail: {}
-    ~adapter-matrix: {}
-    ~adapter-qq: {}
-    ~adapter-satori: {}
-    ~adapter-slack: {}
-    ~adapter-telegram: {}
-    ~adapter-wechat-official: {}
-    ~adapter-wecom: {}
-    ~adapter-whatsapp: {}
-    ~adapter-zulip: {}
+    ~adapter-qq:rkbdmq:
+      id: ${{ env.QQ_ID }}
+      token: ${{ env.QQ_TOKEN }}
+      secret: ${{ env.QQ_SECRET }}
+      type: public
+      intents: 1308627971
+      sandbox: false
+    adapter-telegram:v5a28u:
+      protocol: polling
+      token: ${{ env.TG_TOKEN }}
+      endpoint: ${{ env.TG_ENDPOINT }}
   group:develop:
     $if: env.NODE_ENV === 'development'
-    hmr:
-      root: '.'
+    hmr:aagx0q:
+      root: .
+prefix:
+  - /
+  - null
+timezoneOffset: -480
