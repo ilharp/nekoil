@@ -40,17 +40,20 @@ plugins:
     status:89xflo: {}
     theme-vanilla:sm47n0: {}
   group:storage:
-    ~database-postgres:rb61b6:
+    database-postgres:rb61b6:
+      $if: env.NEKOIL_ENV === 'production'
       host: ${{ env.POSTGRES_HOST }}
       port: 5432
       user: ${{ env.POSTGRES_USER }}
       password: ${{ env.POSTGRES_PASSWORD }}
       database: ${{ env.POSTGRES_DATABASE }}
     database-sqlite:v9xs5g:
+      $if: env.NEKOIL_ENV !== 'production'
       path: data/koishi.db
     assets-local:rk7cb2: {}
   group:adapter:
-    ~adapter-qq:rkbdmq:
+    adapter-qq:rkbdmq:
+      $if: env.NEKOIL_ENV === 'production'
       id: ${{ env.QQ_ID }}
       token: ${{ env.QQ_TOKEN }}
       secret: ${{ env.QQ_SECRET }}
@@ -58,7 +61,8 @@ plugins:
       intents: 1308627971
       sandbox: false
     adapter-telegram:v5a28u:
-      protocol: polling
+      $if: env.NEKOIL_ENV === 'production'
+      protocol: server
       token: ${{ env.TG_TOKEN }}
       endpoint: ${{ env.TG_ENDPOINT }}
   group:develop:
