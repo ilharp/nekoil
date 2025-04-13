@@ -1,4 +1,5 @@
-import { Context, Schema } from 'koishi'
+import type { Context } from 'koishi'
+import { Schema } from 'koishi'
 
 export const name = 'nekoil-core'
 
@@ -42,7 +43,7 @@ export const databaseBaseFields = {
     length: 1,
     nullable: false,
   },
-}
+} as const
 
 export interface ContentPackV1 extends DatabaseBase {
   cpid: number
