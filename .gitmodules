@@ -1,0 +1,3 @@
+[submodule "sym"]
+	path = packages/sym
+	url = https://github.com/project-sym/sym.git
