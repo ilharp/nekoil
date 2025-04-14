@@ -17,6 +17,7 @@
   "devDependencies": {
     "@types/telegram-web-app": "^7.10.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "nekoil-typedef": "workspace:^",
     "typescript": "^5.8.2",
     "vite": "^6.2.0"
   }

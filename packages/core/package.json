@@ -16,5 +16,8 @@
   ],
   "peerDependencies": {
     "koishi": "^4.18.7"
+  },
+  "devDependencies": {
+    "nekoil-typedef": "workspace:^"
   }
 }
