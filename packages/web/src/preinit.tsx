@@ -1,10 +1,15 @@
 try {
   if (
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    !window.Telegram ||
-    Number(window.Telegram.WebApp.version.split('.')[0]) < 7
+    !window.Telegram?.WebApp.isVersionAtLeast('7.0')
   )
-    window.history.pushState(null, '', '/upgradeapp')
+    throw new Error()
+
+  window.history.replaceState(
+    null,
+    '',
+    '/' + (window.Telegram.WebApp.initDataUnsafe.start_param ?? ''),
+  )
 } catch (_) {
-  // Ignore
+  window.history.replaceState(null, '', '/upgradeapp')
 }
