@@ -11,8 +11,14 @@ declare module 'koishi' {
 
 export interface DatabaseBase {
   created_time: Date
+
   deleted: number
+
   deleted_time: Date
+
+  /**
+   * 1=admin 2=user
+   */
   deleted_reason: number
 }
 
@@ -43,12 +49,20 @@ export const databaseBaseFields = {
 export interface ContentPackV1 extends DatabaseBase {
   cpid: number
 
-  /**
-   * 1=zstdv1
-   */
-  content_mode: number
+  cp_version: number
 
-  content: string
+  creator: number
+
+  owner: number
+
+  /**
+   * 1=zstdv1 2=jsonv1
+   */
+  data_full_mode: number
+
+  data_full: string
+
+  data_summary: string
 
   user_id: number
 
@@ -56,45 +70,78 @@ export interface ContentPackV1 extends DatabaseBase {
    * 1=manual 2=tg 3=qq
    */
   platform: number
-
-  cp_version: number
 }
 
 export interface ContentPackHandleV1 extends DatabaseBase {
-  cpid: number
+  handle_id: number
 
   /**
-   * 1=private 2=public
+   * 1=unlisted(+) 2=public 3=resid 4=private(+)
    */
   handle_type: number
 
   handle: string
+
+  cpid: number
 }
 
 export const apply = (ctx: Context) => {
-  ctx.model.extend('cp_v1', {
-    ...databaseBaseFields,
-  })
+  ctx.model.extend(
+    'cp_v1',
+    {
+      ...databaseBaseFields,
 
-  ctx.model.extend('cp_handle_v1', {
-    ...databaseBaseFields,
+      cpid: {
+        type: 'unsigned',
+        length: 64,
+        nullable: false,
+      },
 
-    cpid: {
-      type: 'unsigned',
-      length: 64,
-      nullable: false,
+      cp_version: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
     },
-
-    handle_type: {
-      type: 'unsigned',
-      length: 1,
-      nullable: false,
+    {
+      primary: 'cpid',
+      autoInc: true,
     },
+  )
 
-    handle: {
-      type: 'char',
-      length: 64,
-      nullable: false,
+  ctx.model.extend(
+    'cp_handle_v1',
+    {
+      ...databaseBaseFields,
+
+      handle_id: {
+        type: 'unsigned',
+        length: 64,
+        nullable: false,
+      },
+
+      handle_type: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
+
+      handle: {
+        type: 'char',
+        length: 64,
+        nullable: false,
+      },
+
+      cpid: {
+        type: 'unsigned',
+        length: 64,
+        nullable: false,
+      },
     },
-  })
+    {
+      primary: 'handle_id',
+      autoInc: true,
+      unique: [['handle_type', 'handle']],
+    },
+  )
 }
