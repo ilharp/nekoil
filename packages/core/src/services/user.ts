@@ -1,5 +1,6 @@
 import type { Context, User } from 'koishi'
 import { Service } from 'koishi'
+import type {} from './upusr'
 
 export interface NekoilUser {
   cordisUser: User
@@ -18,5 +19,15 @@ export class NekoilUserService extends Service {
     super(ctx, 'nekoilUser')
   }
 
-  getUser = () => {}
+  getUser = async (
+    platform: string,
+    pid: string,
+    {}: {} = {},
+  ): Promise<NekoilUser> => {
+    const cordisUser = await this.ctx.upusr.upsertUser(platform, pid)
+
+    return {
+      cordisUser,
+    }
+  }
 }

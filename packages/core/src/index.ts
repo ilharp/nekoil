@@ -1,6 +1,7 @@
 import type { Context } from 'koishi'
 import { Schema } from 'koishi'
 import * as ContentPack from './cp'
+import { NekoilPermissionService } from './services/perm'
 import { UpusrService } from './services/upusr'
 import { NekoilUserService } from './services/user'
 
@@ -14,4 +15,5 @@ export const apply = (ctx: Context, _config: Config) => {
   ctx.plugin(ContentPack)
   ctx.plugin(UpusrService)
   ctx.plugin(NekoilUserService)
+  ctx.plugin(NekoilPermissionService)
 }
