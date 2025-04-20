@@ -2,6 +2,7 @@ FROM ilharp/cordis-base:0.0.1
 
 WORKDIR /cordis
 COPY . /cordis
+RUN ["rm", "-rf", "packages/sym", "packages/web"]
 RUN ["corepack", "yarn"]
 RUN ["corepack", "yarn", "build"]
 RUN ["corepack", "yarn", "node", "-r", "esbuild-register", "scripts/prepare.mts"]
