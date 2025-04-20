@@ -139,6 +139,12 @@ export class NekoilCpService extends Service {
     if (Object.hasOwn(result, 'cpid' satisfies keyof ContentPackWithFull))
       delete (result as Partial<ContentPackWithFull>).cpid
 
+    if (Object.hasOwn(result, 'creator' satisfies keyof ContentPackWithFull))
+      delete (result as Partial<ContentPackWithFull>).creator
+
+    if (Object.hasOwn(result, 'owner' satisfies keyof ContentPackWithFull))
+      delete (result as Partial<ContentPackWithFull>).owner
+
     if (result.data_summary) {
       result.summary = JSON.parse(result.data_summary) as ContentPackSummary
       delete (result as Partial<ContentPackWithFull>).data_summary
