@@ -15,6 +15,22 @@ export const apply = (ctx: Context) => {
     const body = c.request.body as NekoilCpCpGetRequest
 
     setHeader(c)
+    c.flushHeaders()
+
+    const cfCountry = c.request.header['CF-IPCountry']
+    if (
+      !cfCountry ||
+      Array.isArray(cfCountry) ||
+      !cfCountry.length ||
+      cfCountry === 'CN'
+    ) {
+      c.body = {
+        code: 2002,
+        msg: 'EXXXXX FORBIDDEN',
+      }
+      return
+    }
+
     c.body = await ctx.nekoilCp.cpGet(
       undefined as unknown as NekoilUser,
       body.query,
