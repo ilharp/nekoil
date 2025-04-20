@@ -71,17 +71,13 @@ export class NekoilCpService extends Service {
         'cp_v1',
         (cp_v1) =>
           $.and(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            $.eq(cp_v1.deleted, false),
+            $.eq(cp_v1.deleted, 0),
             $.in(
               cp_v1.cpid,
               this.ctx.database
                 .select('cp_handle_v1', (cp_handle_v1) =>
                   $.and(
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    $.eq(cp_handle_v1.deleted, false),
+                    $.eq(cp_handle_v1.deleted, 0),
                     $.eq(cp_handle_v1.handle, queryHandle),
                     isPlusHandle
                       ? $.or(
