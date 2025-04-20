@@ -11,6 +11,28 @@ export const inject = ['server', 'nekoilCp', 'nekoilUser']
 export const apply = (ctx: Context) => {
   // const l = ctx.logger('nekoilCpController')
 
+  ctx.server.options('/nekoil/v0/cp/cp.get', (c) => {
+    c.status = 200
+    setHeader(c)
+    c.set('Allow', 'GET,HEAD,POST,OPTIONS')
+    c.flushHeaders()
+    c.body = Buffer.allocUnsafe(0)
+  })
+
+  ctx.server.head('/nekoil/v0/cp/cp.get', (c) => {
+    c.status = 200
+    setHeader(c)
+    c.flushHeaders()
+    c.body = Buffer.allocUnsafe(0)
+  })
+
+  ctx.server.get('/nekoil/v0/cp/cp.get', (c) => {
+    c.status = 405
+    setHeader(c)
+    c.flushHeaders()
+    c.body = Buffer.allocUnsafe(0)
+  })
+
   ctx.server.post('/nekoil/v0/cp/cp.get', async (c) => {
     // const user = await ctx.nekoilUser.getUser(platform, pid)
 
