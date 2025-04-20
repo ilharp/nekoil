@@ -10147,6 +10147,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nekoil-web@workspace:packages/web"
   dependencies:
+    "@satorijs/element": "npm:3.1.7"
+    "@satorijs/protocol": "npm:1.6.0"
     "@sym-app/components": "workspace:^"
     "@tanstack/react-query": "npm:^5.74.4"
     "@types/telegram-web-app": "npm:^7.10.1"

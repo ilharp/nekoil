@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@satorijs/element": "3.1.7",
+    "@satorijs/protocol": "1.6.0",
     "@sym-app/components": "workspace:^",
     "@tanstack/react-query": "^5.74.4",
     "@types/telegram-web-app": "^7.10.1",
