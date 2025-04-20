@@ -36,12 +36,16 @@ export const databaseBaseQuery = {
   deleted: false,
 } as const
 
-const generateHandle = () => {
+const generateHandle = (length: number, human: boolean) => {
+  const handle = human ? handleH : handleM
+  const handleLength = human ? handleHLength : handleMLength
   let n = ''
-  for (let i = 0; i < 16; i++)
-    n += handleDict.charAt(Math.floor(Math.random() * handleDictLength))
+  for (let i = 0; i < length; i++)
+    n += handle.charAt(Math.floor(Math.random() * handleLength))
   return n
 }
 
-const handleDict = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-const handleDictLength = handleDict.length
+const handleH = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+const handleHLength = handleH.length
+const handleM = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+const handleMLength = handleM.length
