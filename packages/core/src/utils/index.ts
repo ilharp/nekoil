@@ -1,7 +1,10 @@
 import type { ParameterizedContext } from 'koa'
 
 export const setHeader = (c: ParameterizedContext) => {
-  if (/https?:\/\/localhost:/.exec(c.headers.referer!))
+  if (
+    /^https:\/\/390721\.xyz/.exec(c.headers.referer!) ||
+    /^https?:\/\/localhost:/.exec(c.headers.referer!)
+  )
     c.set({
       'Access-Control-Allow-Origin': new URL(c.headers.referer!).origin,
       'Access-Control-Allow-Credentials': 'true',
