@@ -39,6 +39,7 @@ export interface ContentPackHandleV1 extends DatabaseBase {
 }
 
 export interface ContentPackSummary {
+  count: number
   title: string
   summary: string[]
 }
@@ -55,6 +56,8 @@ export interface ContentPackWithFull extends ContentPackWithSummary {
   full: ContentPackFull
 }
 
-export interface NekoilCpCpGetRequest {}
+export interface NekoilCpCpGetRequest {
+  query: string
+}
 
-export type NekoilCpCpGetResponse = ContentPackWithSummary | ContentPackWithFull
+export type ContentPack = ContentPackWithSummary | ContentPackWithFull

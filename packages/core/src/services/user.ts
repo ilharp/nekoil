@@ -1,6 +1,5 @@
 import type { Context, User } from 'koishi'
 import { Service } from 'koishi'
-import type {} from './upusr'
 
 export interface NekoilUser {
   cordisUser: User

@@ -8,6 +8,12 @@ export const setHeader = (c: ParameterizedContext) => {
   })
 }
 
+export const databaseBaseCreate = {
+  created_time: new Date(),
+  deleted: 0,
+  deleted_reason: 0,
+} as const
+
 export const databaseBaseFields = {
   created_time: {
     type: 'timestamp',
@@ -36,6 +42,8 @@ export const databaseBaseQuery = {
   deleted: false,
 } as const
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 const generateHandle = (length: number, human: boolean) => {
   const handle = human ? handleH : handleM
   const handleLength = human ? handleHLength : handleMLength
@@ -49,3 +57,5 @@ const handleH = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 const handleHLength = handleH.length
 const handleM = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 const handleMLength = handleM.length
+
+export class NoLoggingError extends Error {}

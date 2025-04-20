@@ -3820,7 +3820,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash-es@npm:^4.17.6":
+"@types/lodash-es@npm:^4, @types/lodash-es@npm:^4.17.6":
   version: 4.17.12
   resolution: "@types/lodash-es@npm:4.17.12"
   dependencies:
@@ -9400,6 +9400,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
   dependencies:
+    "@types/lodash-es": "npm:^4"
+    lodash-es: "npm:^4.17.21"
     nekoil-typedef: "workspace:^"
   peerDependencies:
     koishi: ^4.18.7
