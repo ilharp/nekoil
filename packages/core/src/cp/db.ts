@@ -28,7 +28,7 @@ export const apply = async (ctx: Context) => {
 
       cpid: {
         type: 'unsigned',
-        length: 32,
+        length: 8,
         nullable: false,
       },
 
@@ -40,13 +40,13 @@ export const apply = async (ctx: Context) => {
 
       creator: {
         type: 'unsigned',
-        length: 32,
+        length: 8,
         nullable: false,
       },
 
       owner: {
         type: 'unsigned',
-        length: 32,
+        length: 8,
         nullable: false,
       },
 
@@ -87,7 +87,7 @@ export const apply = async (ctx: Context) => {
 
       handle_id: {
         type: 'unsigned',
-        length: 32,
+        length: 8,
         nullable: false,
       },
 
@@ -105,7 +105,7 @@ export const apply = async (ctx: Context) => {
 
       cpid: {
         type: 'unsigned',
-        length: 32,
+        length: 8,
         nullable: false,
       },
     },
