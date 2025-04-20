@@ -28,6 +28,42 @@ export const apply = (ctx: Context) => {
         length: 1,
         nullable: false,
       },
+
+      creator: {
+        type: 'unsigned',
+        length: 64,
+        nullable: false,
+      },
+
+      owner: {
+        type: 'unsigned',
+        length: 64,
+        nullable: false,
+      },
+
+      data_full_mode: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
+
+      data_full: {
+        type: 'text',
+        length: 1,
+        nullable: false,
+      },
+
+      data_summary: {
+        type: 'text',
+        length: 1,
+        nullable: false,
+      },
+
+      platform: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
     },
     {
       primary: 'cpid',
@@ -53,8 +89,8 @@ export const apply = (ctx: Context) => {
       },
 
       handle: {
-        type: 'char',
-        length: 64,
+        type: 'string',
+        length: 1,
         nullable: false,
       },
 
