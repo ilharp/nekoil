@@ -1,5 +1,6 @@
 import { includeIgnoreFile } from '@eslint/compat'
 import js from '@eslint/js'
+import eslintPluginQuery from '@tanstack/eslint-plugin-query'
 import eslintPluginImport from 'eslint-plugin-import'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import eslintPluginReact from 'eslint-plugin-react'
@@ -28,6 +29,7 @@ export default typescriptEslint.config(
   eslintPluginReact.configs.flat.recommended,
   eslintPluginReact.configs.flat['jsx-runtime'],
   eslintPluginReactHooks.configs['recommended-latest'],
+  eslintPluginQuery.configs['flat/recommended'],
   eslintPluginPrettierRecommended,
   // {
   //   files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}'],

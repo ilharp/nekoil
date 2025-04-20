@@ -8,16 +8,15 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "@sym-app/components": "workspace:^",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router": "^7.4.1"
-  },
   "devDependencies": {
+    "@sym-app/components": "workspace:^",
+    "@tanstack/react-query": "^5.74.4",
     "@types/telegram-web-app": "^7.10.1",
     "@vitejs/plugin-react": "^4.3.4",
     "nekoil-typedef": "workspace:^",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.4.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.0"
   }

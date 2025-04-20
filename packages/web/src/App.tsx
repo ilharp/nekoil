@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { Banned } from './pages/Banned'
 import { ContentPack } from './pages/ContentPack'
@@ -23,4 +24,10 @@ const router = createBrowserRouter([
   },
 ])
 
-export const App = () => <RouterProvider router={router} />
+const queryClient = new QueryClient()
+
+export const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <RouterProvider router={router} />
+  </QueryClientProvider>
+)

@@ -41,6 +41,7 @@
     "@koishijs/client": "^5.30.7",
     "@koishijs/plugin-hmr": "^1.2.9",
     "@koishijs/scripts": "^4.6.1",
+    "@tanstack/eslint-plugin-query": "^5.73.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
