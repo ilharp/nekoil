@@ -1,0 +1,24 @@
+.symProvider {
+  height: 100%;
+}
+
+.container {
+}
+
+.headerContainer {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border-bottom: 1px solid var(--tg-theme-section-separator-color);
+}
+
+.title {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.msgList {
+  margin: 12px;
+}

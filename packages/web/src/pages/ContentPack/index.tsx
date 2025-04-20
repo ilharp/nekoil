@@ -7,26 +7,51 @@ import {
   SymMsgVirtualList,
   SymProvider,
 } from '@sym-app/components'
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import type { ContentPackWithFull, NekoilCpCpGetRequest } from 'nekoil-typedef'
+import { useParams } from 'react-router'
+import { ResultError } from '../../components/ResultError'
 import { Splash } from '../../components/Splash'
-import { ContentPackWithFull } from 'nekoil-typedef'
+import { requestV1 } from '../../utils'
+import h from '@satorijs/element'
+
+import styles from './index.module.scss'
 
 export const ContentPack = () => {
-  const [loading, setLoading] = useState(true)
-  const [cp, setCp] = useState<ContentPackWithFull | undefined>(undefined)
+  const { cpHandleQuery } = useParams()
 
-  if (loading) return <Splash />
+  const { isPending, isError, data, error } = useQuery({
+    queryKey: ['cp', cpHandleQuery],
+    queryFn: requestV1<ContentPackWithFull>('/nekoil/v0/cp/cp.get', {
+      body: JSON.stringify({
+        query: cpHandleQuery!,
+      } satisfies NekoilCpCpGetRequest),
+    }),
+  })
+
+  if (isPending) return <Splash />
+
+  if (isError) return <ResultError e={error} />
 
   return (
-    <SymProvider>
+    <SymProvider className={styles.symProvider}>
       <SymAioHostContext value={symAioHost}>
         <SymAioCtxContext.Provider
           value={{
-            messages: cp!.full.messages,
+            messages: data.full.messages.map((x) => ({
+              ...x,
+              symHeader: x.user?.name,
+              elements: h.parse(x.content!),
+            })),
           }}
         >
           <SymMsgGroupContext value={symMsgGroupCtx}>
-            <SymMsgVirtualList />
+            <div className={styles.container}>
+              <div className={styles.headerContainer}>
+                <h1 className={styles.title}>{data.summary.title}</h1>
+              </div>
+              <SymMsgVirtualList className={styles.msgList} />
+            </div>
           </SymMsgGroupContext>
         </SymAioCtxContext.Provider>
       </SymAioHostContext>

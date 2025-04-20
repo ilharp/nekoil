@@ -11,7 +11,7 @@ const router = createBrowserRouter([
     Component: Dash,
   },
   {
-    path: ':cphandle',
+    path: ':cpHandleQuery',
     Component: ContentPack,
   },
   {
@@ -24,7 +24,17 @@ const router = createBrowserRouter([
   },
 ])
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      retry: 1,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 export const App = () => (
   <QueryClientProvider client={queryClient}>

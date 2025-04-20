@@ -1,0 +1,33 @@
+@use 'reset';
+@use 'sym';
+@use 'global';
+
+.nekoil-result {
+  &-container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+  }
+
+  &-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 72px;
+  }
+
+  &-title {
+    font-size: 24px;
+    font-weight: bold;
+
+    margin: 12px 36px;
+  }
+
+  &-content {
+    margin: 0 36px;
+  }
+}
