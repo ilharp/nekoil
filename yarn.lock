@@ -1818,17 +1818,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-qq@npm:^4.9.2":
-  version: 4.9.2
-  resolution: "@koishijs/plugin-adapter-qq@npm:4.9.2"
-  dependencies:
-    "@satorijs/adapter-qq": "npm:^4.9.2"
-  peerDependencies:
-    koishi: ^4.18.4
-  checksum: 10c0/04f3672cafdd55e3e60398d670dea308a94c1e30acd3cfe27ad5fed8773dbad9c7a5e3ad3fd6e7b100e3a43ca7d7e56fcfa4b56908469db2ee41893712ca161d
-  languageName: node
-  linkType: hard
-
 "@koishijs/plugin-adapter-telegram@npm:^4.5.10":
   version: 4.5.10
   resolution: "@koishijs/plugin-adapter-telegram@npm:4.5.10"
@@ -2916,15 +2905,6 @@ __metadata:
     argparse: "npm:~1.0.9"
     string-argv: "npm:~0.3.1"
   checksum: 10c0/d77d2099ed295a0ef66f0763ad4cdbd64b7ab998dda0e5714d13ae34156c813ee59fa92633763ed6f2b5eeea98afaee143f1088e2f58b0d88b920694194e739d
-  languageName: node
-  linkType: hard
-
-"@satorijs/adapter-qq@npm:^4.9.2":
-  version: 4.9.2
-  resolution: "@satorijs/adapter-qq@npm:4.9.2"
-  peerDependencies:
-    "@satorijs/core": ^4.3.3
-  checksum: 10c0/fcc0c86a1ce448a74d41fd552b220f9b0c582d6cd1c5941e82ead0171a0db82b8d201ee9debcbad9b19bc1e79c437b8f4c781cd41a7f38b066e16f53d4aacf21
   languageName: node
   linkType: hard
 
@@ -10089,7 +10069,6 @@ __metadata:
     "@eslint/js": "npm:^9.23.0"
     "@koishijs/client": "npm:^5.30.7"
     "@koishijs/plugin-actions": "npm:^0.0.2"
-    "@koishijs/plugin-adapter-qq": "npm:^4.9.2"
     "@koishijs/plugin-adapter-telegram": "npm:^4.5.10"
     "@koishijs/plugin-admin": "npm:^2.0.0-beta.4"
     "@koishijs/plugin-analytics": "npm:^2.0.6"

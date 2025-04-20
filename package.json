@@ -72,7 +72,6 @@
   },
   "dependencies": {
     "@koishijs/plugin-actions": "^0.0.2",
-    "@koishijs/plugin-adapter-qq": "^4.9.2",
     "@koishijs/plugin-adapter-telegram": "^4.5.10",
     "@koishijs/plugin-admin": "^2.0.0-beta.4",
     "@koishijs/plugin-analytics": "^2.0.6",

@@ -52,14 +52,6 @@ plugins:
       path: data/koishi.db
     assets-local:rk7cb2: {}
   group:adapter:
-    adapter-qq:rkbdmq:
-      $if: env.NEKOIL_ENV === 'production'
-      id: ${{ env.QQ_ID }}
-      token: ${{ env.QQ_TOKEN }}
-      secret: ${{ env.QQ_SECRET }}
-      type: public
-      intents: 1308627971
-      sandbox: false
     adapter-telegram:v5a28u:
       $if: env.NEKOIL_ENV === 'production'
       protocol: server
