@@ -1,6 +1,15 @@
 import type { ParameterizedContext } from 'koa'
 
 export const setHeader = (c: ParameterizedContext) => {
+  if (/https?:\/\/localhost:/.exec(c.headers.origin!))
+    c.set({
+      'Access-Control-Allow-Origin': c.headers.origin!,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    })
+
   c.set({
     Connection: 'keep-alive',
     'Cache-Control': 'no-store',
