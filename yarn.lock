@@ -9703,6 +9703,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.501.0":
+  version: 0.501.0
+  resolution: "lucide-react@npm:0.501.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/c684c81bba746c4371ff1758c9d7dcff75809bf35c8a7ec6e07fb2cf429f3bf212adab06630904b67b0f7fe2254b2cee58354ef71f62ea5139b63fdecb45f9a8
+  languageName: node
+  linkType: hard
+
 "lz-string@npm:^1.5.0":
   version: 1.5.0
   resolution: "lz-string@npm:1.5.0"
@@ -10142,6 +10151,7 @@ __metadata:
     "@tanstack/react-query": "npm:^5.74.4"
     "@types/telegram-web-app": "npm:^7.10.1"
     "@vitejs/plugin-react": "npm:^4.3.4"
+    lucide-react: "npm:^0.501.0"
     nekoil-typedef: "workspace:^"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
