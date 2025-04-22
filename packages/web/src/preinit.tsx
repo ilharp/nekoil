@@ -1,7 +1,7 @@
 try {
   if (
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    !window.Telegram?.WebApp.isVersionAtLeast('8.0')
+    !window.Telegram?.WebApp.isVersionAtLeast('6.1')
   )
     throw new Error()
 
