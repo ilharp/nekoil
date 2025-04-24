@@ -22,6 +22,16 @@
     "nekoil-typedef": "workspace:^"
   },
   "dependencies": {
+    "koishi-plugin-redis": "workspace:^",
     "lodash-es": "^4.17.21"
+  },
+  "koishi": {
+    "service": {
+      "required": [
+        "server",
+        "database",
+        "redis"
+      ]
+    }
   }
 }

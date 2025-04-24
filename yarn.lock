@@ -9540,6 +9540,7 @@ __metadata:
   resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
   dependencies:
     "@types/lodash-es": "npm:^4"
+    koishi-plugin-redis: "workspace:^"
     lodash-es: "npm:^4.17.21"
     nekoil-typedef: "workspace:^"
   peerDependencies:
@@ -9569,7 +9570,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-redis@workspace:packages/redis":
+"koishi-plugin-redis@workspace:^, koishi-plugin-redis@workspace:packages/redis":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-redis@workspace:packages/redis"
   dependencies:
