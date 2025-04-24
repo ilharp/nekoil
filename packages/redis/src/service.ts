@@ -2,6 +2,12 @@ import type { Context } from 'koishi'
 import { Schema, Service } from 'koishi'
 import { createClient, createCluster } from 'redis'
 
+declare module 'koishi' {
+  interface Context {
+    redis: Redis
+  }
+}
+
 export class Redis extends Service {
   #l
 
