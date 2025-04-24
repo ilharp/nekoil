@@ -64,6 +64,16 @@ plugins:
   group:x4dshh:
     $label: nekoil-group
     nekoil-core:rm0mqo: {}
+  group:5btmiz:
+    $label: aa
+    redis:pk73va:
+      $if: env.NEKOIL_ENV !== 'production'
+      mode: client
+    redis:vxs1pc:
+      $if: env.NEKOIL_ENV === 'production'
+      mode: cluster
+      rootNodes:
+        - ${{ env.REDIS_URL }}
 prefix:
   - /
   - null
