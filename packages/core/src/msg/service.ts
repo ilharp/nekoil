@@ -1,5 +1,6 @@
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
+import type {} from 'koishi-plugin-redis'
 import { debounce } from 'lodash-es'
 
 interface Emitter {
@@ -14,7 +15,7 @@ declare module 'koishi' {
 }
 
 export class NekoilMsgService extends Service {
-  static inject = ['database']
+  static inject = ['redis']
 
   #l
 
@@ -51,5 +52,15 @@ export class NekoilMsgService extends Service {
 
   #buildFn = (channel: string, emitter: Emitter) => async () => {
     if (emitter.lock) return
+
+    await this.ctx.redis.client.createPool().execute(async (client) => {
+      const key = `nekoilv1:msg:${channel}`
+
+      await client.watch(key)
+
+      const multi = await client.multi()
+
+      await multi.exec()
+    })
   }
 }
