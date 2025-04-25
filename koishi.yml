@@ -50,8 +50,21 @@ plugins:
     database-sqlite:v9xs5g:
       $if: env.NEKOIL_ENV !== 'production'
       path: data/koishi.db
+    redis:pk73va:
+      $if: env.NEKOIL_ENV !== 'production'
+      mode: client
+    redis:vxs1pc:
+      $if: env.NEKOIL_ENV === 'production'
+      mode: cluster
+      rootNodes:
+        - ${{ env.REDIS_URL }}
     assets-local:rk7cb2: {}
   group:adapter:
+    adapter-telegram:t68xq1:
+      $if: env.NEKOIL_ENV !== 'production'
+      protocol: polling
+      token: ${{ env.TG_TOKEN }}
+      endpoint: ${{ env.TG_ENDPOINT }}
     adapter-telegram:v5a28u:
       $if: env.NEKOIL_ENV === 'production'
       protocol: server
@@ -64,16 +77,6 @@ plugins:
   group:x4dshh:
     $label: nekoil-group
     nekoil-core:rm0mqo: {}
-  group:5btmiz:
-    $label: aa
-    redis:pk73va:
-      $if: env.NEKOIL_ENV !== 'production'
-      mode: client
-    redis:vxs1pc:
-      $if: env.NEKOIL_ENV === 'production'
-      mode: cluster
-      rootNodes:
-        - ${{ env.REDIS_URL }}
 prefix:
   - /
   - null
