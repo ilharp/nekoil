@@ -70,6 +70,7 @@ plugins:
       protocol: server
       token: ${{ env.TG_TOKEN }}
       endpoint: ${{ env.TG_ENDPOINT }}
+      selfUrl: ${{ env.SELF_URL_PRIVATE }}
   group:develop:
     $if: env.NODE_ENV === 'development'
     hmr:aagx0q:
