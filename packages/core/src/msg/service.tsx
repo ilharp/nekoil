@@ -311,16 +311,43 @@ export class NekoilMsgService extends Service {
     sessions: NekoilMsgSession[],
   ): Promise<h[]> => {
     const result = sessions.map((session) => {
+      let author = h('author', {
+        id: session.event.user!.id,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        name: session.event.user!.nick || session.event.user!.name,
+        avatar: session.event.user!.avatar,
+      })
+
+      const forward = session.event._data?.message?.forward_origin
+
+      if (forward) {
+        // 避免正在创建 cp 的用户隐私泄漏
+        author = h('author')
+
+        switch (forward.type) {
+          case 'user':
+            author.attrs['id'] = forward.sender_user.id
+            author.attrs['name'] =
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              `${forward.sender_user.first_name || ''} ${forward.sender_user.last_name || ''}`
+            break
+
+          case 'hidden_user':
+            author.attrs['name'] = forward.sender_user_name
+            break
+
+          case 'channel':
+          case 'chat':
+            author.attrs['name'] =
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              forward.chat.title || forward.author_signature
+            break
+        }
+      }
+
       const message: h = (
         <message>
-          <author
-            // TODO
-            id={session.event.user!.id}
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            name={session.event.user!.nick || session.event.user!.name}
-            // eslint-disable-next-line react/no-unknown-property
-            avatar={session.event.user!.avatar}
-          />
+          {author}
           {session.event.message!.elements}
         </message>
       )
@@ -446,7 +473,7 @@ export class NekoilMsgService extends Service {
 
         break
       } catch (_) {
-        continue
+        // continue
       }
     }
 
