@@ -136,6 +136,8 @@ export class NekoilMsgService extends Service {
     _channelId: string,
     sessions: NekoilMsgSession[],
   ) => {
+    let progressMsg: number | undefined = undefined
+
     // FIXME
     const bot = this.ctx.bots[0] as unknown as TelegramBot
 
@@ -146,6 +148,8 @@ export class NekoilMsgService extends Service {
     )
 
     const lastSession = sessions[len - 1]
+    const pid = lastSession!.event.user!.id
+    const pidNumber = Number(pid)
 
     try {
       let contentType: 'forward' | 'satori' | 'onebot' = 'forward'
@@ -220,14 +224,13 @@ export class NekoilMsgService extends Service {
           break
       }
 
-      const pid = lastSession!.event.user!.id
-      const pidNumber = Number(pid)
-
-      const { message_id: progressMsg } = await bot.internal.sendMessage({
-        chat_id: pidNumber,
-        text: loadingContent,
-        parse_mode: 'MarkdownV2',
-      })
+      progressMsg = (
+        await bot.internal.sendMessage({
+          chat_id: pidNumber,
+          text: loadingContent,
+          parse_mode: 'MarkdownV2',
+        })
+      ).message_id!
 
       const onProgress = async (text: string) => {
         await bot.internal.editMessageText({
@@ -286,15 +289,23 @@ export class NekoilMsgService extends Service {
 
       await bot.internal.deleteMessage({
         chat_id: pidNumber,
-        message_id: progressMsg!,
+        message_id: progressMsg,
       })
     } catch (e) {
       this.#l.error(`error processing tg message: ${e}`)
 
-      await bot.sendPrivateMessage(
-        lastSession!.event.user!.id,
-        `出现了错误：\n${e}`,
-      )
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      bot.internal.sendMessage({
+        chat_id: pidNumber,
+        text: `出现了错误：\n${e}`,
+        parse_mode: 'MarkdownV2',
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      bot.internal.deleteMessage({
+        chat_id: pidNumber,
+        message_id: progressMsg!,
+      })
     }
   }
 
