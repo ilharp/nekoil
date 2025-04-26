@@ -19,25 +19,32 @@ export class Redis extends Service {
     this.#l = ctx.logger('redis')
 
     ctx.on('ready', async () => {
-      // @ts-expect-error createCluster bad type
-      this.client = await (
-        config.mode === 'cluster'
-          ? createCluster({
-              rootNodes: config.rootNodes.map((url) => ({ url })),
-              defaults: {
+      try {
+        // @ts-expect-error createCluster bad type
+        this.client = await (
+          config.mode === 'cluster'
+            ? createCluster({
+                rootNodes: config.rootNodes.map((url) => ({ url })),
+                defaults: {
+                  readonly: config.readonly,
+                },
+              })
+            : createClient({
                 readonly: config.readonly,
-              },
-            })
-          : createClient({
-              readonly: config.readonly,
-              url: config.url,
-            })
-      )
-        .on('ready', () => {
-          this.#l.success(`connected`)
-        })
-        .on('error', this.#l.error)
-        .connect()
+                url: config.url,
+              })
+        )
+          .on('connect', () => {
+            this.#l.success('connecting')
+          })
+          .on('ready', () => {
+            this.#l.success('connected')
+          })
+          .on('error', this.#l.error)
+          .connect()
+      } catch (e) {
+        this.#l.error(e)
+      }
     })
 
     ctx.on('dispose', async () => {
