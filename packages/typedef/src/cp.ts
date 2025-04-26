@@ -29,7 +29,7 @@ export interface ContentPackHandleV1 extends DatabaseBase {
   handle_id: number
 
   /**
-   * 1=unlisted(+) 2=public 3=resid 4=private(+)
+   * 1=unlisted(_) 2=public 3=resid 4=private(_)
    */
   handle_type: number
 

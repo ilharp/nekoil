@@ -1,4 +1,5 @@
 import type { ParameterizedContext } from 'koa'
+import type { ContentPackHandleV1 } from 'nekoil-typedef'
 
 export const setHeader = (c: ParameterizedContext) => {
   if (
@@ -67,5 +68,10 @@ const handleH = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 const handleHLength = handleH.length
 const handleM = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 const handleMLength = handleM.length
+
+export const getHandle = (cpHandle: ContentPackHandleV1) => {
+  if ([1, 4].includes(cpHandle.handle_type)) return `_${cpHandle.handle}`
+  return cpHandle.handle
+}
 
 export class NoLoggingError extends Error {}

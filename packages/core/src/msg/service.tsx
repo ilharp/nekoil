@@ -12,7 +12,7 @@ import type {
   ContentPackV1,
   ContentPackWithAll,
 } from 'nekoil-typedef'
-import { generateHandle } from '../utils'
+import { generateHandle, getHandle } from '../utils'
 import { summaryMessagerSend } from './summary'
 
 interface Emitter {
@@ -164,6 +164,11 @@ export class NekoilMsgService extends Service {
           }[]
         | undefined = undefined
 
+      // 解析到 elements
+      sessions.forEach((x) => {
+        x.event.message!.elements = h.parse(x.event.message!.content!)
+      })
+
       // 判断是否均为纯文本
       if (
         sessions.every(
@@ -228,7 +233,6 @@ export class NekoilMsgService extends Service {
         await bot.internal.sendMessage({
           chat_id: pidNumber,
           text: loadingContent,
-          parse_mode: 'MarkdownV2',
         })
       ).message_id!
 
@@ -237,7 +241,6 @@ export class NekoilMsgService extends Service {
           chat_id: pidNumber,
           message_id: progressMsg!,
           text: `${loadingContent}\n${text}`,
-          parse_mode: 'MarkdownV2',
         })
       }
 
@@ -276,11 +279,11 @@ export class NekoilMsgService extends Service {
             [
               {
                 text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                url: `https://t.me/nekoilbot?startapp=%2B${cpHandle.handle}`,
+                url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
               },
               {
                 text: '转发',
-                switch_inline_query: `+${cpHandle.handle}`,
+                switch_inline_query: getHandle(cpHandle),
               },
             ],
           ],
@@ -292,13 +295,13 @@ export class NekoilMsgService extends Service {
         message_id: progressMsg,
       })
     } catch (e) {
-      this.#l.error(`error processing tg message: ${e}`)
+      this.#l.error(`error processing tg message:`)
+      this.#l.error(e)
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       bot.internal.sendMessage({
         chat_id: pidNumber,
         text: `出现了错误：\n${e}`,
-        parse_mode: 'MarkdownV2',
       })
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -421,7 +424,7 @@ export class NekoilMsgService extends Service {
           elements.splice(
             forwardIndex,
             1,
-            <nekoil:cp handle={`+${cpHandle.handle}`} />,
+            <nekoil:cp handle={getHandle(cpHandle)} />,
           )
         }
 
@@ -435,7 +438,7 @@ export class NekoilMsgService extends Service {
         }
 
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const summary = `${author?.attrs['name'] || '用户'}${(
+        const summary = `${author?.attrs['name'] || '用户'}: ${(
           await summaryMessagerSend(elements)
         )
           .join('')
@@ -461,11 +464,11 @@ export class NekoilMsgService extends Service {
 
     const cpCreate = {
       ...pack,
-      summary: undefined,
-      full: undefined,
       data_summary: JSON.stringify(pack.summary),
       data_full: JSON.stringify(pack.full),
-    } as ContentPackV1
+    }
+    delete cpCreate.full
+    delete cpCreate.summary
 
     const cp = await this.ctx.database.create('cp_v1', cpCreate)
 

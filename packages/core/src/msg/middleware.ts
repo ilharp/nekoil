@@ -1,4 +1,4 @@
-import type { Context } from 'koishi'
+import type { Context, h } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import type { NekoilMsgSession } from './service'
 
@@ -22,7 +22,13 @@ export const apply = async (ctx: Context) => {
         dataKey,
         JSON.stringify({
           isDirect: session.isDirect,
-          event: session.event,
+          event: {
+            ...session.event,
+            message: {
+              ...session.event.message,
+              elements: undefined as unknown as h[],
+            },
+          },
         } satisfies NekoilMsgSession),
       )
 

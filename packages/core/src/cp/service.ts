@@ -51,7 +51,7 @@ export class NekoilCpService extends Service {
 
       // TODO: tg prefix
 
-      const isPlusHandle = queryHandle.startsWith('+')
+      const isPlusHandle = queryHandle.startsWith('_')
       if (isPlusHandle) queryHandle = queryHandle.slice(1)
 
       // Join ver.
