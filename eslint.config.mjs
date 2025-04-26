@@ -54,6 +54,12 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unnecessary-condition': [
+        'error',
+        {
+          allowConstantLoopConditions: 'only-allowed-literals',
+        },
+      ],
     },
   },
 )
