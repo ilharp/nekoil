@@ -54,9 +54,7 @@ export const databaseBaseQuery = {
   deleted: false,
 } as const
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const generateHandle = (length: number, human: boolean) => {
+export const generateHandle = (length: number, human: boolean) => {
   const handle = human ? handleH : handleM
   const handleLength = human ? handleHLength : handleMLength
   let n = ''

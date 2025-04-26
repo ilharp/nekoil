@@ -22,6 +22,7 @@
     "nekoil-typedef": "workspace:^"
   },
   "dependencies": {
+    "@satorijs/element": "^3.1.7",
     "koishi-plugin-redis": "workspace:^",
     "lodash-es": "^4.17.21"
   },

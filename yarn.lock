@@ -9539,6 +9539,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
   dependencies:
+    "@satorijs/element": "npm:^3.1.7"
     "@types/lodash-es": "npm:^4"
     koishi-plugin-redis: "workspace:^"
     lodash-es: "npm:^4.17.21"

@@ -60,4 +60,4 @@ export interface NekoilCpCpGetRequest {
   query: string
 }
 
-export type ContentPack = ContentPackWithSummary | ContentPackWithFull
+export type ContentPackWithAll = ContentPackWithSummary & ContentPackWithFull
