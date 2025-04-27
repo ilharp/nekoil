@@ -136,7 +136,6 @@ tmp/
 
 # Koishi data files
 /cache
-/data
 /temp
 
 # Koishi workspaces
