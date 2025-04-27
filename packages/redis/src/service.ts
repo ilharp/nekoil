@@ -13,43 +13,63 @@ export class Redis extends Service {
 
   public client: Redis.RedisClient = undefined as unknown as Redis.RedisClient
 
-  constructor(ctx: Context, config: Redis.Config) {
+  constructor(
+    ctx: Context,
+    private redisConfig: Redis.Config,
+  ) {
     super(ctx, 'redis')
 
     this.#l = ctx.logger('redis')
 
     ctx.on('ready', async () => {
       try {
-        // @ts-expect-error createCluster bad type
-        this.client = await (
-          config.mode === 'cluster'
-            ? createCluster({
-                rootNodes: config.rootNodes.map((url) => ({ url })),
-                defaults: {
-                  readonly: config.readonly,
-                },
-              })
-            : createClient({
-                readonly: config.readonly,
-                url: config.url,
-              })
-        )
-          .on('connect', () => {
-            this.#l.success('connecting')
-          })
-          .on('ready', () => {
-            this.#l.success('connected')
-          })
-          .on('error', this.#l.error)
-          .connect()
-      } catch (e) {
-        this.#l.error(e)
+        this.client = await this.#isolateIntl(true)
+      } catch (_) {
+        // Already logged
       }
     })
 
     ctx.on('dispose', async () => {
-      await this.client.disconnect()
+      this.client.destroy()
     })
+  }
+
+  public isolate = () => this.#isolateIntl(false)
+
+  #isolateIntl = async (logConnect: boolean) => {
+    try {
+      const client = (
+        this.redisConfig.mode === 'cluster'
+          ? createCluster({
+              rootNodes: this.redisConfig.rootNodes.map((url) => ({ url })),
+              defaults: {
+                readonly: this.redisConfig.readonly,
+              },
+            })
+          : createClient({
+              readonly: this.redisConfig.readonly,
+              url: this.redisConfig.url,
+            })
+      ) as Redis.RedisClient
+
+      if (logConnect) {
+        client.on('connect', () => {
+          this.#l.success('connecting')
+        })
+        client.on('ready', () => {
+          this.#l.success('connected')
+        })
+      }
+
+      client.on('error', this.#l.error)
+
+      await client.connect()
+
+      return client
+    } catch (e) {
+      this.#l.error(e)
+      throw e
+    }
   }
 }
 
@@ -81,11 +101,11 @@ export namespace Redis {
           'Connect in [`READONLY`](https://redis.io/commands/readonly) mode',
         )
         .default(false),
-      mode: Schema.union(['client', 'cluster']).required(),
+      mode: Schema.union(['client', 'cluster']).default('client'),
     }),
     Schema.union([
       Schema.object({
-        mode: Schema.const('client').required(),
+        mode: Schema.const('client'),
         url: Schema.string()
           .description(
             '`redis[s]://[[username][:password]@][host][:port][/db-number]` (see [`redis`](https://www.iana.org/assignments/uri-schemes/prov/redis) and [`rediss`](https://www.iana.org/assignments/uri-schemes/prov/rediss) IANA registration for more details)',
@@ -93,7 +113,7 @@ export namespace Redis {
           .default('redis://127.0.0.1:6379/0'),
       }),
       Schema.object({
-        mode: Schema.const('cluster').required(),
+        mode: Schema.const('cluster'),
         rootNodes: Schema.array(String)
           .description(
             'An array of root nodes that are part of the cluster, which will be used to get the cluster topology.',

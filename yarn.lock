@@ -2671,59 +2671,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@redis/bloom@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@redis/bloom@npm:1.2.0"
+"@redis/bloom@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "@redis/bloom@npm:5.0.0-next.7"
   peerDependencies:
-    "@redis/client": ^1.0.0
-  checksum: 10c0/7dde8e67188164e96226c8a5c78ebd2801f1662947371e78fb95fb180c1e9ddff8d237012eb5e9182775be61cb546f67f759927cdaee0d178d863ee290e1fb27
+    "@redis/client": ^5.0.0-next.7
+  checksum: 10c0/3c363752986b8b92ba5693499c4e4c7db050383707dc65b413de83aa1e59a045ea07372c504903e63b1f67c239f080c10f33a451e91bc7c343e05886f9b61a22
   languageName: node
   linkType: hard
 
-"@redis/client@npm:1.6.0":
-  version: 1.6.0
-  resolution: "@redis/client@npm:1.6.0"
+"@redis/client@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "@redis/client@npm:5.0.0-next.7"
   dependencies:
     cluster-key-slot: "npm:1.1.2"
-    generic-pool: "npm:3.9.0"
-    yallist: "npm:4.0.0"
-  checksum: 10c0/c80a01b4f72d32284515dac6d1aefe0e9c881d08b8db33281f87b51650c1c116b18074a29ca81599d15dccb37b29eef9b26a75a5755150ae27d163e680c34bf6
+  checksum: 10c0/a7620e65e02718dbe5be9151a12414fb117c04842a6b145af8a649297dc07ec90cbb02d20ed709c8979c3f1782de5ea866f0dec83bcedd5541782272155c1376
   languageName: node
   linkType: hard
 
-"@redis/graph@npm:1.1.1":
-  version: 1.1.1
-  resolution: "@redis/graph@npm:1.1.1"
+"@redis/json@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "@redis/json@npm:5.0.0-next.7"
   peerDependencies:
-    "@redis/client": ^1.0.0
-  checksum: 10c0/64199db2cb3669c4911af8aba3b7116c4c2c1df37ca74b2a65555e62c863935a0cea74bc41bd92acf2e551074eb2a30c75f54a9f439b40e0f9bb67fc5fb66614
+    "@redis/client": ^5.0.0-next.7
+  checksum: 10c0/58a056cc53aeddb2ad53ab1fcb3a66842eaf37507ce6e53ca2a031420302e906a2d4ee78d8d3ab339b5d9c33616b07e0e0851b6740f5aeccdcbfb56cfeb7290b
   languageName: node
   linkType: hard
 
-"@redis/json@npm:1.0.7":
-  version: 1.0.7
-  resolution: "@redis/json@npm:1.0.7"
+"@redis/search@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "@redis/search@npm:5.0.0-next.7"
   peerDependencies:
-    "@redis/client": ^1.0.0
-  checksum: 10c0/cef473711d66f7568a16edbd728acca7d237cfeaa15e0326b5b628dfab4afc0c76c7354e7f8efad6ecc64a1cb774e4aa060ee46497b633e18ba0a2f0aace1cc4
+    "@redis/client": ^5.0.0-next.7
+  checksum: 10c0/51d2d64bd64cb21f3cd45b63804268c9749ac29b4562a1dc51c6100322cbb0d147ef9503d61d717256b76f8b5a60b841080311ae9c145e6cf9be60912248df32
   languageName: node
   linkType: hard
 
-"@redis/search@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@redis/search@npm:1.2.0"
+"@redis/time-series@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "@redis/time-series@npm:5.0.0-next.7"
   peerDependencies:
-    "@redis/client": ^1.0.0
-  checksum: 10c0/01d57ac10d2c5698e04e4a2f945440db3087e8834643ca950c099879dbcd77526604ca6f5c2ee883dfd4b337b0a24cb7d81ac56845aa83f89a4f161362a08dc6
-  languageName: node
-  linkType: hard
-
-"@redis/time-series@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@redis/time-series@npm:1.1.0"
-  peerDependencies:
-    "@redis/client": ^1.0.0
-  checksum: 10c0/503d0d5cbc9113d26666bb7b4dea57619badbcdfeee0369abf647250f26c5482ed5827c83f88f9f0cf22e021e3e7cb562459669d733fac05652972e208d6ba0f
+    "@redis/client": ^5.0.0-next.7
+  checksum: 10c0/fc3bc25d2c4582ffc99fca7d2efc5efb9b0fb7bda9771e56664745bf27eb7e5f8203687ec69bf2ac4342d543ad3c3cf993fb69d9760a6c1f6c48ac822c75d028
   languageName: node
   linkType: hard
 
@@ -7823,13 +7812,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"generic-pool@npm:3.9.0":
-  version: 3.9.0
-  resolution: "generic-pool@npm:3.9.0"
-  checksum: 10c0/6b314d0d71170d5cbaf7162c423f53f8d6556b2135626a65bcdc03c089840b0a2f59eeb2d907939b8200e945eaf71ceb6630426f22d2128a1d242aec4b232aa7
-  languageName: node
-  linkType: hard
-
 "gensync@npm:^1.0.0-beta.2":
   version: 1.0.0-beta.2
   resolution: "gensync@npm:1.0.0-beta.2"
@@ -9575,7 +9557,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-redis@workspace:packages/redis"
   dependencies:
-    redis: "npm:^4.7.0"
+    "@redis/client": "npm:5.0.0-next.7"
+    redis: "npm:5.0.0-next.7"
   peerDependencies:
     koishi: ^4.18.7
   languageName: unknown
@@ -11299,17 +11282,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redis@npm:^4.7.0":
-  version: 4.7.0
-  resolution: "redis@npm:4.7.0"
+"redis@npm:5.0.0-next.7":
+  version: 5.0.0-next.7
+  resolution: "redis@npm:5.0.0-next.7"
   dependencies:
-    "@redis/bloom": "npm:1.2.0"
-    "@redis/client": "npm:1.6.0"
-    "@redis/graph": "npm:1.1.1"
-    "@redis/json": "npm:1.0.7"
-    "@redis/search": "npm:1.2.0"
-    "@redis/time-series": "npm:1.1.0"
-  checksum: 10c0/a05632a58adbcaa4566238073cd6d00ed008522d2ef015a31aaef200c184a4eff4fa007c514eda91dda1e1205350b5901d0c7b58824dbfa593feb81a0087bf4d
+    "@redis/bloom": "npm:5.0.0-next.7"
+    "@redis/client": "npm:5.0.0-next.7"
+    "@redis/json": "npm:5.0.0-next.7"
+    "@redis/search": "npm:5.0.0-next.7"
+    "@redis/time-series": "npm:5.0.0-next.7"
+  checksum: 10c0/b1988e480265f69eb45c013d00a8f66a2d7c16617a0d9797250a82e119df76f402f5443c372c7b8f4040d28e1ea7c46c1c00c03df5190b0353d9025002f9a40e
   languageName: node
   linkType: hard
 
@@ -13473,17 +13455,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yallist@npm:4.0.0, yallist@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "yallist@npm:4.0.0"
-  checksum: 10c0/2286b5e8dbfe22204ab66e2ef5cc9bbb1e55dfc873bbe0d568aa943eb255d131890dfd5bf243637273d31119b870f49c18fcde2c6ffbb7a7a092b870dc90625a
-  languageName: node
-  linkType: hard
-
 "yallist@npm:^3.0.2":
   version: 3.1.1
   resolution: "yallist@npm:3.1.1"
   checksum: 10c0/c66a5c46bc89af1625476f7f0f2ec3653c1a1791d2f9407cfb4c2ba812a1e1c9941416d71ba9719876530e3340a99925f697142989371b72d93b9ee628afd8c1
+  languageName: node
+  linkType: hard
+
+"yallist@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "yallist@npm:4.0.0"
+  checksum: 10c0/2286b5e8dbfe22204ab66e2ef5cc9bbb1e55dfc873bbe0d568aa943eb255d131890dfd5bf243637273d31119b870f49c18fcde2c6ffbb7a7a092b870dc90625a
   languageName: node
   linkType: hard
 
