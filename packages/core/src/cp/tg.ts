@@ -58,7 +58,7 @@ export const apply = (ctx: Context) => {
           type: 'article',
           id: 'help',
           title: cp.data!.summary.title,
-          description: cp.data!.summary.summary[0],
+          description: cp.data!.summary.summary.join('\n'),
           input_message_content: {
             message_text: `<b>${escape(cp.data!.summary.title)}</b>\n\n${cp.data!.summary.summary.map(escape).join('\n')}`,
             parse_mode: 'HTML',

@@ -1,6 +1,7 @@
 import type { Context } from 'koishi'
 import * as controller from './controller'
 import * as db from './db'
+import * as msg from './msg'
 import { NekoilCpService } from './service'
 import * as tg from './tg'
 
@@ -11,4 +12,5 @@ export const apply = (ctx: Context) => {
   ctx.plugin(NekoilCpService)
   ctx.plugin(controller)
   ctx.plugin(tg)
+  ctx.plugin(msg)
 }

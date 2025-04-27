@@ -1,19 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 
 import type TelegramBot from '@koishijs/plugin-adapter-telegram'
-import type { Event, Message } from '@satorijs/protocol'
-import type { Bot, Context, User } from 'koishi'
+import type { Event } from '@satorijs/protocol'
+import type { Context } from 'koishi'
 import { h, Service } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
-import type {
-  ContentPackHandleV1,
-  ContentPackV1,
-  ContentPackWithAll,
-} from 'nekoil-typedef'
-import { generateHandle, getHandle } from '../utils'
-import { summaryMessagerSend } from './summary'
+import { getHandle } from '../../utils'
 
 interface Emitter {
   fn: () => unknown
@@ -22,7 +16,7 @@ interface Emitter {
 
 declare module 'koishi' {
   interface Context {
-    nekoilMsg: NekoilMsgService
+    nekoilCpMsg: NekoilCpMsgService
   }
 }
 
@@ -31,15 +25,15 @@ export interface NekoilMsgSession {
   event: Event
 }
 
-export class NekoilMsgService extends Service {
-  static inject = ['redis', 'database']
+export class NekoilCpMsgService extends Service {
+  static inject = ['nekoilCp', 'redis', 'database']
 
   #l
 
   constructor(ctx: Context) {
-    super(ctx, 'nekoilMsg')
+    super(ctx, 'nekoilCpMsg')
 
-    this.#l = ctx.logger('nekoilMsg')
+    this.#l = ctx.logger('nekoilCpMsg')
   }
 
   #emitMap: Record<string, Emitter> = {}
@@ -73,56 +67,56 @@ export class NekoilMsgService extends Service {
     if (emitter.lock) return
 
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      await this.ctx.redis.client.executeIsolated(async (client) => {
-        const lmtKey = `nekoilv1:msg:${channel}:time`
-        const dataKey = `nekoilv1:msg:${channel}:data`
+      const client = await this.ctx.redis.isolate()
 
-        await client.watch(dataKey)
+      const lmtKey = `nekoilv1:msg:${channel}:time`
+      const dataKey = `nekoilv1:msg:${channel}:data`
 
-        let multi = client.multi()
-        multi.get(lmtKey)
-        const [lmt] = (await multi.exec()) as [string]
-        if (new Date().getTime() - Number(lmt) < 3500)
-          return this.#buildFn(channel, emitter)
+      await client.watch(dataKey)
 
-        multi = client.multi()
-        multi.lRange(dataKey, 0, -1)
-        multi.del(dataKey)
-        multi.del(lmtKey)
+      let multi = client.multi()
+      multi.get(lmtKey)
+      const [lmt] = (await multi.exec()) as unknown as [string]
+      if (new Date().getTime() - Number(lmt) < 3500)
+        return this.#buildFn(channel, emitter)
 
-        const [sessions] = (await multi.exec()) as [string[], number, number]
+      multi = client.multi()
+      multi.lRange(dataKey, 0, -1)
+      multi.del(dataKey)
+      multi.del(lmtKey)
 
-        const splitIndex = channel.indexOf(':')
-        const platform = channel.slice(0, splitIndex)
-        const channelId = channel.slice(splitIndex + 1)
+      const [sessions] = (await multi.exec()) as unknown as [
+        string[],
+        number,
+        number,
+      ]
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.#process(
-          platform,
-          channelId,
-          sessions.map((x) => JSON.parse(x) as NekoilMsgSession),
-        )
-      })
+      const splitIndex = channel.indexOf(':')
+      const platform = channel.slice(0, splitIndex)
+      // const channelId = channel.slice(splitIndex + 1)
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.#process(
+        platform,
+        sessions.map((x) => JSON.parse(x) as NekoilMsgSession),
+      )
     } catch (e) {
       if (e instanceof WatchError) {
         return this.#buildFn(channel, emitter)
       } else {
         this.#l.error(`error processing channel ${channel}`)
         this.#l.error(e)
+        // setTimeout(() => {
+        //   this.#buildFn(channel, emitter)
+        // }, 5000)
       }
     }
   }
 
-  #process = (
-    platform: string,
-    channelId: string,
-    sessions: NekoilMsgSession[],
-  ) => {
+  #process = (platform: string, sessions: NekoilMsgSession[]) => {
     switch (platform) {
       case 'telegram': {
-        return this.#processTelegram(channelId, sessions)
+        return this.#processTelegram(sessions)
       }
 
       default: {
@@ -132,14 +126,8 @@ export class NekoilMsgService extends Service {
     }
   }
 
-  #processTelegram = async (
-    _channelId: string,
-    sessions: NekoilMsgSession[],
-  ) => {
+  #processTelegram = async (sessions: NekoilMsgSession[]) => {
     let progressMsg: number | undefined = undefined
-
-    // FIXME
-    const bot = this.ctx.bots[0] as unknown as TelegramBot
 
     const len = sessions.length
     sessions.sort(
@@ -150,6 +138,10 @@ export class NekoilMsgService extends Service {
     const lastSession = sessions[len - 1]
     const pid = lastSession!.event.user!.id
     const pidNumber = Number(pid)
+
+    const bot = this.ctx.bots[
+      `telegram:${lastSession!.event.selfId}`
+    ] as unknown as TelegramBot
 
     try {
       let contentType: 'forward' | 'satori' | 'onebot' = 'forward'
@@ -259,16 +251,15 @@ export class NekoilMsgService extends Service {
           break
       }
 
-      const { cpAll, cpHandle } = await this.#createContentPack(parsedContent, {
-        cpPlatform: contentType === 'forward' ? 2 : 1,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        bot,
-        platform: 'telegram',
-        pid,
-        loadingContent,
-        onProgress,
-      })
+      const { cpAll, cpHandle } = await this.ctx.nekoilCp.cpCreate(
+        parsedContent,
+        {
+          cpPlatform: contentType === 'forward' ? 2 : 1,
+          platform: 'telegram',
+          pid,
+          onProgress,
+        },
+      )
 
       await bot.internal.sendMessage({
         chat_id: pidNumber,
@@ -371,150 +362,4 @@ export class NekoilMsgService extends Service {
 
     return result
   }
-
-  /**
-   * @param content `<message>` 构成的数组。
-   */
-  #createContentPack = async (
-    content: h[],
-    option: CreateOption,
-    intlState?: CreateState,
-  ): Promise<CreateResult> => {
-    const state: CreateState = intlState ?? {
-      createdCount: 0,
-    }
-
-    state.createdCount++
-
-    if (state.createdCount > 32) throw new Error('套娃层数超过限制。')
-
-    if (state.createdCount > 1)
-      option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
-
-    state.user ??= await this.ctx.database.getUser(option.platform, option.pid)
-
-    const pack: Partial<ContentPackWithAll> = {
-      created_time: new Date(),
-      deleted: 0,
-      deleted_reason: 0,
-
-      cp_version: 1,
-      data_full_mode: 2,
-      platform: option.cpPlatform,
-
-      creator: state.user.id,
-      owner: state.user.id,
-    }
-
-    const messages = await Promise.all(
-      content.map(async (elem) => {
-        const author = elem.children.find((x) => x.type === 'author')
-        const elements = elem.children.filter((x) => x !== author)
-
-        const forwardIndex = elements.findIndex(
-          (x) => x.type === 'message' && x.attrs['forward'],
-        )
-        if (forwardIndex > -1) {
-          const forward = elements[forwardIndex]!
-          const { cpHandle } = await this.#createContentPack(
-            forward.children.filter((x) => x.type === 'message'),
-            option,
-            state,
-          )
-          elements.splice(
-            forwardIndex,
-            1,
-            <nekoil:cp handle={getHandle(cpHandle)} />,
-          )
-        }
-
-        const protocolMessage: Message = {
-          content: elements.join(''),
-          user: {
-            id: author?.attrs['id'],
-            name: author?.attrs['name'],
-            avatar: author?.attrs['avatar'],
-          },
-        }
-
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const summary = `${author?.attrs['name'] || '用户'}: ${(
-          await summaryMessagerSend(elements)
-        )
-          .join('')
-          .replace(/\r/g, '')
-          .replace(/\n/g, ' ')}`
-
-        return {
-          message: protocolMessage,
-          summary,
-        }
-      }),
-    )
-
-    pack.full = {
-      messages: messages.map((x) => x.message),
-    }
-
-    pack.summary = {
-      count: messages.length,
-      title: '群聊的聊天记录',
-      summary: messages.map((x) => x.summary),
-    }
-
-    const cpCreate = {
-      ...pack,
-      data_summary: JSON.stringify(pack.summary),
-      data_full: JSON.stringify(pack.full),
-    }
-    delete cpCreate.full
-    delete cpCreate.summary
-
-    const cp = await this.ctx.database.create('cp_v1', cpCreate)
-
-    let cpHandle: ContentPackHandleV1
-    while (true) {
-      try {
-        cpHandle = await this.ctx.database.create('cp_handle_v1', {
-          created_time: new Date(),
-          deleted: 0,
-          deleted_reason: 0,
-
-          cpid: cp.cpid,
-          handle_type: 1,
-          handle: generateHandle(16, true),
-        })
-
-        break
-      } catch (_) {
-        // continue
-      }
-    }
-
-    return {
-      cpAll: pack as ContentPackWithAll,
-      cp,
-      cpHandle,
-    }
-  }
-}
-
-interface CreateOption {
-  cpPlatform: 1 | 2 | 3
-  bot: Bot
-  platform: string
-  pid: string
-  loadingContent: string
-  onProgress: (text: string) => unknown
-}
-
-interface CreateState {
-  createdCount: number
-  user?: User
-}
-
-interface CreateResult {
-  cpAll: ContentPackWithAll
-  cp: ContentPackV1
-  cpHandle: ContentPackHandleV1
 }

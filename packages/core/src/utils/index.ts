@@ -75,3 +75,21 @@ export const getHandle = (cpHandle: ContentPackHandleV1) => {
 }
 
 export class NoLoggingError extends Error {}
+
+export const ellipsis = (text: string, max: number) => {
+  const len = text.length
+  let i = 0
+  let l = 0
+  while (l < len) {
+    const c = text.charCodeAt(i)
+
+    if ((c >= 0x0001 && c <= 0x007e) || (c >= 0xff60 && c <= 0xff9f)) l += 1
+    else l += 2
+
+    if (l >= max) return `${text.slice(0, i)}...`
+
+    i++
+  }
+
+  return text
+}

@@ -2,12 +2,12 @@ import type { Context, h } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import type { NekoilMsgSession } from './service'
 
-export const name = 'nekoil-msg-middleware'
+export const name = 'nekoil-cp-msg-middleware'
 
-export const inject = ['redis', 'nekoilMsg']
+export const inject = ['redis', 'nekoilCpMsg']
 
 export const apply = async (ctx: Context) => {
-  // const l = ctx.logger('nekoilMsg')
+  // const l = ctx.logger('nekoilCpMsg')
 
   ctx.private().middleware((session, next) =>
     next(async () => {
@@ -15,7 +15,7 @@ export const apply = async (ctx: Context) => {
       const lmtKey = `nekoilv1:msg:${channel}:time`
       const dataKey = `nekoilv1:msg:${channel}:data`
 
-      ctx.nekoilMsg.lock(channel)
+      ctx.nekoilCpMsg.lock(channel)
 
       await ctx.redis.client.set(lmtKey, new Date().getTime())
       await ctx.redis.client.lPush(
@@ -32,8 +32,8 @@ export const apply = async (ctx: Context) => {
         } satisfies NekoilMsgSession),
       )
 
-      ctx.nekoilMsg.unlock(channel)
-      ctx.nekoilMsg.emit(channel)
+      ctx.nekoilCpMsg.unlock(channel)
+      ctx.nekoilCpMsg.emit(channel)
     }),
   )
 }

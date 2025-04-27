@@ -1,15 +1,20 @@
-import type { Context, FlatKeys } from 'koishi'
+import type { Message } from '@satorijs/protocol'
+import type { Context, FlatKeys, h, User } from 'koishi'
 import { $, Service } from 'koishi'
+import type {} from 'koishi-plugin-redis'
 import type {
   ContentPackFull,
+  ContentPackHandleV1,
   ContentPackSummary,
   ContentPackV1,
+  ContentPackWithAll,
   ContentPackWithFull,
   ContentPackWithSummary,
   NekoilResponseBody,
 } from 'nekoil-typedef'
 import type { NekoilUser } from '../services/user'
-import { NoLoggingError } from '../utils'
+import { ellipsis, generateHandle, getHandle, NoLoggingError } from '../utils'
+import { summaryMessagerSend } from './summary'
 
 declare module 'koishi' {
   interface Context {
@@ -28,7 +33,7 @@ export class NekoilCpService extends Service {
     this.#l = ctx.logger('nekoilCp')
   }
 
-  cpGet = async <TFull extends boolean = false>(
+  public cpGet = async <TFull extends boolean = false>(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     user: NekoilUser,
@@ -131,7 +136,138 @@ export class NekoilCpService extends Service {
     }
   }
 
-  // cpCreate = async () => {}
+  public cpCreate = (
+    content: h[],
+    option: CpCreateOption,
+  ): Promise<CpCreateResult> =>
+    this.#cpCreateIntl(content, option, { createdCount: 0 })
+
+  /**
+   * @param content `<message>` 构成的数组。
+   */
+  #cpCreateIntl = async (
+    content: h[],
+    option: CpCreateOption,
+    state: CpCreateStateIntl,
+  ): Promise<CpCreateResult> => {
+    state.createdCount++
+
+    if (state.createdCount > 32) throw new Error('套娃层数超过限制。')
+
+    if (state.createdCount > 1)
+      option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
+
+    state.user ??= await this.ctx.database.getUser(option.platform, option.pid)
+
+    const pack: Partial<ContentPackWithAll> = {
+      created_time: new Date(),
+      deleted: 0,
+      deleted_reason: 0,
+
+      cp_version: 1,
+      data_full_mode: 2,
+      platform: option.cpPlatform,
+
+      creator: state.user.id,
+      owner: state.user.id,
+    }
+
+    const messages = await Promise.all(
+      content.map(async (elem, index) => {
+        const author = elem.children.find((x) => x.type === 'author')
+        const elements = elem.children.filter((x) => x !== author)
+
+        const forwardIndex = elements.findIndex(
+          (x) => x.type === 'message' && x.attrs['forward'],
+        )
+        if (forwardIndex > -1) {
+          const forward = elements[forwardIndex]!
+          const { cpHandle } = await this.#cpCreateIntl(
+            forward.children.filter((x) => x.type === 'message'),
+            option,
+            state,
+          )
+          elements.splice(
+            forwardIndex,
+            1,
+            <nekoil:cp handle={getHandle(cpHandle)} />,
+          )
+        }
+
+        const protocolMessage: Message = {
+          content: elements.join(''),
+          user: {
+            id: author?.attrs['id'],
+            name: author?.attrs['name'],
+            avatar: author?.attrs['avatar'],
+          },
+        }
+
+        const summary =
+          index < 3 &&
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          `${author?.attrs['name'] || '用户'}: ${ellipsis(
+            (await summaryMessagerSend(elements))
+              .join('')
+              .replace(/\r/g, '')
+              .replace(/\n/g, ' '),
+            30,
+          )}`
+
+        return {
+          message: protocolMessage,
+          summary,
+        }
+      }),
+    )
+
+    pack.full = {
+      messages: messages.map((x) => x.message),
+    }
+
+    pack.summary = {
+      count: messages.length,
+      title: '群聊的聊天记录',
+      summary: messages
+        .map((x) => x.summary)
+        .filter(Boolean as unknown as (x: string | false) => x is string),
+    }
+
+    const cpCreate = {
+      ...pack,
+      data_summary: JSON.stringify(pack.summary),
+      data_full: JSON.stringify(pack.full),
+    }
+    delete cpCreate.full
+    delete cpCreate.summary
+
+    const cp = await this.ctx.database.create('cp_v1', cpCreate)
+
+    let cpHandle: ContentPackHandleV1
+    while (true) {
+      try {
+        cpHandle = await this.ctx.database.create('cp_handle_v1', {
+          created_time: new Date(),
+          deleted: 0,
+          deleted_reason: 0,
+
+          cpid: cp.cpid,
+          handle_type: 1,
+          handle: generateHandle(16, true),
+        })
+
+        break
+      } catch (_) {
+        // continue
+      }
+    }
+
+    return {
+      cpAll: pack as ContentPackWithAll,
+      cp,
+      cpHandle,
+    }
+  }
 
   #parse = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
     const result = structuredClone(cp) as unknown as ContentPackWithFull
@@ -178,4 +314,23 @@ const queryPrefixList = [
   'https://390721.xyz/',
   'http://www.390721.xyz/',
   'https://www.390721.xyz/',
+  'https://t.me/nekoilbot?startapp=',
 ].map<[string, number]>((x) => [x, x.length])
+
+interface CpCreateOption {
+  cpPlatform: 1 | 2 | 3
+  platform: string
+  pid: string
+  onProgress: (text: string) => unknown
+}
+
+interface CpCreateStateIntl {
+  createdCount: number
+  user?: User
+}
+
+interface CpCreateResult {
+  cpAll: ContentPackWithAll
+  cp: ContentPackV1
+  cpHandle: ContentPackHandleV1
+}
