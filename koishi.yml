@@ -10,7 +10,11 @@ plugins:
   group:basic:
     admin:2rjo0n: {}
     bind:p5l0qm: {}
-    commands:vnzxf1: {}
+    commands:vnzxf1:
+      nekoilpack:
+        aliases:
+          p: null
+        name: /p
     help:k2t2x6: {}
     http:nsrnpu: {}
     inspect:jqy2ce: {}
