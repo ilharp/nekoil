@@ -54,14 +54,9 @@ plugins:
     database-sqlite:v9xs5g:
       $if: env.NEKOIL_ENV !== 'production'
       path: data/koishi.db
-    redis:pk73va:
-      $if: env.NEKOIL_ENV !== 'production'
-      mode: client
     redis:vxs1pc:
-      $if: env.NEKOIL_ENV === 'production'
-      mode: cluster
-      rootNodes:
-        - ${{ env.REDIS_URL }}
+      mode: client
+      url: ${{ env.REDIS_URL }}
     assets-local:rk7cb2: {}
   group:adapter:
     adapter-telegram:t68xq1:
