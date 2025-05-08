@@ -273,6 +273,15 @@ export class NekoilCpService extends Service {
           state,
         )
         result.push(<nekoil:cp handle={getHandle(cpHandle)} />)
+      } else if (elem.type === 'img') {
+        // 处理图片
+        let origins = elem.children.find((x) => x.type === 'nekoil:origins')
+        if (!origins) {
+          origins = <nekoil:origins />
+          elem.children.unshift(origins)
+        }
+
+        result.push(elem)
       } else {
         result.push(elem)
       }
