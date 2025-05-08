@@ -1,6 +1,6 @@
 import type { Message } from '@satorijs/protocol'
-import type { Context, FlatKeys, h, User } from 'koishi'
-import { $, Service } from 'koishi'
+import type { Context, FlatKeys, User } from 'koishi'
+import { $, h, Service } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import type {
   ContentPackFull,
@@ -140,7 +140,11 @@ export class NekoilCpService extends Service {
     content: h[],
     option: CpCreateOption,
   ): Promise<CpCreateResult> =>
-    this.#cpCreateIntl(content, option, { createdCount: 0 })
+    this.#cpCreateIntl(
+      content.map((x) => h.parse(x.toString())[0]!),
+      option,
+      { createdCount: 0 },
+    )
 
   /**
    * @param content `<message>` 构成的数组。
