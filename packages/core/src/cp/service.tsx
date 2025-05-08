@@ -175,9 +175,9 @@ export class NekoilCpService extends Service {
     const messages = await Promise.all(
       content.map(async (elem, index) => {
         const author = elem.children.find((x) => x.type === 'author')
-        const elements = elem.children.filter((x) => x !== author)
+        let elements = elem.children.filter((x) => x !== author)
 
-        await this.#processMessages(elements, { option, state })
+        elements = await this.#processMessages(elements, { option, state })
 
         const protocolMessage: Message = {
           content: elements.join(''),
@@ -257,25 +257,24 @@ export class NekoilCpService extends Service {
   #processMessages = async (
     elements: h[],
     { option, state }: { option: CpCreateOption; state: CpCreateStateIntl },
-  ): Promise<void> => {
-    // 处理嵌套 cp
-    const forwardIndex = elements.findIndex(
-      (x) => x.type === 'message' && x.attrs['forward'],
-    )
+  ): Promise<h[]> => {
+    const result: h[] = []
 
-    if (forwardIndex > -1) {
-      const forward = elements[forwardIndex]!
-      const { cpHandle } = await this.#cpCreateIntl(
-        forward.children.filter((x) => x.type === 'message'),
-        option,
-        state,
-      )
-      elements.splice(
-        forwardIndex,
-        1,
-        <nekoil:cp handle={getHandle(cpHandle)} />,
-      )
+    for (const elem of elements) {
+      if (elem.type === 'message' && elem.attrs['forward']) {
+        // 处理嵌套 cp
+        const { cpHandle } = await this.#cpCreateIntl(
+          elem.children.filter((x) => x.type === 'message'),
+          option,
+          state,
+        )
+        result.push(<nekoil:cp handle={getHandle(cpHandle)} />)
+      } else {
+        result.push(elem)
+      }
     }
+
+    return result
   }
 
   #parse = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
