@@ -515,7 +515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cordisjs/plugin-server@npm:^0.2.4":
+"@cordisjs/plugin-server@npm:^0.2.4, @cordisjs/plugin-server@npm:^0.2.5":
   version: 0.2.5
   resolution: "@cordisjs/plugin-server@npm:0.2.5"
   dependencies:
@@ -1818,17 +1818,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-adapter-telegram@npm:^4.5.10":
-  version: 4.5.10
-  resolution: "@koishijs/plugin-adapter-telegram@npm:4.5.10"
-  dependencies:
-    "@satorijs/adapter-telegram": "npm:^4.5.10"
-  peerDependencies:
-    koishi: ^4.18.7
-  checksum: 10c0/52ef0700b4205f1ea5f60b0dbcf3b9f7add59b782afb43e6b50d12db78c582a2d25da26241dd1cc251d49bc456c0bbe0fd3299b225b8cf2207692863cc652415
-  languageName: node
-  linkType: hard
-
 "@koishijs/plugin-admin@npm:^2.0.0-beta.4":
   version: 2.0.0-beta.4
   resolution: "@koishijs/plugin-admin@npm:2.0.0-beta.4"
@@ -2950,17 +2939,6 @@ __metadata:
     argparse: "npm:~1.0.9"
     string-argv: "npm:~0.3.1"
   checksum: 10c0/d77d2099ed295a0ef66f0763ad4cdbd64b7ab998dda0e5714d13ae34156c813ee59fa92633763ed6f2b5eeea98afaee143f1088e2f58b0d88b920694194e739d
-  languageName: node
-  linkType: hard
-
-"@satorijs/adapter-telegram@npm:^4.5.10":
-  version: 4.5.10
-  resolution: "@satorijs/adapter-telegram@npm:4.5.10"
-  dependencies:
-    file-type: "npm:^16.5.4"
-  peerDependencies:
-    "@satorijs/core": ^4.5.0
-  checksum: 10c0/b891116b82b7659e36ce91122a155ddb6d7234dfbd3f8839a78724ca591c39c8f239559944dd2dea870dfe1aa29c2d532f6e0f5e972cbd816cd9931b5e5f8456
   languageName: node
   linkType: hard
 
@@ -9517,6 +9495,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"koishi-plugin-nekoil-adapter-telegram@workspace:^, koishi-plugin-nekoil-adapter-telegram@workspace:packages/adapter-telegram":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-nekoil-adapter-telegram@workspace:packages/adapter-telegram"
+  dependencies:
+    "@cordisjs/plugin-server": "npm:^0.2.5"
+    "@satorijs/core": "npm:^4.5.0"
+    cordis: "npm:^3.18.1"
+    file-type: "npm:^16.5.4"
+  peerDependencies:
+    "@satorijs/core": ^4.5.0
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-nekoil-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
@@ -10237,7 +10228,6 @@ __metadata:
     "@eslint/js": "npm:^9.23.0"
     "@koishijs/client": "npm:^5.30.7"
     "@koishijs/plugin-actions": "npm:^0.0.2"
-    "@koishijs/plugin-adapter-telegram": "npm:^4.5.10"
     "@koishijs/plugin-admin": "npm:^2.0.0-beta.4"
     "@koishijs/plugin-analytics": "npm:^2.0.6"
     "@koishijs/plugin-auth": "npm:^4.1.6"
@@ -10286,6 +10276,7 @@ __metadata:
     koishi: "npm:^4.18.7"
     koishi-plugin-assets-local: "npm:^3.3.2"
     koishi-plugin-dataview: "npm:^2.7.8"
+    koishi-plugin-nekoil-adapter-telegram: "workspace:^"
     koishi-plugin-puppeteer: "npm:^3.9.0"
     koishi-plugin-rate-limit: "npm:^2.0.4"
     koishi-plugin-telemetry: "npm:^0.2.3"

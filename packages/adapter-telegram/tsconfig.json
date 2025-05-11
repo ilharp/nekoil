@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "composite": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@satorijs/element",
+    "types": [
+      "node",
+      "yml-register/types",
+    ],
+    "outDir": "lib",
+    "rootDir": "src",
+    "strictNullChecks": false,
+  },
+  "include": [
+    "src",
+  ],
+}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 
-import type TelegramBot from '@koishijs/plugin-adapter-telegram'
+import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type { Event } from '@satorijs/protocol'
 import type { Context } from 'koishi'
 import { h, Service } from 'koishi'

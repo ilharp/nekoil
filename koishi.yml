@@ -59,12 +59,12 @@ plugins:
       url: ${{ env.REDIS_URL }}
     assets-local:rk7cb2: {}
   group:adapter:
-    adapter-telegram:t68xq1:
+    nekoil-adapter-telegram:t68xq1:
       $if: env.NEKOIL_ENV !== 'production'
       protocol: polling
       token: ${{ env.TG_TOKEN }}
       endpoint: ${{ env.TG_ENDPOINT }}
-    adapter-telegram:v5a28u:
+    nekoil-adapter-telegram:v5a28u:
       $if: env.NEKOIL_ENV === 'production'
       protocol: server
       token: ${{ env.TG_TOKEN }}

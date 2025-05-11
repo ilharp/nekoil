@@ -1,4 +1,4 @@
-import type {} from '@koishijs/plugin-adapter-telegram'
+import type {} from 'koishi-plugin-nekoil-adapter-telegram'
 import type { Context } from 'koishi'
 import type { NekoilUser } from '../services/user'
 import { escape } from 'lodash-es'
