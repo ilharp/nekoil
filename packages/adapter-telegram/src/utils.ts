@@ -252,11 +252,17 @@ export async function decodeMessage(
       if (file.file_path.endsWith('.tgs')) {
         throw new Error('tgs is not supported now')
       }
-      segments.push(h('img', await bot.$getFileFromPath(file.file_path, {
-        id: data.sticker.file_id,
-        uniqueId: data.sticker.file_unique_id,
-        setName: data.sticker.set_name,
-      })))
+      segments.push(
+        h(
+          'nekoil:tgsticker',
+          {
+            id: data.sticker.file_id,
+            uniqueId: data.sticker.file_unique_id,
+            setName: data.sticker.set_name,
+          },
+          [h('img', await bot.$getFileFromPath(file.file_path))],
+        ),
+      )
     } catch (e) {
       bot.logger.warn('get file error', e)
       segments.push(h('text', { content: `[${data.sticker.set_name || 'sticker'} ${data.sticker.emoji || ''}]` }))
