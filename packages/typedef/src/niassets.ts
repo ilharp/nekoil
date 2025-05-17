@@ -1,0 +1,31 @@
+export interface NiAssetsV1 {
+  niaid: number
+
+  /**
+   * 1=pic
+   */
+  type: number
+
+  /**
+   * sha256-url safe base64, static 44bytes
+   */
+  handle: string
+
+  /**
+   * bytes, hard max 4G, soft max 64M
+   */
+  size: number
+}
+
+export interface NiAssetsRcV1 {
+  id: number
+
+  niaid: number
+
+  /**
+   * 1=cp
+   */
+  ref_type: number
+
+  ref: number
+}
