@@ -44,7 +44,7 @@
     "@tanstack/eslint-plugin-query": "^5.73.3",
     "@tsconfig/strictest": "^2.0.5",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.14",
+    "@types/node": "^22.15.18",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "concurrently": "^9.1.2",

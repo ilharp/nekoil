@@ -1,5 +1,7 @@
 import type { ParameterizedContext } from 'koa'
 import type { ContentPackHandleV1 } from 'nekoil-typedef'
+import { promisify } from 'node:util'
+import { zstdCompress, zstdDecompress } from 'node:zlib'
 
 export const setHeader = (c: ParameterizedContext) => {
   if (
@@ -93,3 +95,6 @@ export const ellipsis = (text: string, max: number) => {
 
   return text
 }
+
+export const zstdCompressAsync = promisify(zstdCompress)
+export const zstdDecompressAsync = promisify(zstdDecompress)

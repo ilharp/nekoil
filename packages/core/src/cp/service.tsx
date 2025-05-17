@@ -13,7 +13,14 @@ import type {
   NekoilResponseBody,
 } from 'nekoil-typedef'
 import type { NekoilUser } from '../services/user'
-import { ellipsis, generateHandle, getHandle, NoLoggingError } from '../utils'
+import {
+  ellipsis,
+  generateHandle,
+  getHandle,
+  NoLoggingError,
+  zstdCompressAsync,
+  zstdDecompressAsync,
+} from '../utils'
 import { summaryMessagerSend } from './summary'
 
 declare module 'koishi' {
@@ -169,7 +176,7 @@ export class NekoilCpService extends Service {
       deleted_reason: 0,
 
       cp_version: 1,
-      data_full_mode: 2,
+      data_full_mode: 1,
       platform: option.cpPlatform,
 
       creator: state.user.id,
@@ -225,7 +232,9 @@ export class NekoilCpService extends Service {
     const cpCreate = {
       ...pack,
       data_summary: JSON.stringify(pack.summary),
-      data_full: JSON.stringify(pack.full),
+      data_full: (
+        await zstdCompressAsync(Buffer.from(JSON.stringify(pack.full)))
+      ).toString('base64'),
     }
     delete cpCreate.full
     delete cpCreate.summary
@@ -331,6 +340,15 @@ export class NekoilCpService extends Service {
 
     if (result.data_full) {
       switch (result.data_full_mode) {
+        case 1: {
+          result.full = JSON.parse(
+            (
+              await zstdDecompressAsync(Buffer.from(result.data_full, 'base64'))
+            ).toString('utf-8'),
+          ) as ContentPackFull
+          break
+        }
+
         case 2: {
           result.full = JSON.parse(result.data_full) as ContentPackFull
           break
