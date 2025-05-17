@@ -290,6 +290,10 @@ export class NekoilCpService extends Service {
           origins = (<nekoil:origins />)! as h
           img.children.unshift(origins)
         }
+        const originSrc = img.attrs['src']
+        origins.children.unshift(<nekoil:origin src={originSrc} />)
+
+        // TODO
 
         result.push(isTgsticker ? tgsticker! : img)
       } else {
