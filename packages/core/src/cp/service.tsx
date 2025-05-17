@@ -1,5 +1,5 @@
 import type { Message } from '@satorijs/protocol'
-import type { Context, FlatKeys, User } from 'koishi'
+import type { Context, Dict, FlatKeys, User } from 'koishi'
 import { $, h, Service } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import type {
@@ -300,6 +300,14 @@ export class NekoilCpService extends Service {
     return result
   }
 
+  /**
+   * 转换 {@link ContentPackV1} 到 {@link ContentPackWithFull}
+   *
+   * 出了解压 data_ 字段以外，还需要做到前端安全，把不该传给前端的去掉。包括：
+   *
+   * - cpid 等
+   * - img 里的 origin
+   */
   #parse = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
     const result = structuredClone(cp) as unknown as ContentPackWithFull
 
@@ -336,9 +344,19 @@ export class NekoilCpService extends Service {
       delete (result as Partial<ContentPackWithFull>).data_full
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    result.full?.messages.forEach((message) => {
+      message.content = h.transform(message.content!, {
+        img: buildOriginsStripper('img'),
+      })
+    })
+
     return result
   }
 }
+
+const buildOriginsStripper = (t: string) => (attrs: Dict, children: h[]) =>
+  h(t, { ...attrs, 'nekoil:origins': undefined }, children)
 
 const queryPrefixList = [
   'http://390721.xyz/',
