@@ -15,6 +15,10 @@ export interface NiAssetsV1 {
    * bytes, hard max 4G, soft max 64M
    */
   size: number
+
+  filename: string
+
+  mime: string
 }
 
 export interface NiAssetsRcV1 {

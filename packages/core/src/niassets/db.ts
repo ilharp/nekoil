@@ -37,6 +37,18 @@ export const apply = (ctx: Context) => {
       length: 4, // 4 byte = 32bit = 4G
       nullable: false,
     },
+
+    filename: {
+      type: 'string',
+      length: 1,
+      nullable: false,
+    },
+
+    mime: {
+      type: 'string',
+      length: 1,
+      nullable: false,
+    },
   })
 
   ctx.model.extend('niassets_rc_v1', {
