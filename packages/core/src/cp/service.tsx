@@ -277,7 +277,7 @@ export class NekoilCpService extends Service {
         // 处理图片
         let origins = elem.children.find((x) => x.type === 'nekoil:origins')
         if (!origins) {
-          origins = <nekoil:origins />
+          origins = (<nekoil:origins />)! as h
           elem.children.unshift(origins)
         }
 
