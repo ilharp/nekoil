@@ -273,15 +273,25 @@ export class NekoilCpService extends Service {
           state,
         )
         result.push(<nekoil:cp handle={getHandle(cpHandle)} />)
-      } else if (elem.type === 'img') {
-        // 处理图片
-        let origins = elem.children.find((x) => x.type === 'nekoil:origins')
-        if (!origins) {
-          origins = (<nekoil:origins />)! as h
-          elem.children.unshift(origins)
+      } else if (elem.type === 'nekoil:tgsticker' || elem.type === 'img') {
+        const isTgsticker = elem.type === 'nekoil:tgsticker'
+        let img: h
+        let tgsticker: h | undefined = undefined
+        if (isTgsticker) {
+          tgsticker = h.parse(elem.toString())[0]!
+          img = tgsticker.children.find((x) => x.type === 'img')!
+        } else {
+          img = h.parse(elem.toString())[0]!
         }
 
-        result.push(elem)
+        // 处理图片
+        let origins = img.children.find((x) => x.type === 'nekoil:origins')
+        if (!origins) {
+          origins = (<nekoil:origins />)! as h
+          img.children.unshift(origins)
+        }
+
+        result.push(isTgsticker ? tgsticker! : img)
       } else {
         result.push(elem)
       }
