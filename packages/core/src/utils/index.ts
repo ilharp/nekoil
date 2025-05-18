@@ -3,7 +3,7 @@ import type { ContentPackHandleV1 } from 'nekoil-typedef'
 import { promisify } from 'node:util'
 import { zstdCompress, zstdDecompress } from 'node:zlib'
 
-export const setHeader = (c: ParameterizedContext) => {
+export const setHeader = (c: ParameterizedContext, noCache = true) => {
   if (
     /^https:\/\/390721\.xyz/.exec(c.headers.referer!) ||
     /^https?:\/\/localhost:/.exec(c.headers.referer!)
@@ -18,9 +18,10 @@ export const setHeader = (c: ParameterizedContext) => {
 
   c.set({
     Connection: 'keep-alive',
-    'Cache-Control': 'no-store',
     'X-Powered-By': 'Nekoil master-0',
   })
+
+  if (noCache) c.set('Cache-Control', 'no-store')
 }
 
 export const databaseBaseCreate = {
