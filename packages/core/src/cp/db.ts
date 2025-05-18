@@ -177,7 +177,8 @@ const helpCpSummary: ContentPackSummary = {
 const notFoundCpFull: ContentPackFull = {
   messages: [
     {
-      content: '找不到对应的聊天记录，请检查链接或 ID 是否正确。',
+      content:
+        '找不到对应的聊天记录，请检查链接或 ID 是否正确。要从 resid 创建聊天记录，请先将 resid 私发给 nekoil。',
       // @ts-expect-error We don't need user.id here
       user: {
         name: 'Nekoil',
