@@ -13,67 +13,100 @@ declare module 'koishi' {
 export const apply = (ctx: Context) => {
   // const l = ctx.logger('nekoilAssetsDb')
 
-  ctx.model.extend('niassets_v1', {
-    niaid: {
-      type: 'unsigned',
-      length: 8,
-      nullable: false,
-    },
+  ctx.model.extend(
+    'niassets_v1',
+    {
+      niaid: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
 
-    type: {
-      type: 'unsigned',
-      length: 1,
-      nullable: false,
-    },
+      type: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
 
-    handle: {
-      type: 'string',
-      length: 44,
-      nullable: false,
-    },
+      handle: {
+        type: 'string',
+        length: 44,
+        nullable: false,
+      },
 
-    size: {
-      type: 'unsigned',
-      length: 4, // 4 byte = 32bit = 4G
-      nullable: false,
-    },
+      size: {
+        type: 'unsigned',
+        length: 4, // 4 byte = 32bit = 4G
+        nullable: false,
+      },
 
-    filename: {
-      type: 'string',
-      length: 1,
-      nullable: false,
-    },
+      filename: {
+        type: 'string',
+        length: 1,
+        nullable: false,
+      },
 
-    mime: {
-      type: 'string',
-      length: 1,
-      nullable: false,
-    },
-  })
+      mime: {
+        type: 'string',
+        length: 1,
+        nullable: false,
+      },
 
-  ctx.model.extend('niassets_rc_v1', {
-    id: {
-      type: 'unsigned',
-      length: 8,
-      nullable: false,
-    },
+      thumbhash: {
+        type: 'string',
+        length: 1,
+      },
 
-    niaid: {
-      type: 'unsigned',
-      length: 8,
-      nullable: false,
-    },
+      width: {
+        type: 'unsigned',
+        length: 4,
+        nullable: false,
+      },
 
-    ref_type: {
-      type: 'unsigned',
-      length: 1,
-      nullable: false,
+      height: {
+        type: 'unsigned',
+        length: 4,
+        nullable: false,
+      },
     },
+    {
+      primary: 'niaid',
+      autoInc: true,
+      unique: ['handle'],
+    },
+  )
 
-    ref: {
-      type: 'unsigned',
-      length: 8,
-      nullable: false,
+  ctx.model.extend(
+    'niassets_rc_v1',
+    {
+      id: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
+
+      niaid: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
+
+      ref_type: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
+
+      ref: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
     },
-  })
+    {
+      primary: 'id',
+      autoInc: true,
+      unique: [['niaid', 'ref_type', 'ref']],
+    },
+  )
 }

@@ -7,7 +7,7 @@ export interface NiAssetsV1 {
   type: number
 
   /**
-   * sha256-url safe base64, static 44bytes
+   * sha256 url safe base64, static 44bytes
    */
   handle: string
 
@@ -19,6 +19,14 @@ export interface NiAssetsV1 {
   filename: string
 
   mime: string
+
+  /**
+   * base64
+   */
+  thumbhash: string
+
+  width: number
+  height: number
 }
 
 export interface NiAssetsRcV1 {
