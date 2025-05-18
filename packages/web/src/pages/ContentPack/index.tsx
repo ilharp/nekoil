@@ -16,6 +16,7 @@ import { requestV1 } from '../../utils'
 import h from '@satorijs/element'
 
 import styles from './index.module.scss'
+import { FRImg } from '../../components/frs/FRImg'
 
 export const ContentPack = () => {
   const { cpHandleQuery } = useParams()
@@ -63,6 +64,7 @@ const symAioHost: SymAioHost = {
   frCanRemoveBubble: () => false,
   frRenderers: {
     ...frRenderers,
+    img: (_frCtx, element) => [<FRImg elem={element} />],
   },
 }
 

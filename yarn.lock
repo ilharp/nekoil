@@ -11745,6 +11745,7 @@ __metadata:
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     react-router: "npm:^7.4.1"
+    thumbhash: "npm:^0.1.1"
     typescript: "npm:^5.8.2"
     vite: "npm:^6.2.0"
   languageName: unknown
