@@ -11031,6 +11031,7 @@ __metadata:
     "@types/http-proxy": "npm:^1.17.16"
     "@types/lodash-es": "npm:^4"
     http-proxy: "npm:^1.18.1"
+    koishi-plugin-nekoil-adapter-telegram: "workspace:^"
     koishi-plugin-redis: "workspace:^"
     lodash-es: "npm:^4.17.21"
     mime: "npm:^4.0.7"
