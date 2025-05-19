@@ -41,20 +41,20 @@ export const apply = (ctx: Context) => {
       },
 
       filename: {
-        type: 'string',
-        length: 1,
+        type: 'text',
+        length: 512, // 260
         nullable: false,
       },
 
       mime: {
         type: 'string',
-        length: 1,
+        length: 128, // 73
         nullable: false,
       },
 
       thumbhash: {
         type: 'string',
-        length: 1,
+        length: 1024, // 64
       },
 
       width: {
