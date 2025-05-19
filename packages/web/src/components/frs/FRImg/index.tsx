@@ -23,21 +23,21 @@ export const FRImg = ({ elem }: { elem: h }) => {
 
   return (
     <div className={styles.container}>
-      {loading && (
-        <img
-          className={styles.img}
-          height={`${elem.attrs.height}px`}
-          width={`${elem.attrs.width}px`}
-          src={thumbhashUrl}
-        />
-      )}
       <img
-        className={styles.img}
+        className={styles.origin}
         height={`${elem.attrs.height}px`}
         width={`${elem.attrs.width}px`}
         src={`https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`}
         onLoad={handleOnLoad}
       />
+      {loading && (
+        <img
+          className={styles.thumb}
+          height={`${elem.attrs.height}px`}
+          width={`${elem.attrs.width}px`}
+          src={thumbhashUrl}
+        />
+      )}
     </div>
   )
 }
