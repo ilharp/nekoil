@@ -1,6 +1,7 @@
 import type {} from '@koishijs/plugin-server'
 import type { Context } from 'koishi'
 import type { NekoilCpCpGetRequest } from 'nekoil-typedef'
+import type { Config } from '../config'
 import type { NekoilUser } from '../services/user'
 import { setHeader } from '../utils'
 
@@ -8,7 +9,7 @@ export const name = 'nekoil-cp-controller'
 
 export const inject = ['server', 'nekoilCp', 'nekoilUser']
 
-export const apply = (ctx: Context) => {
+export const apply = (ctx: Context, config: Config) => {
   // const l = ctx.logger('nekoilCpController')
 
   ctx.server.options('/nekoil/v0/cp/cp.get', (c) => {
@@ -43,6 +44,19 @@ export const apply = (ctx: Context) => {
     c.set('Content-Type', 'application/json')
     c.flushHeaders()
 
+    const nekoilProxyToken = c.request.header['nekoil-proxy-token']
+    if (
+      !nekoilProxyToken ||
+      Array.isArray(nekoilProxyToken) ||
+      !nekoilProxyToken.length ||
+      nekoilProxyToken !== config.proxyToken
+    ) {
+      c.body = {
+        code: 2003,
+        msg: 'EXXXXX FORBIDDEN',
+      }
+      return
+    }
     const cfCountry = c.request.header['cf-ipcountry']
     if (
       !cfCountry ||

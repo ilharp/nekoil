@@ -21,7 +21,32 @@ export const apply = (ctx: Context, config: Config) => {
   ctx.server.all(
     '/nekoil/v0/proxy/internal\\:nekoil/2/:filename+',
     async (c, next) => {
+      const nekoilProxyToken = c.request.header['nekoil-proxy-token']
+      if (
+        !nekoilProxyToken ||
+        Array.isArray(nekoilProxyToken) ||
+        !nekoilProxyToken.length ||
+        nekoilProxyToken !== config.proxyToken
+      ) {
+        c.body = {
+          code: 2003,
+          msg: 'EXXXXX FORBIDDEN',
+        }
+        return
+      }
+      const cfCountry = c.request.header['cf-ipcountry']
+      if (
+        !cfCountry ||
+        Array.isArray(cfCountry) ||
+        !cfCountry.length ||
+        cfCountry === 'CN'
+      ) {
+        c.status = 403
+        return
+      }
+
       await next()
+
       if (['HEAD', 'GET'].includes(c.method))
         c.set('Cache-Control', 'public, max-age=60') // 1800
     },

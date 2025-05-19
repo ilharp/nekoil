@@ -11,7 +11,7 @@ export const name = 'nekoil-cp'
 export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(db)
   ctx.plugin(NekoilCpService, config)
-  ctx.plugin(controller)
+  ctx.plugin(controller, config)
   ctx.plugin(tg)
   ctx.plugin(msg)
 }
