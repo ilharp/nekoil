@@ -25,7 +25,7 @@ export const FRImg = ({ elem }: { elem: h }) => {
     <div className={styles.container}>
       <img
         className={styles.origin}
-        height={`${elem.attrs.height}px`}
+        // height={`${elem.attrs.height}px`}
         width={`${elem.attrs.width}px`}
         src={`https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`}
         onLoad={handleOnLoad}
@@ -33,7 +33,7 @@ export const FRImg = ({ elem }: { elem: h }) => {
       {loading && (
         <img
           className={styles.thumb}
-          height={`${elem.attrs.height}px`}
+          // height={`${elem.attrs.height}px`}
           width={`${elem.attrs.width}px`}
           src={thumbhashUrl}
         />
