@@ -3,14 +3,14 @@
 import type {} from '@koishijs/plugin-server'
 import { createProxyServer } from 'http-proxy'
 import type { Context } from 'koishi'
-import { env } from 'node:process'
+import type { Config } from '../config'
 import { setHeader } from '../utils'
 
 export const name = 'nekoil-assets-controller'
 
 export const inject = ['server', 'nekoilCp', 'nekoilUser', 'nekoilAssets']
 
-export const apply = (ctx: Context) => {
+export const apply = (ctx: Context, config: Config) => {
   // const l = ctx.logger('nekoilAssetsController')
 
   const proxy = createProxyServer()
@@ -58,7 +58,7 @@ export const apply = (ctx: Context) => {
             c.req,
             c.res,
             {
-              target: env['NEKOIL_ASSETS_ENDPOINT'],
+              target: config.assets.endpoint,
               changeOrigin: true,
             },
             (e) => {

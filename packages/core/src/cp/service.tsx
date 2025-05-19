@@ -15,9 +15,9 @@ import type {
   NekoilResponseBody,
 } from 'nekoil-typedef'
 import { createHash } from 'node:crypto'
-import { env } from 'node:process'
 import sharp from 'sharp'
 import { rgbaToThumbHash } from 'thumbhash'
+import type { Config } from '../config'
 import type { NekoilUser } from '../services/user'
 import {
   ellipsis,
@@ -40,7 +40,10 @@ export class NekoilCpService extends Service {
 
   #l
 
-  constructor(ctx: Context) {
+  constructor(
+    ctx: Context,
+    private nekoilConfig: Config,
+  ) {
     super(ctx, 'nekoilCp')
 
     this.#l = ctx.logger('nekoilCp')
@@ -398,7 +401,7 @@ export class NekoilCpService extends Service {
               // 上传
               await this.ctx.nekoilAssets.s3.send(
                 new PutObjectCommand({
-                  Bucket: env['NEKOIL_ASSETS_BUCKET_ID'],
+                  Bucket: this.nekoilConfig.assets.bucketId,
                   Key: `v1/${imgHandle}.${fileExt}`,
                   Body: fileBuffer,
                 }),

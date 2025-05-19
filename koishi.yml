@@ -76,7 +76,10 @@ plugins:
       root: .
   group:x4dshh:
     $label: nekoil-group
-    nekoil-core:rm0mqo: {}
+    nekoil-core:rm0mqo:
+      assets:
+        endpoint: ${{ env.NEKOIL_ASSETS_ENDPOINT }}
+        bucketId: ${{ env.NEKOIL_ASSETS_BUCKET_ID }}
 prefix:
   - /
   - null
