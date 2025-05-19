@@ -390,13 +390,19 @@ export class NekoilCpService extends Service {
               const sharpMetadata = await sharpImg.metadata()
               width = sharpMetadata.width!
               height = sharpMetadata.height!
-              const { data: rgbaBuffer } = await sharpImg
+              const { data: rgbaBuffer, info: sharpImgInfo } = await sharpImg
                 .resize(100, 100, { fit: 'inside' })
                 .ensureAlpha()
                 .raw()
                 .toBuffer({ resolveWithObject: true })
+              const thumbWidth = sharpImgInfo.width
+              const thumbHeight = sharpImgInfo.height
 
-              const binaryThumbHash = rgbaToThumbHash(width, height, rgbaBuffer)
+              const binaryThumbHash = rgbaToThumbHash(
+                thumbWidth,
+                thumbHeight,
+                rgbaBuffer,
+              )
               thumbhash = Buffer.from(binaryThumbHash).toString('base64')
 
               // 上传
