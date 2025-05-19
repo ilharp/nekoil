@@ -403,7 +403,7 @@ export class NekoilCpService extends Service {
                 new PutObjectCommand({
                   Bucket: this.nekoilConfig.assets.bucketId,
                   Key: `v1/${imgHandle}.${fileExt}`,
-                  Body: fileBuffer,
+                  Body: await zstdCompressAsync(fileBuffer),
                 }),
               )
 

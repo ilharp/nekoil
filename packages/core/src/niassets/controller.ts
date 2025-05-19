@@ -4,7 +4,8 @@ import type {} from '@koishijs/plugin-server'
 import { createProxyServer } from 'http-proxy'
 import type { Context } from 'koishi'
 import type { Config } from '../config'
-import { setHeader } from '../utils'
+import { setHeader, zstdDecompressAsync } from '../utils'
+import mime from 'mime'
 
 export const name = 'nekoil-assets-controller'
 
@@ -20,7 +21,7 @@ export const apply = (ctx: Context, config: Config) => {
 
   ctx.server.all(
     '/nekoil/v0/proxy/internal\\:nekoil/2/:filename+',
-    async (c, next) => {
+    async (c) => {
       if (c.method === 'OPTIONS') {
         c.status = 200
         setHeader(c)
@@ -52,59 +53,37 @@ export const apply = (ctx: Context, config: Config) => {
         return
       }
 
-      setHeader(c, false)
+      const filename = c.params['filename']!
+      const filenameSplit = filename.split('.')
+      if (filenameSplit.length !== 2) {
+        c.status = 400
+        c.set('Cache-Control', 'no-store')
+        return
+      }
 
-      await next()
+      const [_fileHandle, fileExt] = filenameSplit as [string, string]
+
+      const fileRes = await ctx.http(
+        `${config.assets.endpoint}/v1/${filename}`,
+        {
+          responseType: 'arraybuffer',
+        },
+      )
+
+      for (const pair of fileRes.headers.entries())
+        if (pair[0] !== 'content-length' && pair[0] !== 'content-type')
+          c.set(pair[0], pair[1])
+
+      const fileRaw = await zstdDecompressAsync(fileRes.data)
+      // c.set('Content-Length', String(fileRaw.byteLength))
+      c.body = fileRaw
+
+      c.set('Content-Type', mime.getType(fileExt) || 'application/octet-stream')
+
+      setHeader(c, false)
 
       if (['HEAD', 'GET'].includes(c.method))
         c.set('Cache-Control', 'public, max-age=60') // 1800
-    },
-    (c) => {
-      const filename = c.params['filename']!
-
-      c.req.url = `/v1/${filename}`
-      ;(
-        c.req as unknown as {
-          body: unknown
-        }
-      ).body = c.request.body || null
-
-      return new Promise<void>((resolve) => {
-        // https://github.com/nodejitsu/node-http-proxy/issues/951#issuecomment-179904134
-        c.res.on('close', () => {
-          // Sliently ignore close event.
-          resolve()
-        })
-
-        c.res.on('finish', () => {
-          resolve()
-        })
-
-        proxy.web(
-          c.req,
-          c.res,
-          {
-            target: config.assets.endpoint,
-            changeOrigin: true,
-          },
-          (e) => {
-            const status = (
-              {
-                ECONNREFUSED: 503,
-                ETIMEOUT: 504,
-              } as const
-            )[
-              (
-                e as unknown as {
-                  code: number
-                }
-              ).code
-            ]
-            c.status = status || 500
-            resolve()
-          },
-        )
-      })
     },
   )
 }
