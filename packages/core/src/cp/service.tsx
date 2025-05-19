@@ -387,13 +387,14 @@ export class NekoilCpService extends Service {
             } else {
               // 算 thumbhash
               const sharpImg = sharp(file.data)
-              const { data: rgbaBuffer, info: sharpImgInfo } = await sharpImg
+              const sharpMetadata = await sharpImg.metadata()
+              width = sharpMetadata.width!
+              height = sharpMetadata.height!
+              const { data: rgbaBuffer } = await sharpImg
                 .resize(100, 100, { fit: 'inside' })
                 .ensureAlpha()
                 .raw()
                 .toBuffer({ resolveWithObject: true })
-              width = sharpImgInfo.width
-              height = sharpImgInfo.height
 
               const binaryThumbHash = rgbaToThumbHash(width, height, rgbaBuffer)
               thumbhash = Buffer.from(binaryThumbHash).toString('base64')
