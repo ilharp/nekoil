@@ -27,6 +27,7 @@ export const apply = (ctx: Context, config: Config) => {
         setHeader(c)
         c.set('Allow', 'GET,HEAD,OPTIONS')
         c.flushHeaders()
+        c.body = Buffer.allocUnsafe(0)
         return
       }
 
@@ -38,7 +39,9 @@ export const apply = (ctx: Context, config: Config) => {
         nekoilProxyToken !== config.proxyToken
       ) {
         c.status = 403
-        c.set('Cache-Control', 'no-store')
+        setHeader(c)
+        c.flushHeaders()
+        c.body = Buffer.allocUnsafe(0)
         return
       }
       const cfCountry = c.request.header['cf-ipcountry']
@@ -49,7 +52,9 @@ export const apply = (ctx: Context, config: Config) => {
         cfCountry === 'CN'
       ) {
         c.status = 403
-        c.set('Cache-Control', 'no-store')
+        setHeader(c)
+        c.flushHeaders()
+        c.body = Buffer.allocUnsafe(0)
         return
       }
 
@@ -57,7 +62,9 @@ export const apply = (ctx: Context, config: Config) => {
       const filenameSplit = filename.split('.')
       if (filenameSplit.length !== 2) {
         c.status = 400
-        c.set('Cache-Control', 'no-store')
+        setHeader(c)
+        c.flushHeaders()
+        c.body = Buffer.allocUnsafe(0)
         return
       }
 
@@ -75,7 +82,6 @@ export const apply = (ctx: Context, config: Config) => {
           c.set(pair[0], pair[1])
 
       const fileRaw = await zstdDecompressAsync(fileRes.data)
-      // c.set('Content-Length', String(fileRaw.byteLength))
       c.body = fileRaw
 
       c.set('Content-Type', mime.getType(fileExt) || 'application/octet-stream')
