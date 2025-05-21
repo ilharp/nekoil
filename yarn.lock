@@ -11009,6 +11009,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot"
+  dependencies:
+    "@koishijs/plugin-server": "npm:^3.2.4"
+    koishi: "npm:^4.18.6"
+    qface: "npm:^1.4.1"
+  peerDependencies:
+    koishi: ^4.18.6
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-nekoil-adapter-telegram@workspace:^, koishi-plugin-nekoil-adapter-telegram@workspace:packages/adapter-telegram":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-adapter-telegram@workspace:packages/adapter-telegram"
@@ -11095,7 +11107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi@npm:^4.18.7":
+"koishi@npm:^4.18.6, koishi@npm:^4.18.7":
   version: 4.18.7
   resolution: "koishi@npm:4.18.7"
   dependencies:
@@ -12603,6 +12615,13 @@ __metadata:
   version: 6.1.0
   resolution: "pure-rand@npm:6.1.0"
   checksum: 10c0/1abe217897bf74dcb3a0c9aba3555fe975023147b48db540aa2faf507aee91c03bf54f6aef0eb2bf59cc259a16d06b28eca37f0dc426d94f4692aeff02fb0e65
+  languageName: node
+  linkType: hard
+
+"qface@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "qface@npm:1.4.1"
+  checksum: 10c0/64f84389b120c3a9b3408eacbedf1eac895ab19abdf4341a8610cdc6eff1b1c92024083b342ea091f2fe897544aefb57bd5a509f4483daeee41403065d7a389c
   languageName: node
   linkType: hard
 
