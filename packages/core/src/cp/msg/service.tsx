@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 
-import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type { Event } from '@satorijs/protocol'
 import type { Context } from 'koishi'
 import { h, Service } from 'koishi'
+import type { CQCode } from 'koishi-plugin-nekoil-adapter-onebot'
+import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
@@ -113,20 +114,7 @@ export class NekoilCpMsgService extends Service {
     }
   }
 
-  #process = (platform: string, sessions: NekoilMsgSession[]) => {
-    switch (platform) {
-      case 'telegram': {
-        return this.#processTelegram(sessions)
-      }
-
-      default: {
-        this.#l.error(`unknown platform ${platform}?`)
-        return
-      }
-    }
-  }
-
-  #processTelegram = async (sessions: NekoilMsgSession[]) => {
+  #process = async (platform: string, sessions: NekoilMsgSession[]) => {
     let progressMsg: number | undefined = undefined
 
     const len = sessions.length
@@ -139,12 +127,11 @@ export class NekoilCpMsgService extends Service {
     const pid = lastSession!.event.user!.id
     const pidNumber = Number(pid)
 
-    const bot = this.ctx.bots[
-      `telegram:${lastSession!.event.selfId}`
-    ] as unknown as TelegramBot
+    const bot = this.ctx.bots[`${platform}:${lastSession!.event.selfId}`]!
 
     try {
-      let contentType: 'forward' | 'satori' | 'onebot' = 'forward'
+      let contentType: 'forward' | 'satori' | 'onebot' | 'obForward' = 'forward'
+      let obForwardId: string | undefined = undefined
       let content: string | undefined = undefined
       let satoriContent: h[] | undefined = undefined
       let parsedSatoriContent: h | undefined = undefined
@@ -152,7 +139,11 @@ export class NekoilCpMsgService extends Service {
       let parsedOneBotContent:
         | {
             type: 'node'
-            data: any
+            data: {
+              user_id: string
+              nickname: string
+              content: CQCode[]
+            }
           }[]
         | undefined = undefined
 
@@ -161,8 +152,22 @@ export class NekoilCpMsgService extends Service {
         x.event.message!.elements = h.parse(x.event.message!.content!)
       })
 
+      // 判断是否为 obForward
+      if (contentType === 'forward' && platform === 'onebot' && len === 1) {
+        const elements = lastSession?.event.message!.elements!
+        if (
+          elements.length === 1 &&
+          elements[0]!.type === 'forward' &&
+          elements[0]!.attrs['id']
+        ) {
+          contentType = 'obForward'
+          obForwardId = elements[0]!.attrs['id']!
+        }
+      }
+
       // 判断是否均为纯文本
       if (
+        contentType === 'forward' &&
         sessions.every(
           (x) =>
             x.event.message!.elements!.length === 1 &&
@@ -210,6 +215,9 @@ export class NekoilCpMsgService extends Service {
 
       let loadingContent: string
       switch (contentType) {
+        case 'obForward':
+          loadingContent = '正在解析聊天记录…………'
+          break
         case 'satori':
           loadingContent = '正在从 Satori 创建聊天记录…………'
           break
@@ -221,23 +229,43 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
-      progressMsg = (
-        await bot.internal.sendMessage({
-          chat_id: pidNumber,
-          text: loadingContent,
-        })
-      ).message_id!
+      switch (platform) {
+        case 'telegram': {
+          const tgBot = bot as unknown as TelegramBot
+          progressMsg = (
+            await tgBot.internal.sendMessage({
+              chat_id: pidNumber,
+              text: loadingContent,
+            })
+          ).message_id!
+          break
+        }
+
+        default: {
+          this.#l.info(
+            `Creating cp, type ${contentType} platform ${platform} pid ${pidNumber}`,
+          )
+          break
+        }
+      }
 
       const onProgress = async (text: string) => {
-        await bot.internal.editMessageText({
-          chat_id: pidNumber,
-          message_id: progressMsg!,
-          text: `${loadingContent}\n${text}`,
-        })
+        if (platform === 'telegram') {
+          const tgBot = bot as unknown as TelegramBot
+          await tgBot.internal.editMessageText({
+            chat_id: pidNumber,
+            message_id: progressMsg!,
+            text: `${loadingContent}\n${text}`,
+          })
+        }
       }
 
       let parsedContent: h[]
       switch (contentType) {
+        case 'obForward': {
+          // TODO call api
+          break
+        }
         case 'satori':
           parsedContent = parsedSatoriContent!.children.filter(
             (x) => x.type === 'message',
@@ -261,52 +289,93 @@ export class NekoilCpMsgService extends Service {
         },
       )
 
-      await bot.internal.sendMessage({
-        chat_id: pidNumber,
-        text: `<b>${escape(cpAll.summary.title)}</b>\n\n${cpAll.summary.summary.map(escape).join('\n')}`,
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
-              },
-              {
-                text: '转发',
-                switch_inline_query: getHandle(cpHandle),
-              },
-            ],
-          ],
-        },
-      })
+      switch (platform) {
+        case 'telegram': {
+          const tgBot = bot as unknown as TelegramBot
+          await tgBot.internal.sendMessage({
+            chat_id: pidNumber,
+            text: `<b>${escape(cpAll.summary.title)}</b>\n\n${cpAll.summary.summary.map(escape).join('\n')}`,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: `查看 ${cpAll.summary.count} 条聊天记录`,
+                    url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
+                  },
+                  {
+                    text: '转发',
+                    switch_inline_query: getHandle(cpHandle),
+                  },
+                ],
+              ],
+            },
+          })
+          break
+        }
 
-      await bot.internal.deleteMessage({
-        chat_id: pidNumber,
-        message_id: progressMsg,
-      })
+        default: {
+          this.#l.info(
+            `cp ${getHandle(cpHandle)} created, platform ${platform} pid ${pidNumber}`,
+          )
+          break
+        }
+      }
+
+      if (progressMsg) {
+        await bot.deleteMessage(
+          platform === 'onebot' ? `private:${pidNumber}` : String(pidNumber),
+          String(progressMsg),
+        )
+      }
     } catch (e) {
-      this.#l.error(`error processing tg message:`)
+      this.#l.error(`error processing message:`)
       this.#l.error(e)
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      bot.internal.sendMessage({
-        chat_id: pidNumber,
-        text: `出现了错误：\n${e}`,
-      })
+      switch (platform) {
+        case 'telegram': {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          bot.sendPrivateMessage(String(pidNumber), `出现了错误：\n${e}`)
+          break
+        }
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      bot.internal.deleteMessage({
-        chat_id: pidNumber,
-        message_id: progressMsg!,
-      })
+        default:
+          break
+      }
+
+      switch (platform) {
+        case 'telegram': {
+          const tgBot = bot as unknown as TelegramBot
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          tgBot.internal.sendMessage({
+            chat_id: pidNumber,
+            text: `出现了错误：\n${e}`,
+          })
+          break
+        }
+
+        default:
+          break
+      }
+
+      if (progressMsg) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        bot.deleteMessage(
+          platform === 'onebot' ? `private:${pidNumber}` : String(pidNumber),
+          String(progressMsg),
+        )
+      }
     }
   }
 
   #parseOneBot = async (
     _content: {
       type: 'node'
-      data: any
+      data: {
+        user_id: string
+        nickname: string
+        content: CQCode[]
+      }
     }[],
   ): Promise<h[]> => {
     return []
