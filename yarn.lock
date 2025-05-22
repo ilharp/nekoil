@@ -11009,7 +11009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot":
+"koishi-plugin-nekoil-adapter-onebot@workspace:^, koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot"
   dependencies:
@@ -11819,6 +11819,7 @@ __metadata:
     koishi: "npm:^4.18.7"
     koishi-plugin-assets-local: "npm:^3.3.2"
     koishi-plugin-dataview: "npm:^2.7.8"
+    koishi-plugin-nekoil-adapter-onebot: "workspace:^"
     koishi-plugin-nekoil-adapter-telegram: "workspace:^"
     koishi-plugin-puppeteer: "npm:^3.9.0"
     koishi-plugin-rate-limit: "npm:^2.0.4"

@@ -59,6 +59,10 @@ plugins:
       url: ${{ env.REDIS_URL }}
     assets-local:rk7cb2: {}
   group:adapter:
+    nekoil-adapter-onebot:g0c6v4:
+      selfId: ${{ env.QQ_ID }}
+      protocol: http
+      endpoint: http://127.0.0.1
     nekoil-adapter-telegram:t68xq1:
       $if: env.NEKOIL_ENV !== 'production'
       protocol: polling
