@@ -16,4 +16,8 @@ export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(NekoilPermissionService)
   ctx.plugin(cp, config)
   ctx.plugin(niassets, config)
+
+  ctx.on('before-send', (session) => {
+    return session.platform === 'onebot'
+  })
 }
