@@ -9,6 +9,7 @@ import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
 import { getHandle } from '../../utils'
+import type { CpCreateOptionId } from '../service'
 
 interface Emitter {
   fn: () => unknown
@@ -131,7 +132,7 @@ export class NekoilCpMsgService extends Service {
 
     try {
       let contentType: 'forward' | 'satori' | 'onebot' | 'obForward' = 'forward'
-      let obForwardId: string | undefined = undefined
+      let resid: string | undefined = undefined
       let content: string | undefined = undefined
       let satoriContent: h[] | undefined = undefined
       let parsedSatoriContent: h | undefined = undefined
@@ -153,15 +154,18 @@ export class NekoilCpMsgService extends Service {
       })
 
       // 判断是否为 obForward
-      if (contentType === 'forward' && platform === 'onebot' && len === 1) {
-        const elements = lastSession?.event.message!.elements!
+      if (
+        /* contentType === 'forward' && */ platform === 'onebot' &&
+        len === 1
+      ) {
+        const elements = lastSession!.event.message!.elements!
         if (
           elements.length === 1 &&
           elements[0]!.type === 'forward' &&
           elements[0]!.attrs['id']
         ) {
           contentType = 'obForward'
-          obForwardId = elements[0]!.attrs['id']!
+          resid = elements[0]!.attrs['id']!
         }
       }
 
@@ -261,21 +265,41 @@ export class NekoilCpMsgService extends Service {
       }
 
       let parsedContent: h[]
+      let cpCreateOptionId: CpCreateOptionId
+
       switch (contentType) {
         case 'obForward': {
           // TODO call api
+          cpCreateOptionId = {
+            idType: 'resid',
+            resid: '',
+          }
           break
         }
         case 'satori':
           parsedContent = parsedSatoriContent!.children.filter(
             (x) => x.type === 'message',
           )
+          cpCreateOptionId = {
+            idType: 'unlisted',
+          }
           break
         case 'onebot':
           parsedContent = await this.#parseOneBot(parsedOneBotContent!)
+          cpCreateOptionId = {
+            idType: 'unlisted',
+          }
           break
         case 'forward':
-          parsedContent = await this.#parseTelegramForward(sessions)
+          switch (platform) {
+            case 'telegram': {
+              parsedContent = await this.#parseTelegramForward(sessions)
+              break
+            }
+          }
+          cpCreateOptionId = {
+            idType: 'unlisted',
+          }
           break
       }
 
@@ -286,6 +310,7 @@ export class NekoilCpMsgService extends Service {
           platform: 'telegram',
           pid,
           onProgress,
+          ...cpCreateOptionId,
         },
       )
 

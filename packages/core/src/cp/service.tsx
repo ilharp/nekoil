@@ -531,12 +531,23 @@ const queryPrefixList = [
   'https://t.me/nekoilbot?startapp=',
 ].map<[string, number]>((x) => [x, x.length])
 
-interface CpCreateOption {
+export interface CpCreateOptionBase {
   cpPlatform: 1 | 2 | 3
   platform: string
   pid: string
   onProgress: (text: string) => unknown
 }
+
+export type CpCreateOptionId =
+  | {
+      idType: 'unlisted'
+    }
+  | {
+      idType: 'resid'
+      resid: string
+    }
+
+export type CpCreateOption = CpCreateOptionBase & CpCreateOptionId
 
 interface CpCreateStateIntl {
   createdCount: number
