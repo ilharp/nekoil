@@ -3,15 +3,16 @@
 import type { Event } from '@satorijs/protocol'
 import type { Context } from 'koishi'
 import { h, Service } from 'koishi'
-import type {
-  CQCode,
-  BaseBot as OneBotBaseBot,
+import {
+  OneBot,
+  type CQCode,
+  type BaseBot as OneBotBaseBot,
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
-import { getHandle } from '../../utils'
+import { getHandle, regexResid } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
 interface Emitter {
@@ -29,6 +30,15 @@ export interface NekoilMsgSession {
   isDirect: boolean
   event: Event
 }
+
+type OneBotForwardMsg = {
+  type: 'node'
+  data: {
+    user_id: string
+    nickname: string
+    content: CQCode[]
+  }
+}[]
 
 export class NekoilCpMsgService extends Service {
   static inject = ['nekoilCp', 'redis', 'database']
@@ -132,10 +142,17 @@ export class NekoilCpMsgService extends Service {
     const pidNumber = Number(pid)
 
     const bot = this.ctx.bots[`${platform}:${lastSession!.event.selfId}`]!
+    const obBot = this.ctx.bots.find(
+      (x) => x.platform === 'onebot',
+    )! as OneBotBaseBot
+    // const tgBot = this.ctx.bots.find(
+    //   (x) => x.platform === 'telegram',
+    // )! as TelegramBot
 
     try {
       let contentType: 'forward' | 'satori' | 'onebot' | 'obForward' = 'forward'
       let resid: string | undefined = undefined
+      let oneBotForwardMsg: OneBotForwardMsg | undefined = undefined
       let content: string | undefined = undefined
       let satoriContent: h[] | undefined = undefined
       let parsedSatoriContent: h | undefined = undefined
@@ -172,13 +189,39 @@ export class NekoilCpMsgService extends Service {
         }
       }
 
+      // 判断是否为 resid
+      if (contentType === 'forward' && len === 1) {
+        const session = sessions[0]!
+        if (
+          session.event.message!.elements!.length === 1 &&
+          session.event.message!.elements![0]!.type === 'text'
+        ) {
+          const content = (
+            session.event.message!.elements![0]!.attrs['content'] as string
+          ).trim()
+          if (regexResid.test(content)) {
+            try {
+              oneBotForwardMsg ??= (
+                await (bot as OneBotBaseBot).internal.getForwardMsg(content)
+              ).message
+              contentType = 'obForward'
+              resid = content
+            } catch (cause) {
+              throw new Error('获取聊天记录内容失败，可能已经过期', {
+                cause,
+              })
+            }
+          }
+        }
+      }
+
       // 判断是否均为纯文本
       if (
         contentType === 'forward' &&
         sessions.every(
           (x) =>
             x.event.message!.elements!.length === 1 &&
-            x.event.message!.elements![0]?.type === 'text',
+            x.event.message!.elements![0]!.type === 'text',
         )
       ) {
         // 都是纯文本，拼接起来
@@ -267,22 +310,26 @@ export class NekoilCpMsgService extends Service {
         }
       }
 
+      /**
+       * 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+       */
       let parsedContent: h[]
       let cpCreateOptionId: CpCreateOptionId
 
       switch (contentType) {
         case 'obForward': {
-          const forwardMsg = await (
-            bot as OneBotBaseBot
-          ).internal.getForwardMsg(resid!)
+          oneBotForwardMsg ??= (
+            await (bot as OneBotBaseBot).internal.getForwardMsg(resid!)
+          ).message
 
+          parsedContent = await this.#parseOneBot(
+            oneBotForwardMsg,
+            bot as OneBotBaseBot,
+          )
           cpCreateOptionId = {
             idType: 'resid',
-            resid: '',
+            resid: resid!,
           }
-
-          // TODO
-
           break
         }
         case 'satori':
@@ -302,7 +349,7 @@ export class NekoilCpMsgService extends Service {
         case 'forward':
           switch (platform) {
             case 'onebot': {
-              // TODO
+              parsedContent = await this.#parseOneBotForward(sessions)
               break
             }
             case 'telegram': {
@@ -408,19 +455,43 @@ export class NekoilCpMsgService extends Service {
     }
   }
 
+  /**
+   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+   */
   #parseOneBot = async (
-    _content: {
-      type: 'node'
-      data: {
-        user_id: string
-        nickname: string
-        content: CQCode[]
-      }
-    }[],
+    content: OneBotForwardMsg,
+    bot?: OneBotBaseBot,
   ): Promise<h[]> => {
+    return Promise.all(
+      content.map(async (node) => {
+        const children = await OneBot.adaptElements(node.data.content, bot)
+
+        const message: h = (
+          <message>
+            <author
+              id={String(node.data.user_id)}
+              name={node.data.nickname}
+              avatar={`http://thirdqq.qlogo.cn/headimg_dl?dst_uin=${node.data.user_id}&spec=640`}
+            />
+            {children}
+          </message>
+        )
+
+        return message
+      }),
+    )
+  }
+
+  /**
+   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+   */
+  #parseOneBotForward = async (_sessions: NekoilMsgSession[]): Promise<h[]> => {
     return []
   }
 
+  /**
+   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+   */
   #parseTelegramForward = async (
     sessions: NekoilMsgSession[],
   ): Promise<h[]> => {
