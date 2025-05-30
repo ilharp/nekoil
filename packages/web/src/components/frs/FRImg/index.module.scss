@@ -4,18 +4,11 @@
   line-height: 1;
 }
 
-%img {
-  max-width: 100%;
-}
-
-.thumb {
-  @extend %img;
-
+.img {
   position: absolute;
   left: 0;
   top: 0;
-}
-
-.origin {
-  @extend %img;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }
