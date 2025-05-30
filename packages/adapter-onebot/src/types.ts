@@ -528,7 +528,7 @@ export interface Internal {
   deleteGroupFileFolder(group_id: id, folder_id: string): Promise<void>
   renameGroupFileFolder(group_id: id, folder_id: string, new_folder_name: string): Promise<void>
 
-  lagrangeGetForwardMsg(id: string): Promise<{
+  getForwardMsg(id: string): Promise<{
     message: {
       type: 'node'
       data: {
