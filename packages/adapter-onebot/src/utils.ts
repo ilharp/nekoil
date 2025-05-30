@@ -46,8 +46,25 @@ export async function adaptMessage(
   payload: Universal.MessageLike = message,
 ) {
   message.id = message.messageId = data.message_id.toString()
+  message.elements = await adaptElements(bot, data)
+  message.content = message.elements.join('')
 
-  // message content
+  const [guildId, channelId] = decodeGuildChannelId(data)
+
+  if (!payload) return message
+  payload.user = decodeUser(data.sender)
+  payload.member = decodeGuildMember(data.sender)
+  payload.timestamp = data.time * 1000
+  payload.guild = guildId && { id: guildId }
+  payload.channel = channelId && { id: channelId, type: guildId ? Universal.Channel.Type.TEXT : Universal.Channel.Type.DIRECT }
+  return message
+}
+
+export const adaptElements = async (
+  bot: BaseBot,
+  data: OneBot.Message,
+  message: Universal.Message = {},
+) => {
   const chain = CQCode.parse(data.message)
   if (bot.config.advanced.splitMixedContent) {
     chain.forEach((item, index) => {
@@ -63,7 +80,7 @@ export async function adaptMessage(
     })
   }
 
-  message.elements = h.transform(chain, {
+  const elements = h.transform(chain, {
     at(attrs) {
       if (attrs.qq !== 'all') return h.at(attrs.qq, { name: attrs.name })
       return h('at', { type: 'all' })
@@ -99,23 +116,24 @@ export async function adaptMessage(
       })
     },
   })
-  const [guildId, channelId] = decodeGuildChannelId(data)
+
+  const [_guildId, channelId] = decodeGuildChannelId(data)
+
   if (message.elements[0]?.type === 'reply') {
-    const reply = message.elements.shift()
+    const reply = message.elements[0]
+    reply.type = 'quote'
     message.quote = await bot.getMessage(channelId, reply.attrs.id).catch((error) => {
       bot.logger.warn(error)
       return undefined
     })
+    reply.children = [h('author', {
+      id: message.quote.user.id,
+      name: message.quote.user.name,
+      avatar: message.quote.user.avatar,
+    }), ...message.quote.elements]
   }
-  message.content = message.elements.join('')
 
-  if (!payload) return message
-  payload.user = decodeUser(data.sender)
-  payload.member = decodeGuildMember(data.sender)
-  payload.timestamp = data.time * 1000
-  payload.guild = guildId && { id: guildId }
-  payload.channel = channelId && { id: channelId, type: guildId ? Universal.Channel.Type.TEXT : Universal.Channel.Type.DIRECT }
-  return message
+  return elements
 }
 
 const decodeGuildChannelId = (data: OneBot.Message) => {
