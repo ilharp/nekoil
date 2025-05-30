@@ -455,13 +455,27 @@ export class NekoilCpMsgService extends Service {
     }
   }
 
-  /**
-   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
-   */
   #parseOneBot = async (
     content: OneBotForwardMsg,
     bot?: OneBotBaseBot,
   ): Promise<h[]> => {
+    return this.#parseOneBotIntl(content, bot, 0)
+  }
+
+  /**
+   * @param createdCount 使用值类型避免误伤单层嵌套里包含多条 cp 的情况
+   *
+   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+   */
+  #parseOneBotIntl = async (
+    content: OneBotForwardMsg,
+    bot: OneBotBaseBot | undefined,
+    createdCount: number,
+  ): Promise<h[]> => {
+    createdCount++
+
+    if (createdCount > 32) throw new Error('套娃层数超过限制。')
+
     return Promise.all(
       content.map(async (node) => {
         const children = await OneBot.adaptElements(node.data.content, bot)
