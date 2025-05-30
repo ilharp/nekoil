@@ -182,7 +182,7 @@ export class NekoilCpService extends Service {
   }
 
   /**
-   * @param content `<message>` 构成的数组。
+   * @param 消息元素的数组，其中每个消息元素的类型都为 message，children 中可能有首个元素为 author
    */
   #cpCreateIntl = async (
     content: h[],
