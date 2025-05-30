@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/http-proxy": "^1.17.16",
     "@types/lodash-es": "^4",
+    "koishi-plugin-nekoil-adapter-onebot": "workspace:^",
     "koishi-plugin-nekoil-adapter-telegram": "workspace:^",
     "nekoil-typedef": "workspace:^"
   },
