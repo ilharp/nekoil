@@ -119,8 +119,8 @@ export const adaptElements = async (
 
   const [_guildId, channelId] = decodeGuildChannelId(data)
 
-  if (message.elements[0]?.type === 'reply') {
-    const reply = message.elements[0]
+  if (elements[0]?.type === 'reply') {
+    const reply = elements[0]
     reply.type = 'quote'
     message.quote = await bot.getMessage(channelId, reply.attrs.id).catch((error) => {
       bot.logger.warn(error)
