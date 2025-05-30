@@ -427,7 +427,7 @@ export interface Internal {
   sendGroupSign(group_id: id): Promise<void>
   sendGroupSignAsync(group_id: id): Promise<void>
   getMsg(message_id: id): Promise<Message>
-  getForwardMsg(message_id: id): Promise<ForwardMessage[]>
+  // getForwardMsg(message_id: id): Promise<ForwardMessage[]>
   getEssenceMsgList(group_id: id): Promise<EssenceMessage[]>
   getWordSlices(content: string): Promise<string[]>
   ocrImage(image: string): Promise<OcrResult>
@@ -527,6 +527,17 @@ export interface Internal {
   moveGroupFile(group_id: id, file_id: string, parent_directory: string, target_directory: string): Promise<void>
   deleteGroupFileFolder(group_id: id, folder_id: string): Promise<void>
   renameGroupFileFolder(group_id: id, folder_id: string, new_folder_name: string): Promise<void>
+
+  lagrangeGetForwardMsg(id: string): Promise<{
+    message: {
+      type: 'node'
+      data: {
+        user_id: string
+        nickname: string
+        content: CQCode[]
+      }
+    }[]
+  }>
 }
 
 export class TimeoutError extends Error {
@@ -634,7 +645,7 @@ Internal.define('send_like', 'user_id', 'times')
 Internal.define('get_msg', 'message_id')
 Internal.define('get_essence_msg_list', 'group_id')
 Internal.define('ocr_image', 'image')
-Internal.defineExtract('get_forward_msg', 'messages', 'message_id')
+// Internal.defineExtract('get_forward_msg', 'messages', 'message_id')
 Internal.defineExtract('.get_word_slices', 'slices', 'content')
 Internal.define('get_group_msg_history', 'group_id', 'message_seq')
 Internal.define('set_friend_add_request', 'flag', 'approve', 'remark')
@@ -720,3 +731,5 @@ Internal.define('move_group_file', 'group_id', 'file_id', 'parent_directory', 't
 // Internal.define('create_group_file_folder', 'group_id', 'name', 'parent_id')
 Internal.define('delete_group_file_folder', 'group_id', 'folder_id')
 Internal.define('rename_group_file_folder', 'group_id', 'folder_id', 'new_folder_name')
+
+Internal.define('get_forward_msg', 'id')
