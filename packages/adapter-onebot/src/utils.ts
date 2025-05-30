@@ -46,7 +46,7 @@ export async function adaptMessage(
   payload: Universal.MessageLike = message,
 ) {
   message.id = message.messageId = data.message_id.toString()
-  message.elements = await adaptElements(bot, data)
+  message.elements = await adaptElements(data.message, bot, message)
   message.content = message.elements.join('')
 
   const [guildId, channelId] = decodeGuildChannelId(data)
@@ -61,11 +61,11 @@ export async function adaptMessage(
 }
 
 export const adaptElements = async (
-  bot: BaseBot,
-  data: OneBot.Message,
+  obMessage: string | CQCode[],
+  bot?: BaseBot,
   message: Universal.Message = {},
 ) => {
-  const chain = CQCode.parse(data.message)
+  const chain = CQCode.parse(obMessage)
   if (bot.config.advanced.splitMixedContent) {
     chain.forEach((item, index) => {
       if (item.type !== 'image') return
@@ -117,20 +117,22 @@ export const adaptElements = async (
     },
   })
 
-  const [_guildId, channelId] = decodeGuildChannelId(data)
-
   if (elements[0]?.type === 'reply') {
     const reply = elements[0]
     reply.type = 'quote'
-    message.quote = await bot.getMessage(channelId, reply.attrs.id).catch((error) => {
-      bot.logger.warn(error)
-      return undefined
-    })
-    reply.children = [h('author', {
-      id: message.quote.user.id,
-      name: message.quote.user.name,
-      avatar: message.quote.user.avatar,
-    }), ...message.quote.elements]
+
+    if (bot) {
+      message.quote = await bot.getMessage('' /* ob does not need channelId */, reply.attrs.id).catch((error) => {
+        bot.logger.warn(`err when get quote msg ${reply.attrs.id}`)
+        bot.logger.warn(error)
+        return undefined
+      })
+      reply.children = [h('author', {
+        id: message.quote?.user.id,
+        name: message.quote?.user.name,
+        avatar: message.quote?.user.avatar,
+      }), ...(message.quote?.elements ?? [])]
+    }
   }
 
   return elements
