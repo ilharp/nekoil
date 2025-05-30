@@ -3,7 +3,10 @@
 import type { Event } from '@satorijs/protocol'
 import type { Context } from 'koishi'
 import { h, Service } from 'koishi'
-import type { CQCode } from 'koishi-plugin-nekoil-adapter-onebot'
+import type {
+  CQCode,
+  BaseBot as OneBotBaseBot,
+} from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
@@ -269,11 +272,17 @@ export class NekoilCpMsgService extends Service {
 
       switch (contentType) {
         case 'obForward': {
-          // TODO call api
+          const forwardMsg = await (
+            bot as OneBotBaseBot
+          ).internal.getForwardMsg(resid!)
+
           cpCreateOptionId = {
             idType: 'resid',
             resid: '',
           }
+
+          // TODO
+
           break
         }
         case 'satori':
@@ -292,10 +301,16 @@ export class NekoilCpMsgService extends Service {
           break
         case 'forward':
           switch (platform) {
+            case 'onebot': {
+              // TODO
+              break
+            }
             case 'telegram': {
               parsedContent = await this.#parseTelegramForward(sessions)
               break
             }
+            default:
+              throw new Error()
           }
           cpCreateOptionId = {
             idType: 'unlisted',
