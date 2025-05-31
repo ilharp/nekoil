@@ -196,8 +196,6 @@ export class NekoilCpService extends Service {
     if (state.createdCount > 1)
       option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
 
-    state.user ??= await this.ctx.database.getUser(option.platform, option.pid)
-
     const pack: Partial<ContentPackWithAll> = {
       created_time: new Date(),
       deleted: 0,
@@ -207,8 +205,8 @@ export class NekoilCpService extends Service {
       data_full_mode: 1,
       platform: option.cpPlatform,
 
-      creator: state.user.id,
-      owner: state.user.id,
+      creator: option.user.id,
+      owner: option.user.id,
     }
 
     const messages = await Promise.all(
@@ -551,6 +549,7 @@ export interface CpCreateOptionBase {
   platform: string
   pid: string
   onProgress: (text: string) => unknown
+  user: User
 }
 
 export type CpCreateOptionId =
@@ -566,7 +565,6 @@ export type CpCreateOption = CpCreateOptionBase & CpCreateOptionId
 
 interface CpCreateStateIntl {
   createdCount: number
-  user?: User
   niaids: number[]
 }
 

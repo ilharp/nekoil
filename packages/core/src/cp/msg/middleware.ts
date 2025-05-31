@@ -1,4 +1,4 @@
-import type { Context, h } from 'koishi'
+import type { Context, h, User } from 'koishi'
 import type {} from 'koishi-plugin-redis'
 import type { NekoilMsgSession } from './service'
 
@@ -29,6 +29,7 @@ export const apply = async (ctx: Context) => {
               elements: undefined as unknown as h[],
             },
           },
+          user: session.user! as unknown as User,
         } satisfies NekoilMsgSession),
       )
 

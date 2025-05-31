@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 
 import type { Event } from '@satorijs/protocol'
-import type { Context } from 'koishi'
+import type { Context, User } from 'koishi'
 import { h, Service } from 'koishi'
 import type {
   CQCode,
@@ -29,7 +29,7 @@ declare module 'koishi' {
 export interface NekoilMsgSession {
   isDirect: boolean
   event: Event
-  // user: User
+  user: User
 }
 
 type OneBotForwardMsg = {
@@ -374,6 +374,7 @@ export class NekoilCpMsgService extends Service {
           pid,
           onProgress,
           ...cpCreateOptionId,
+          user: lastSession!.user,
         },
       )
 
