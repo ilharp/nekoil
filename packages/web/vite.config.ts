@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import type { SpawnOptions } from 'node:child_process'
 import { spawn } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 import { defineConfig } from 'vite'
 
 // eslint-disable-next-line import/no-default-export
@@ -21,11 +22,11 @@ export default defineConfig(async () => {
 
     build: {
       rollupOptions: {
-        external: ['react', 'react-dom'],
+        external: ['react', 'react-dom/client'],
         output: {
           paths: {
             react: 'https://esm.sh/react@19.1.0',
-            'react-dom': 'https://esm.sh/react-dom@19.1.0',
+            'react-dom/client': 'https://esm.sh/react-dom@19.1.0',
           },
         },
       },
