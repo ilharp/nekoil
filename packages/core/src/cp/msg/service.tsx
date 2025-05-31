@@ -387,7 +387,7 @@ export class NekoilCpMsgService extends Service {
               [
                 {
                   text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                  url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
+                  url: `https://t.me/nekoilbot?startapp=${encodeURIComponent(getHandle(cpHandle))}`,
                 },
                 {
                   text: '转发',

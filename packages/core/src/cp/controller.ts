@@ -73,7 +73,7 @@ export const apply = (ctx: Context, config: Config) => {
 
     c.body = await ctx.nekoilCp.cpGet(
       undefined as unknown as NekoilUser,
-      body.query,
+      decodeURIComponent(body.query),
       true,
     )
   })
