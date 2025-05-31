@@ -107,15 +107,17 @@ export class NekoilCpMsgService extends Service {
         number,
       ]
 
-      const splitIndex = channel.indexOf(':')
-      const platform = channel.slice(0, splitIndex)
-      // const channelId = channel.slice(splitIndex + 1)
+      if (sessions.length) {
+        const splitIndex = channel.indexOf(':')
+        const platform = channel.slice(0, splitIndex)
+        // const channelId = channel.slice(splitIndex + 1)
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.#process(
-        platform,
-        sessions.map((x) => JSON.parse(x) as NekoilMsgSession),
-      )
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.#process(
+          platform,
+          sessions.map((x) => JSON.parse(x) as NekoilMsgSession),
+        )
+      }
     } catch (e) {
       if (e instanceof WatchError) {
         return this.#buildFn(channel, emitter)
