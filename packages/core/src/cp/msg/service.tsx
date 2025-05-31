@@ -12,7 +12,7 @@ import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
-import { getHandle, regexResid } from '../../utils'
+import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
 interface Emitter {
@@ -217,7 +217,7 @@ export class NekoilCpMsgService extends Service {
               contentType = 'obForward'
               resid = content
             } catch (cause) {
-              throw new Error('获取聊天记录内容失败，可能已经过期', {
+              throw new UserSafeError('获取聊天记录内容失败，可能已经过期。', {
                 cause,
               })
             }
@@ -414,7 +414,7 @@ export class NekoilCpMsgService extends Service {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         notifBot.internal.sendMessage({
           chat_id: notifUserId,
-          text: `出现了错误：\n${e}`,
+          text: `生成聊天记录时出现错误${e instanceof UserSafeError ? `：${e.message}` : '。'}`,
         })
       }
 

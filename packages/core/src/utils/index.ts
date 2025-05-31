@@ -78,6 +78,7 @@ export const getHandle = (cpHandle: ContentPackHandleV1) => {
 }
 
 export class NoLoggingError extends Error {}
+export class UserSafeError extends Error {}
 
 export const ellipsis = (text: string, max: number) => {
   const len = text.length
