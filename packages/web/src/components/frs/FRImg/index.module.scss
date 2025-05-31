@@ -1,14 +1,7 @@
 .container {
-  position: relative;
-
   line-height: 1;
 }
 
 .img {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
+  max-width: 100%;
 }

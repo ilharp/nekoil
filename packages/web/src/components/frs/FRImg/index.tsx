@@ -1,11 +1,9 @@
 import type h from '@satorijs/element'
-import { useCallback, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { thumbHashToDataURL } from 'thumbhash'
 import styles from './index.module.scss'
 
 export const FRImg = ({ elem }: { elem: h }) => {
-  const [loading, setLoading] = useState(true)
-
   const thumbhashUrl = useMemo(
     () =>
       thumbHashToDataURL(
@@ -17,27 +15,24 @@ export const FRImg = ({ elem }: { elem: h }) => {
     [elem.attrs['nekoil:thumbhash']],
   )
 
-  const handleOnLoad = useCallback(() => {
-    setLoading(false)
-  }, [])
+  const imgElement = useRef(null as unknown as HTMLImageElement)
 
-  const imgContainerStyle = useMemo(
-    () => ({
-      paddingTop: `calc(${elem.attrs.width}/${elem.attrs.height}*100%)`,
-    }),
-    [elem.attrs.height, elem.attrs.width],
-  )
+  useEffect(() => {
+    const imgOriginalLoader = new Image()
+    imgOriginalLoader.onload = () => {
+      imgElement.current.src = imgOriginalLoader.src
+    }
+    imgOriginalLoader.src = `https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`
+  }, [elem.attrs.src])
 
   return (
     <div className={styles.container}>
-      <div style={imgContainerStyle}>
-        <img
-          className={styles.img}
-          src={`https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`}
-          onLoad={handleOnLoad}
-        />
-        {loading && <img className={styles.img} src={thumbhashUrl} />}
-      </div>
+      <img
+        className={styles.img}
+        ref={imgElement}
+        src={thumbhashUrl}
+        width={`${elem.attrs.width}px`}
+      />
     </div>
   )
 }
