@@ -143,9 +143,9 @@ export class NekoilCpMsgService extends Service {
     const pidNumber = Number(pid)
 
     const bot = this.ctx.bots[`${platform}:${lastSession!.event.selfId}`]!
-    // const obBot = this.ctx.bots.find(
-    //   (x) => x.platform === 'onebot',
-    // )! as OneBotBaseBot
+    const obBot = this.ctx.bots.find(
+      (x) => x.platform === 'onebot',
+    )! as OneBotBaseBot
     // const tgBot = this.ctx.bots.find(
     //   (x) => x.platform === 'telegram',
     // )! as TelegramBot
@@ -202,9 +202,8 @@ export class NekoilCpMsgService extends Service {
           ).trim()
           if (regexResid.test(content)) {
             try {
-              oneBotForwardMsg ??= (
-                await (bot as OneBotBaseBot).internal.getForwardMsg(content)
-              ).message
+              oneBotForwardMsg ??= (await obBot.internal.getForwardMsg(content))
+                .message
               contentType = 'obForward'
               resid = content
             } catch (cause) {
