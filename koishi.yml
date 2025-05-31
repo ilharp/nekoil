@@ -2,8 +2,8 @@ plugins:
   group:server:
     server:bctbjh:
       host: 0.0.0.0
-      port: 80
-      maxPort: 80
+      port: "${{ env.NEKOIL_ENV === 'production' ? 80 : 5140 }}"
+      maxPort: "${{ env.NEKOIL_ENV === 'production' ? 80 : 5140 }}"
       selfUrl: ${{ env.SELF_URL_PUBLIC }}
     server-temp:qmvgdc:
       selfUrl: ${{ env.SELF_URL_PRIVATE }}
@@ -30,7 +30,7 @@ plugins:
         password: ${{ env.ADMIN_PASSWORD }}
     config:0n6vxu: {}
     console:zsv61x:
-      open: true
+      open: false
     dataview:j608ho: {}
     explorer:u2zb6t: {}
     logger:cir834: {}
