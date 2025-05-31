@@ -19,13 +19,13 @@ import { requestV1 } from '../../utils'
 import styles from './index.module.scss'
 
 export const ContentPack = () => {
-  const cpHandleQuery = decodeURIComponent(useParams().cpHandleQuery!)
+  const { cpHandleQuery } = useParams()
 
   const { isPending, isError, data, error } = useQuery({
     queryKey: ['cp', cpHandleQuery],
     queryFn: requestV1<ContentPackWithFull>('/nekoil/v0/cp/cp.get', {
       body: JSON.stringify({
-        query: cpHandleQuery,
+        query: cpHandleQuery!,
       } satisfies NekoilCpCpGetRequest),
     }),
   })
