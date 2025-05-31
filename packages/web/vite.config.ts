@@ -18,6 +18,18 @@ export default defineConfig(async () => {
     define: {
       __DEFINE_NEKOIL_VERSION_STRING__: versionString,
     },
+
+    build: {
+      rollupOptions: {
+        external: ['react', 'react-dom'],
+        output: {
+          paths: {
+            react: 'https://esm.sh/react@19.1.0',
+            'react-dom': 'https://esm.sh/react-dom@19.1.0',
+          },
+        },
+      },
+    },
   }
 })
 
