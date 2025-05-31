@@ -76,7 +76,6 @@
     "@koishijs/plugin-admin": "^2.0.0-beta.4",
     "@koishijs/plugin-analytics": "^2.0.6",
     "@koishijs/plugin-auth": "^4.1.6",
-    "@koishijs/plugin-bind": "^1.5.1",
     "@koishijs/plugin-commands": "^3.5.4",
     "@koishijs/plugin-config": "^2.8.6",
     "@koishijs/plugin-console": "^5.30.7",

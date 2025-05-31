@@ -2,14 +2,13 @@ plugins:
   group:server:
     server:bctbjh:
       host: 0.0.0.0
-      port: '${{ env.NEKOIL_ENV === ''production'' ? 80 : 5140 }}'
-      maxPort: '${{ env.NEKOIL_ENV === ''production'' ? 80 : 5140 }}'
+      port: "${{ env.NEKOIL_ENV === 'production' ? 80 : 5140 }}"
+      maxPort: "${{ env.NEKOIL_ENV === 'production' ? 80 : 5140 }}"
       selfUrl: ${{ env.SELF_URL_PUBLIC }}
     server-temp:qmvgdc:
       selfUrl: ${{ env.SELF_URL_PRIVATE }}
   group:basic:
     admin:2rjo0n: {}
-    bind:p5l0qm: {}
     commands:vnzxf1:
       nekoilpack:
         aliases:

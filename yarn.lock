@@ -2676,15 +2676,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-bind@npm:^1.5.1":
-  version: 1.5.1
-  resolution: "@koishijs/plugin-bind@npm:1.5.1"
-  peerDependencies:
-    koishi: ^4.16.2
-  checksum: 10c0/b1cfa571b8a49f39000d464850919a4e249f957b2550d8b0be0e2bf76ddac97a64467514cf20efb8c5fecde13b2b3d8b9eb02f3a42edd5cc4497ceea20eb4ff4
-  languageName: node
-  linkType: hard
-
 "@koishijs/plugin-commands@npm:^3.5.4":
   version: 3.5.4
   resolution: "@koishijs/plugin-commands@npm:3.5.4"
@@ -11775,7 +11766,6 @@ __metadata:
     "@koishijs/plugin-admin": "npm:^2.0.0-beta.4"
     "@koishijs/plugin-analytics": "npm:^2.0.6"
     "@koishijs/plugin-auth": "npm:^4.1.6"
-    "@koishijs/plugin-bind": "npm:^1.5.1"
     "@koishijs/plugin-commands": "npm:^3.5.4"
     "@koishijs/plugin-config": "npm:^2.8.6"
     "@koishijs/plugin-console": "npm:^5.30.7"
