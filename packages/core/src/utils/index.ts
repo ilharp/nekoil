@@ -100,4 +100,4 @@ export const ellipsis = (text: string, max: number) => {
 export const zstdCompressAsync = promisify(zstdCompress)
 export const zstdDecompressAsync = promisify(zstdDecompress)
 
-export const regexResid = /^[0-9a-zA-Z/]{64}$/g
+export const regexResid = /^[0-9a-zA-Z/+]{64}$/g
