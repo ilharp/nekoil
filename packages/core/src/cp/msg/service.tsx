@@ -140,11 +140,11 @@ export class NekoilCpMsgService extends Service {
         a.event._data.message.message_id - b.event._data.message.message_id,
     )
 
-    const lastSession = sessions[len - 1]
-    const pid = lastSession!.event.user!.id
+    const lastSession = sessions[len - 1]!
+    const pid = lastSession.event.user!.id
     const pidNumber = Number(pid)
 
-    const bot = this.ctx.bots[`${platform}:${lastSession!.event.selfId}`]!
+    const bot = this.ctx.bots[`${platform}:${lastSession.event.selfId}`]!
     const obBot = this.ctx.bots.find(
       (x) => x.platform === 'onebot',
     )! as OneBotBaseBot
@@ -181,7 +181,7 @@ export class NekoilCpMsgService extends Service {
         /* contentType === 'forward' && */ platform === 'onebot' &&
         len === 1
       ) {
-        const elements = lastSession!.event.message!.elements!
+        const elements = lastSession.event.message!.elements!
         if (
           elements.length === 1 &&
           elements[0]!.type === 'forward' &&
@@ -375,7 +375,7 @@ export class NekoilCpMsgService extends Service {
           pid,
           onProgress,
           ...cpCreateOptionId,
-          user: lastSession!.user,
+          user: lastSession.user,
         },
       )
 
