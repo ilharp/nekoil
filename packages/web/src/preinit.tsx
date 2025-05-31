@@ -16,11 +16,7 @@ try {
       .join('')
   }
 
-  window.history.replaceState(
-    null,
-    '',
-    '/' + (window.Telegram.WebApp.initDataUnsafe.start_param ?? ''),
-  )
+  window.history.replaceState(null, '', '/' + path)
 } catch (_) {
   window.history.replaceState(null, '', '/upgradeapp')
 }
