@@ -1,3 +1,4 @@
+import h from '@satorijs/element'
 import type { SymAioHost, SymMsgGroupCtx } from '@sym-app/components'
 import {
   frRenderers,
@@ -10,13 +11,12 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import type { ContentPackWithFull, NekoilCpCpGetRequest } from 'nekoil-typedef'
 import { useParams } from 'react-router'
+import { Footer } from '../../components/Footer'
+import { FRImg } from '../../components/frs/FRImg'
 import { ResultError } from '../../components/ResultError'
 import { Splash } from '../../components/Splash'
 import { requestV1 } from '../../utils'
-import h from '@satorijs/element'
-
 import styles from './index.module.scss'
-import { FRImg } from '../../components/frs/FRImg'
 
 export const ContentPack = () => {
   const { cpHandleQuery } = useParams()
@@ -36,6 +36,9 @@ export const ContentPack = () => {
 
   return (
     <SymProvider className={styles.symProvider}>
+      <div className={styles.headerContainer}>
+        <h1 className={styles.title}>{data.summary.title}</h1>
+      </div>
       <SymAioHostContext value={symAioHost}>
         <SymAioCtxContext.Provider
           value={{
@@ -47,15 +50,13 @@ export const ContentPack = () => {
           }}
         >
           <SymMsgGroupContext value={symMsgGroupCtx}>
-            <div className={styles.container}>
-              <div className={styles.headerContainer}>
-                <h1 className={styles.title}>{data.summary.title}</h1>
-              </div>
-              <SymMsgVirtualList className={styles.msgList} />
-            </div>
+            <SymMsgVirtualList className={styles.msgList} />
           </SymMsgGroupContext>
         </SymAioCtxContext.Provider>
       </SymAioHostContext>
+      <div className="nekoil-separator" />
+      <Footer />
+      <div className={styles.bottomFix} />
     </SymProvider>
   )
 }
