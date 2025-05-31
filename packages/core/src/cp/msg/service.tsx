@@ -148,9 +148,17 @@ export class NekoilCpMsgService extends Service {
     const obBot = this.ctx.bots.find(
       (x) => x.platform === 'onebot',
     )! as OneBotBaseBot
-    // const tgBot = this.ctx.bots.find(
-    //   (x) => x.platform === 'telegram',
-    // )! as TelegramBot
+    const tgBot = this.ctx.bots.find(
+      (x) => x.platform === 'telegram',
+    )! as unknown as TelegramBot
+
+    const notifBot = tgBot
+    const notifUserId = (
+      await this.ctx.database.get('binding', {
+        aid: lastSession.user.id,
+        platform: 'telegram',
+      })
+    )[0]?.pid
 
     try {
       let contentType: 'forward' | 'satori' | 'onebot' | 'obForward' = 'forward'
@@ -281,35 +289,25 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
-      switch (platform) {
-        case 'telegram': {
-          const tgBot = bot as unknown as TelegramBot
-          progressMsg = (
-            await tgBot.internal.sendMessage({
-              chat_id: pidNumber,
-              text: loadingContent,
-            })
-          ).message_id!
-          break
-        }
-
-        default: {
-          this.#l.info(
-            `Creating cp, type ${contentType} platform ${platform} pid ${pidNumber}`,
-          )
-          break
-        }
+      if (notifUserId) {
+        progressMsg = (
+          await notifBot.internal.sendMessage({
+            chat_id: notifUserId,
+            text: loadingContent,
+          })
+        ).message_id!
+      } else {
+        this.#l.info(
+          `Creating cp, type ${contentType} platform ${platform} pid ${pidNumber}`,
+        )
       }
 
       const onProgress = async (text: string) => {
-        if (platform === 'telegram') {
-          const tgBot = bot as unknown as TelegramBot
-          await tgBot.internal.editMessageText({
-            chat_id: pidNumber,
-            message_id: progressMsg!,
-            text: `${loadingContent}\n${text}`,
-          })
-        }
+        await notifBot.internal.editMessageText({
+          chat_id: pidNumber,
+          message_id: progressMsg!,
+          text: `${loadingContent}\n${text}`,
+        })
       }
 
       /**
@@ -379,81 +377,50 @@ export class NekoilCpMsgService extends Service {
         },
       )
 
-      switch (platform) {
-        case 'telegram': {
-          const tgBot = bot as unknown as TelegramBot
-          await tgBot.internal.sendMessage({
-            chat_id: pidNumber,
-            text: `<b>${escape(cpAll.summary.title)}</b>\n\n${cpAll.summary.summary.map(escape).join('\n')}`,
-            parse_mode: 'HTML',
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                    url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
-                  },
-                  {
-                    text: '转发',
-                    switch_inline_query: getHandle(cpHandle),
-                  },
-                ],
+      if (notifUserId) {
+        await notifBot.internal.sendMessage({
+          chat_id: notifUserId,
+          text: `<b>${escape(cpAll.summary.title)}</b>\n\n${cpAll.summary.summary.map(escape).join('\n')}`,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: `查看 ${cpAll.summary.count} 条聊天记录`,
+                  url: `https://t.me/nekoilbot?startapp=${getHandle(cpHandle)}`,
+                },
+                {
+                  text: '转发',
+                  switch_inline_query: getHandle(cpHandle),
+                },
               ],
-            },
-          })
-          break
-        }
-
-        default: {
-          this.#l.info(
-            `cp ${getHandle(cpHandle)} created, platform ${platform} pid ${pidNumber}`,
-          )
-          break
-        }
+            ],
+          },
+        })
+      } else {
+        this.#l.info(
+          `cp ${getHandle(cpHandle)} created, platform ${platform} pid ${pidNumber}`,
+        )
       }
 
       if (progressMsg) {
-        await bot.deleteMessage(
-          platform === 'onebot' ? `private:${pidNumber}` : String(pidNumber),
-          String(progressMsg),
-        )
+        await notifBot.deleteMessage(notifUserId!, String(progressMsg))
       }
     } catch (e) {
       this.#l.error(`error processing message:`)
       this.#l.error(e)
 
-      switch (platform) {
-        case 'telegram': {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          bot.sendPrivateMessage(String(pidNumber), `出现了错误：\n${e}`)
-          break
-        }
-
-        default:
-          break
-      }
-
-      switch (platform) {
-        case 'telegram': {
-          const tgBot = bot as unknown as TelegramBot
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          tgBot.internal.sendMessage({
-            chat_id: pidNumber,
-            text: `出现了错误：\n${e}`,
-          })
-          break
-        }
-
-        default:
-          break
+      if (notifUserId) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        notifBot.internal.sendMessage({
+          chat_id: notifUserId,
+          text: `出现了错误：\n${e}`,
+        })
       }
 
       if (progressMsg) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        bot.deleteMessage(
-          platform === 'onebot' ? `private:${pidNumber}` : String(pidNumber),
-          String(progressMsg),
-        )
+        notifBot.deleteMessage(notifUserId!, String(progressMsg))
       }
     }
   }
