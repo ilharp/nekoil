@@ -3,11 +3,11 @@
 import type { Event } from '@satorijs/protocol'
 import type { Context } from 'koishi'
 import { h, Service } from 'koishi'
-import {
-  OneBot,
-  type CQCode,
-  type BaseBot as OneBotBaseBot,
+import type {
+  CQCode,
+  BaseBot as OneBotBaseBot,
 } from 'koishi-plugin-nekoil-adapter-onebot'
+import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
@@ -29,6 +29,7 @@ declare module 'koishi' {
 export interface NekoilMsgSession {
   isDirect: boolean
   event: Event
+  // user: User
 }
 
 type OneBotForwardMsg = {
@@ -142,9 +143,9 @@ export class NekoilCpMsgService extends Service {
     const pidNumber = Number(pid)
 
     const bot = this.ctx.bots[`${platform}:${lastSession!.event.selfId}`]!
-    const obBot = this.ctx.bots.find(
-      (x) => x.platform === 'onebot',
-    )! as OneBotBaseBot
+    // const obBot = this.ctx.bots.find(
+    //   (x) => x.platform === 'onebot',
+    // )! as OneBotBaseBot
     // const tgBot = this.ctx.bots.find(
     //   (x) => x.platform === 'telegram',
     // )! as TelegramBot
