@@ -123,8 +123,8 @@ export const adaptElements = async (
 
     if (bot) {
       message.quote = await bot.getMessage('' /* ob does not need channelId */, reply.attrs.id).catch((error) => {
-        bot.logger.warn(`err when get quote msg ${reply.attrs.id}`)
-        bot.logger.warn(error)
+        // bot.logger.warn(`err when get quote msg ${reply.attrs.id}`)
+        // bot.logger.warn(error)
         return undefined
       })
       reply.children = [h('author', {
