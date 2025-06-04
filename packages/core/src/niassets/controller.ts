@@ -3,14 +3,20 @@
 import type {} from '@koishijs/plugin-server'
 import { createProxyServer } from 'http-proxy'
 import type { Context } from 'koishi'
+import mime from 'mime'
 import type { Config } from '../config'
 import { setHeader, zstdDecompressAsync } from '../utils'
-import mime from 'mime'
-import { middlewareCfCountry, middlewareProxyToken } from '../utils/middlewares'
+import { middlewareProxyToken } from '../utils/middlewares'
 
 export const name = 'nekoil-assets-controller'
 
-export const inject = ['server', 'nekoilCp', 'nekoilUser', 'nekoilAssets']
+export const inject = [
+  'server',
+  'nekoilCp',
+  'nekoilUser',
+  'nekoilAssets',
+  'nekoilTg',
+]
 
 export const apply = (ctx: Context, config: Config) => {
   // const l = ctx.logger('nekoilAssetsController')
@@ -35,7 +41,7 @@ export const apply = (ctx: Context, config: Config) => {
       return next()
     },
     middlewareProxyToken(config),
-    middlewareCfCountry(),
+    ctx.nekoilTg.middlewareInitData(),
     async (c) => {
       const filename = c.params['filename']!
       const filenameSplit = filename.split('.')

@@ -4962,6 +4962,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@telegram-apps/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@telegram-apps/types@npm:2.0.0"
+  checksum: 10c0/dc564575055af7e90dd2d0013e00143cd847cff2fbb78d824caa76ebafff8931d83f660e2051174c431a841892b8a6a5d08968f0c106605747de0aeac2787933
+  languageName: node
+  linkType: hard
+
 "@testing-library/dom@npm:10.4.0":
   version: 10.4.0
   resolution: "@testing-library/dom@npm:10.4.0"
@@ -11133,6 +11140,7 @@ __metadata:
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.812.0"
     "@satorijs/element": "npm:^3.1.7"
+    "@telegram-apps/types": "npm:^2.0.0"
     "@types/http-proxy": "npm:^1.17.16"
     "@types/lodash-es": "npm:^4"
     http-proxy: "npm:^1.18.1"

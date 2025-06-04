@@ -4,11 +4,11 @@ import type { NekoilCpCpGetRequest } from 'nekoil-typedef'
 import type { Config } from '../config'
 import type { NekoilUser } from '../services/user'
 import { setHeader } from '../utils'
-import { middlewareCfCountry, middlewareProxyToken } from '../utils/middlewares'
+import { middlewareProxyToken } from '../utils/middlewares'
 
 export const name = 'nekoil-cp-controller'
 
-export const inject = ['server', 'nekoilCp', 'nekoilUser']
+export const inject = ['server', 'nekoilCp', 'nekoilUser', 'nekoilTg']
 
 export const apply = (ctx: Context, config: Config) => {
   // const l = ctx.logger('nekoilCpController')
@@ -46,7 +46,7 @@ export const apply = (ctx: Context, config: Config) => {
       return next()
     },
     middlewareProxyToken(config),
-    middlewareCfCountry(),
+    ctx.nekoilTg.middlewareInitData(),
     async (c) => {
       // const user = await ctx.nekoilUser.getUser(platform, pid)
 

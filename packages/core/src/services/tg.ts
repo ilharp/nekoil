@@ -1,12 +1,20 @@
+import type { Middleware } from '@koa/router'
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
 import type { TelegramBot } from 'koishi-plugin-nekoil-adapter-telegram'
 import type { BinaryLike } from 'node:crypto'
 import { createHmac } from 'node:crypto'
+import type { User } from '@telegram-apps/types'
 
 declare module 'koishi' {
   interface Context {
     nekoilTg: NekoilTgService
+  }
+}
+
+declare module 'koa' {
+  interface BaseContext {
+    tgUser: User
   }
 }
 
@@ -60,4 +68,30 @@ export class NekoilTgService extends Service {
 
     return sign.toString('utf-8') === hash
   }
+
+  public middlewareInitData = () =>
+    ((c, next) => {
+      const initDataRaw = c.request.header['nekoil-init-data']
+      if (!initDataRaw || Array.isArray(initDataRaw) || !initDataRaw.length) {
+        c.body = {
+          code: 2004,
+          msg: 'EXXXXX FORBIDDEN',
+        }
+        return
+      }
+
+      const initData = new URLSearchParams(initDataRaw)
+
+      if (!this.validateInitData(initData)) {
+        c.body = {
+          code: 2004,
+          msg: 'EXXXXX FORBIDDEN',
+        }
+        return
+      }
+
+      c.tgUser = JSON.parse(initData.get('user')!) as User
+
+      return next()
+    }) satisfies Middleware
 }
