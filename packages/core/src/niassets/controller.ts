@@ -68,7 +68,7 @@ export const apply = (ctx: Context, config: Config) => {
       setHeader(c, false)
 
       if (['HEAD', 'GET'].includes(c.method))
-        c.set('Cache-Control', 'public, max-age=60') // 1800
+        c.set('Cache-Control', 'public, max-age=1800')
     },
   )
 }
