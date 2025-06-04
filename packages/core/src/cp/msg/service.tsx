@@ -365,10 +365,37 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
+      let cpPlatform: 1 | 2 | 3
+
+      switch (contentType) {
+        case 'forward':
+          switch (platform) {
+            case 'telegram':
+              cpPlatform = 2
+              break
+            case 'onebot':
+              cpPlatform = 3
+              break
+            default:
+              cpPlatform = 1
+              break
+          }
+          break
+        case 'satori':
+          cpPlatform = 1
+          break
+        case 'onebot':
+          cpPlatform = 3
+          break
+        case 'obForward':
+          cpPlatform = 3
+          break
+      }
+
       const { cpAll, cpHandle } = await this.ctx.nekoilCp.cpCreate(
         parsedContent,
         {
-          cpPlatform: contentType === 'forward' ? 2 : 1,
+          cpPlatform,
           pid,
           onProgress,
           ...cpCreateOptionId,
