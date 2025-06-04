@@ -12,7 +12,7 @@ export const setHeader = (c: ParameterizedContext, noCache = true) => {
       'Access-Control-Allow-Origin': new URL(c.headers.referer!).origin,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Nekoil-Init-Data, Content-Type',
       'Access-Control-Max-Age': '86400',
     })
 
