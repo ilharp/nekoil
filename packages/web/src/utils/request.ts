@@ -4,17 +4,24 @@ import type { NekoilResponseBody } from 'nekoil-typedef'
 export const requestV1 =
   <TData>(api: string, init: RequestInit = {}) =>
   async ({ signal }: QueryFunctionContext) => {
-    const response = await fetch(`https://api.390721.xyz${api}`, {
-      method: 'POST',
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        'Nekoil-Init-Data': window.Telegram.WebApp.initData,
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...(init.headers ?? {}),
-      },
-      signal,
-    })
+    const response = await Promise.race([
+      fetch(`https://api.390721.xyz${api}`, {
+        method: 'POST',
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          'Nekoil-Init-Data': window.Telegram.WebApp.initData,
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...(init.headers ?? {}),
+        },
+        signal,
+      }),
+      new Promise<Response>((_, rej) =>
+        setTimeout(() => {
+          rej(new NekoilApiError(2000, '超时'))
+        }, 12000),
+      ),
+    ])
 
     if (!response.ok) {
       throw new NekoilApiError(response.status, await response.text())
@@ -28,15 +35,22 @@ export const requestV1 =
 export const requestBlobV1 =
   (api: string, init: RequestInit = {}) =>
   async ({ signal }: QueryFunctionContext) => {
-    const response = await fetch(`https://api.390721.xyz${api}`, {
-      ...init,
-      headers: {
-        'Nekoil-Init-Data': window.Telegram.WebApp.initData,
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...(init.headers ?? {}),
-      },
-      signal,
-    })
+    const response = await Promise.race([
+      fetch(`https://api.390721.xyz${api}`, {
+        ...init,
+        headers: {
+          'Nekoil-Init-Data': window.Telegram.WebApp.initData,
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...(init.headers ?? {}),
+        },
+        signal,
+      }),
+      new Promise<Response>((_, rej) =>
+        setTimeout(() => {
+          rej(new NekoilApiError(2000, '超时'))
+        }, 12000),
+      ),
+    ])
 
     if (!response.ok) {
       throw new NekoilApiError(response.status, await response.text())
