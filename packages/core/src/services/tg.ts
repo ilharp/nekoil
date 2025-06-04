@@ -66,7 +66,7 @@ export class NekoilTgService extends Service {
 
     const sign = this.#hmac(values.join('\n'), this.#secretKey)
 
-    return sign.toString('utf-8') === hash
+    return sign.toString('hex') === hash
   }
 
   public middlewareInitData = () =>
