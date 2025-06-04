@@ -6,6 +6,7 @@ import type { Context } from 'koishi'
 import type { Config } from '../config'
 import { setHeader, zstdDecompressAsync } from '../utils'
 import mime from 'mime'
+import { middlewareCfCountry, middlewareProxyToken } from '../utils/middlewares'
 
 export const name = 'nekoil-assets-controller'
 
@@ -21,7 +22,7 @@ export const apply = (ctx: Context, config: Config) => {
 
   ctx.server.all(
     '/nekoil/v0/proxy/internal\\:nekoil/2/:filename+',
-    async (c) => {
+    (c, next) => {
       if (c.method === 'OPTIONS') {
         c.status = 200
         setHeader(c)
@@ -31,33 +32,11 @@ export const apply = (ctx: Context, config: Config) => {
         return
       }
 
-      const nekoilProxyToken = c.request.header['nekoil-proxy-token']
-      if (
-        !nekoilProxyToken ||
-        Array.isArray(nekoilProxyToken) ||
-        !nekoilProxyToken.length ||
-        nekoilProxyToken !== config.proxyToken
-      ) {
-        c.status = 403
-        setHeader(c)
-        c.flushHeaders()
-        c.body = Buffer.allocUnsafe(0)
-        return
-      }
-      const cfCountry = c.request.header['cf-ipcountry']
-      if (
-        !cfCountry ||
-        Array.isArray(cfCountry) ||
-        !cfCountry.length ||
-        cfCountry === 'CN'
-      ) {
-        c.status = 403
-        setHeader(c)
-        c.flushHeaders()
-        c.body = Buffer.allocUnsafe(0)
-        return
-      }
-
+      return next()
+    },
+    middlewareProxyToken(config),
+    middlewareCfCountry(),
+    async (c) => {
       const filename = c.params['filename']!
       const filenameSplit = filename.split('.')
       if (filenameSplit.length !== 2) {
