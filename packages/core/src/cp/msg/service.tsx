@@ -369,7 +369,6 @@ export class NekoilCpMsgService extends Service {
         parsedContent,
         {
           cpPlatform: contentType === 'forward' ? 2 : 1,
-          platform: 'telegram',
           pid,
           onProgress,
           ...cpCreateOptionId,

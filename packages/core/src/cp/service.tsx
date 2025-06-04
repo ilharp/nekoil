@@ -452,7 +452,7 @@ export class NekoilCpService extends Service {
           }
         } catch (e) {
           this.#l.error(
-            `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} platform ${option.platform} pid ${option.pid}`,
+            `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} platform ${option.cpPlatform} pid ${option.pid}`,
           )
           if (e instanceof S3ServiceException)
             this.#l.error('caused by S3ServiceException.')
@@ -546,7 +546,6 @@ const queryPrefixList = [
 
 export interface CpCreateOptionBase {
   cpPlatform: 1 | 2 | 3
-  platform: string
   pid: string
   onProgress: (text: string) => unknown
   user: User
