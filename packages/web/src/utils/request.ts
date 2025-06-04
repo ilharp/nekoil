@@ -9,6 +9,7 @@ export const requestV1 =
       ...init,
       headers: {
         'Content-Type': 'application/json',
+        'Nekoil-Init-Data': window.Telegram.WebApp.initData,
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...(init.headers ?? {}),
       },
