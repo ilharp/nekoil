@@ -1,6 +1,8 @@
 import type h from '@satorijs/element'
-import { useEffect, useMemo, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { thumbHashToDataURL } from 'thumbhash'
+import { requestBlobV1 } from '../../../utils'
 import styles from './index.module.scss'
 
 export const FRImg = ({ elem }: { elem: h }) => {
@@ -15,22 +17,16 @@ export const FRImg = ({ elem }: { elem: h }) => {
     [elem.attrs['nekoil:thumbhash']],
   )
 
-  const imgElement = useRef(null as unknown as HTMLImageElement)
-
-  useEffect(() => {
-    const imgOriginalLoader = new Image()
-    imgOriginalLoader.onload = () => {
-      imgElement.current.src = imgOriginalLoader.src
-    }
-    imgOriginalLoader.src = `https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`
-  }, [elem.attrs.src])
+  const { isSuccess, data } = useQuery({
+    queryKey: ['nia', elem.attrs.src],
+    queryFn: requestBlobV1(`/nekoil/v0/proxy/${elem.attrs.src}`),
+  })
 
   return (
     <div className={styles.container}>
       <img
         className={styles.img}
-        ref={imgElement}
-        src={thumbhashUrl}
+        src={isSuccess ? data : thumbhashUrl}
         width={`${elem.attrs.width}px`}
       />
     </div>

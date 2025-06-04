@@ -25,6 +25,27 @@ export const requestV1 =
     return body.data!
   }
 
+export const requestBlobV1 =
+  (api: string, init: RequestInit = {}) =>
+  async ({ signal }: QueryFunctionContext) => {
+    const response = await fetch(`https://api.390721.xyz${api}`, {
+      ...init,
+      headers: {
+        'Nekoil-Init-Data': window.Telegram.WebApp.initData,
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        ...(init.headers ?? {}),
+      },
+      signal,
+    })
+
+    if (!response.ok) {
+      throw new NekoilApiError(response.status, await response.text())
+    }
+
+    const blob = await response.blob()
+    return URL.createObjectURL(blob)
+  }
+
 export class NekoilApiError extends Error {
   constructor(
     public code: number,
