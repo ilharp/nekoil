@@ -1,6 +1,8 @@
 - id: 42vrci
   name: yakumo
   config:
+    exclude:
+      - packages/cpssr
     pipeline:
       build:
         - tsc
