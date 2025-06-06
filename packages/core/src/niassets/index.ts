@@ -8,6 +8,6 @@ export const name = 'nekoil-assets'
 
 export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(db)
-  ctx.plugin(NekoilAssetsService)
+  ctx.plugin(NekoilAssetsService, config)
   ctx.plugin(controller, config)
 }
