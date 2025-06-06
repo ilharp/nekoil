@@ -23,7 +23,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
 
   try {
     await page.setExtraHTTPHeaders({
-      'Nekoil-Cpssr-Data': await req2String(req),
+      'Nekoil-Cpssr-Data': (await req2Buffer(req)).toString('base64'),
     })
     await page.setJavaScriptEnabled(false)
     await page.goto(process.env['NEKOIL_CPSSR_URL']!)
@@ -41,7 +41,8 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
 
     return
   } finally {
-    void page.close()
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    page.close()
   }
 
   res.writeHead(200, {
@@ -68,5 +69,5 @@ const req2Buffer = (req: IncomingMessage) => {
   })
 }
 
-const req2String = (req: IncomingMessage) =>
-  req2Buffer(req).then((b) => b.toString('utf-8'))
+// const req2String = (req: IncomingMessage) =>
+//   req2Buffer(req).then((b) => b.toString('utf-8'))
