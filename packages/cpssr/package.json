@@ -3,11 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --port 5142 --turbopack",
     "start": "next start"
   },
   "dependencies": {
+    "@satorijs/element": "3.1.7",
+    "@satorijs/protocol": "1.6.0",
+    "@sym-app/components": "workspace:^",
+    "nekoil-typedef": "workspace:^",
     "next": "15.3.3",
+    "normalize.css": "^8.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "server-only": "^0.0.1"
