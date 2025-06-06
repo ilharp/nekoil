@@ -84,6 +84,7 @@ plugins:
       assets:
         endpoint: ${{ env.NEKOIL_ASSETS_ENDPOINT }}
         bucketId: ${{ env.NEKOIL_ASSETS_BUCKET_ID }}
+      cpimgrUrl: ${{ env.NEKOIL_CPIMGR_URL }}
 prefix:
   - /
   - null
