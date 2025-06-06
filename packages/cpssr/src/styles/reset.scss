@@ -1,0 +1,44 @@
+* {
+  // Font
+  font-family:
+    'Noto Sans CJK SC', 'Noto Sans CJK', 'Source Han Sans',
+    source-han-sans-simplified-c, 'Segoe UI', 'Microsoft YaHei UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Noto Sans', 'Helvetica Neue',
+    Helvetica, sans-serif;
+  font-weight: 400;
+
+  // Font & text reset
+  font-style: normal;
+  font-variant-ligatures: normal;
+  font-variant-caps: normal;
+  font-variant-numeric: normal;
+  font-variant-east-asian: normal;
+  font-stretch: normal;
+  text-rendering: optimizeLegibility;
+  text-indent: 0;
+  text-shadow: none;
+  text-decoration: none;
+  writing-mode: horizontal-tb;
+  letter-spacing: normal;
+  word-spacing: normal;
+
+  // Layout
+  margin: 0;
+  padding: 0;
+
+  // Box
+  box-sizing: border-box;
+  border: none;
+
+  // Color
+  background-color: transparent;
+}
+
+:root,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}

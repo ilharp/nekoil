@@ -33,7 +33,6 @@ export default function Page({ data }: Props) {
           </SymMsgGroupContext>
         </SymAioCtxContext.Provider>
       </SymAioHostContext>
-      <div />
     </SymProvider>
   )
 }
@@ -42,7 +41,10 @@ export const getServerSideProps = (async (ctx) => {
   return {
     props: {
       data: JSON.parse(
-        ctx.req.headers['nekoil-cpssr-data'] as string,
+        Buffer.from(
+          ctx.req.headers['nekoil-cpssr-data'] as string,
+          'base64',
+        ).toString('utf-8'),
       ) as ContentPackWithFull,
     },
   }

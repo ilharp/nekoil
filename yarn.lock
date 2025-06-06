@@ -11896,9 +11896,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nekoil-cpssr@workspace:packages/cpssr"
   dependencies:
+    "@satorijs/element": "npm:3.1.7"
+    "@satorijs/protocol": "npm:1.6.0"
+    "@sym-app/components": "workspace:^"
+    nekoil-typedef: "workspace:^"
     next: "npm:15.3.3"
+    normalize.css: "npm:^8.0.1"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
+    sass: "npm:^1.89.1"
     server-only: "npm:^0.0.1"
   languageName: unknown
   linkType: soft
@@ -13430,6 +13436,23 @@ __metadata:
   bin:
     sass: sass.js
   checksum: 10c0/ba819a0828f732adf7a94cd8ca017bce92bc299ffb878836ed1da80a30612bfbbf56a5e42d6dff3ad80d919c2025afb42948fc7b54a7bc61a9a2d58e1e0c558a
+  languageName: node
+  linkType: hard
+
+"sass@npm:^1.89.1":
+  version: 1.89.1
+  resolution: "sass@npm:1.89.1"
+  dependencies:
+    "@parcel/watcher": "npm:^2.4.1"
+    chokidar: "npm:^4.0.0"
+    immutable: "npm:^5.0.2"
+    source-map-js: "npm:>=0.6.2 <2.0.0"
+  dependenciesMeta:
+    "@parcel/watcher":
+      optional: true
+  bin:
+    sass: sass.js
+  checksum: 10c0/4406c441f71f5e0ec056345e6091cef51fd1786dac6e5b3eb1e87df464c40b3278219cc51df98309c36794503787ab0fe88fd45f2b0464f22000b68e755883ee
   languageName: node
   linkType: hard
 
