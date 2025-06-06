@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 5142 --turbopack",
-    "start": "next start"
+    "dev": "next dev --port 5142",
+    "build": "next build",
+    "start": "next start --port 5142"
   },
   "dependencies": {
     "@satorijs/element": "3.1.7",
