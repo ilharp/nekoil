@@ -67,12 +67,16 @@ plugins:
       protocol: polling
       token: ${{ env.TG_TOKEN }}
       endpoint: ${{ env.TG_ENDPOINT }}
+      files:
+        pretendLocal: true
     nekoil-adapter-telegram:v5a28u:
       $if: env.NEKOIL_ENV === 'production'
       protocol: server
       token: ${{ env.TG_TOKEN }}
       endpoint: ${{ env.TG_ENDPOINT }}
       selfUrl: ${{ env.SELF_URL_PRIVATE }}
+      files:
+        pretendLocal: true
   group:develop:
     $if: env.NODE_ENV === 'development'
     hmr:aagx0q:

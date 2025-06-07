@@ -25,6 +25,8 @@ export interface TelegramResponse {
   result: any
 }
 
+const regexServerLocalPath = /:.*?\/(.*)/
+
 export class TelegramBot<C extends Context = Context, T extends TelegramBot.Config = TelegramBot.Config> extends Bot<C, T> {
   static MessageEncoder = TelegramMessageEncoder
   static inject = ['http']
@@ -161,6 +163,9 @@ export class TelegramBot<C extends Context = Context, T extends TelegramBot.Conf
   }
 
   async $getFileFromPath(filePath: string, extra?: Record<string, any>) {
+    if (this.server && this.config.files.pretendLocal) {
+      return { ...extra, src: `${this.server}/${(regexServerLocalPath.exec(filePath))[1]}` }
+    }
     if (this.server) {
       return { ...extra, src: `${this.server}/${filePath}` }
     }
@@ -250,6 +255,7 @@ export namespace TelegramBot {
     export interface Files {
       endpoint?: string
       local?: boolean
+      pretendLocal?: boolean
       server?: boolean
     }
   }
@@ -273,6 +279,7 @@ export namespace TelegramBot {
       files: Schema.object({
         endpoint: Schema.string().description('文件请求的终结点。'),
         local: Schema.boolean().description('是否启用 [Telegram Bot API](https://github.com/tdlib/telegram-bot-api) 本地模式。'),
+        pretendLocal: Schema.boolean().description('是否启用伪装本地模式。'),
         server: Schema.boolean().description('是否启用文件代理。若开启将会使用 `selfUrl` 进行反代，否则会下载所有资源文件 (包括图片、视频等)。当配置了 `selfUrl` 时将默认开启。'),
       }),
     }).hidden(process.env.KOISHI_ENV === 'browser').description('文件设置'),
