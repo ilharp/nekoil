@@ -66,7 +66,7 @@ export const adaptElements = async (
   message: Universal.Message = {},
 ) => {
   const chain = CQCode.parse(obMessage)
-  if (bot.config.advanced.splitMixedContent) {
+  if (bot?.config?.advanced?.splitMixedContent ?? true) {
     chain.forEach((item, index) => {
       if (item.type !== 'image') return
       const left = chain[index - 1]
@@ -87,7 +87,7 @@ export const adaptElements = async (
     },
     face({ id }) {
       const name = qface.get(id)?.QDes.slice(1)
-      return h('face', { id, name, platform: bot.platform }, [
+      return h('face', { id, name, platform: bot?.platform ?? 'onebot' }, [
         h.image(qface.getUrl(id)),
       ])
     },
