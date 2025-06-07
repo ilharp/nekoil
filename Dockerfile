@@ -10,7 +10,6 @@ RUN ["corepack", "yarn", "workspace", "@sym-app/components", "build"]
 RUN ["corepack", "yarn", "workspace", "nekoil-cpssr", "build"]
 # RUN ["corepack", "yarn", "node", "-r", "esbuild-register", "scripts/prepare.mts"]
 RUN ["rm", "-rf", "node_modules"]
-RUN ["rm", "-rf", "packages/sym"]
 
 FROM ilharp/cordis-base:0.0.2
 
