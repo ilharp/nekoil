@@ -31,16 +31,27 @@ declare module 'koishi' {
   }
 }
 
+const envBotNameMap = {
+  beta: 'nekoilbetabot',
+  production: 'nekoilbot',
+} as const
+
 export class NekoilCpService extends Service {
   static inject = ['database', 'nekoilAssets']
 
   #l
 
-  constructor(ctx: Context, _nekoilConfig: Config) {
+  constructor(
+    ctx: Context,
+    private nekoilConfig: Config,
+  ) {
     super(ctx, 'nekoilCp')
 
     this.#l = ctx.logger('nekoilCp')
   }
+
+  public getTgStartAppUrl = (handle: string) =>
+    `https://t.me/${envBotNameMap[this.nekoilConfig.env as keyof typeof envBotNameMap]}?startapp=${Buffer.from(encodeURIComponent(handle)).toString('base64url')}`
 
   public cpGet = async <TFull extends boolean = false>(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

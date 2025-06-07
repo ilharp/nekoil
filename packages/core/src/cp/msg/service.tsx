@@ -413,7 +413,7 @@ export class NekoilCpMsgService extends Service {
               [
                 {
                   text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                  url: `https://t.me/nekoilbot?startapp=${Buffer.from(encodeURIComponent(getHandle(cpHandle))).toString('base64url')}`,
+                  url: this.ctx.nekoilCp.getTgStartAppUrl(getHandle(cpHandle)),
                 },
                 {
                   text: '转发',

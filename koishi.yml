@@ -84,6 +84,7 @@ plugins:
   group:x4dshh:
     $label: nekoil-group
     nekoil-core:rm0mqo:
+      env: ${{ env.NEKOIL_ENV }}
       proxyToken: ${{ env.NEKOIL_PROXY_TOKEN }}
       assets:
         endpoint: ${{ env.NEKOIL_ASSETS_ENDPOINT }}

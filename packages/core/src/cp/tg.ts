@@ -68,7 +68,7 @@ export const apply = (ctx: Context) => {
               [
                 {
                   text: `查看 ${cp.data!.summary.count} 条聊天记录`,
-                  url: `https://t.me/nekoilbot?startapp=${Buffer.from(encodeURIComponent(queryHandle)).toString('base64url')}`,
+                  url: ctx.nekoilCp.getTgStartAppUrl(queryHandle),
                 },
                 {
                   text: '转发',

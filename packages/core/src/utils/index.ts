@@ -5,6 +5,7 @@ import { zstdCompress, zstdDecompress } from 'node:zlib'
 
 export const setHeader = (c: ParameterizedContext, noCache = true) => {
   if (
+    /^https:\/\/beta\.390721\.xyz/.exec(c.headers.referer!) ||
     /^https:\/\/390721\.xyz/.exec(c.headers.referer!) ||
     /^https?:\/\/localhost:/.exec(c.headers.referer!)
   )
