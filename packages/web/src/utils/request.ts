@@ -1,11 +1,16 @@
 import type { QueryFunctionContext } from '@tanstack/react-query'
 import type { NekoilResponseBody } from 'nekoil-typedef'
 
+const baseUrl = {
+  beta: 'https://beta-api.390721.xyz',
+  production: 'https://api.390721.xyz',
+}[__DEFINE_NEKOIL_ENV__]
+
 export const requestV1 =
   <TData>(api: string, init: RequestInit = {}) =>
   async ({ signal }: QueryFunctionContext) => {
     const response = await Promise.race([
-      fetch(`https://api.390721.xyz${api}`, {
+      fetch(`${baseUrl}${api}`, {
         method: 'POST',
         ...init,
         headers: {
@@ -36,7 +41,7 @@ export const requestBlobV1 =
   (api: string, init: RequestInit = {}) =>
   async ({ signal }: QueryFunctionContext) => {
     const response = await Promise.race([
-      fetch(`https://api.390721.xyz${api}`, {
+      fetch(`${baseUrl}${api}`, {
         ...init,
         headers: {
           'Nekoil-Init-Data': window.Telegram.WebApp.initData,

@@ -1,1 +1,2 @@
 declare const __DEFINE_NEKOIL_VERSION_STRING__: string
+declare const __DEFINE_NEKOIL_ENV__: string

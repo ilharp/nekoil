@@ -18,6 +18,9 @@ export default defineConfig(async () => {
 
     define: {
       __DEFINE_NEKOIL_VERSION_STRING__: versionString,
+      __DEFINE_NEKOIL_ENV__: process.env.NEKOIL_ENV
+        ? `"${process.env.NEKOIL_ENV}"`
+        : '"production"',
     },
 
     build: {
