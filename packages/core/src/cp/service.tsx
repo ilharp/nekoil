@@ -60,10 +60,15 @@ export class NekoilCpService extends Service {
       // Normal prefix
       queryPrefixList.forEach(([prefix, length]) => {
         if (queryHandle.startsWith(prefix))
-          queryHandle = queryHandle.slice(length)
+          queryHandle = decodeURIComponent(queryHandle.slice(length))
       })
 
-      // TODO: tg prefix
+      tgPrefixList.forEach(([prefix, length]) => {
+        if (queryHandle.startsWith(prefix))
+          queryHandle = decodeURIComponent(
+            Buffer.from(queryHandle.slice(length), 'base64').toString('utf-8'),
+          )
+      })
 
       const isPlusHandle = queryHandle.startsWith('_')
       if (isPlusHandle) queryHandle = queryHandle.slice(1)
@@ -449,7 +454,13 @@ const queryPrefixList = [
   'https://390721.xyz/',
   'http://www.390721.xyz/',
   'https://www.390721.xyz/',
+  'http://beta.390721.xyz/',
+  'https://beta.390721.xyz/',
+].map<[string, number]>((x) => [x, x.length])
+
+const tgPrefixList = [
   'https://t.me/nekoilbot?startapp=',
+  'https://t.me/nekoilbetabot?startapp=',
 ].map<[string, number]>((x) => [x, x.length])
 
 export interface CpCreateOptionBase {
