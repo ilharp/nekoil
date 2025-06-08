@@ -85,6 +85,7 @@ plugins:
     $label: nekoil-group
     nekoil-core:rm0mqo:
       env: ${{ env.NEKOIL_ENV }}
+      tgBotName: ${{ env.TG_BOT_NAME }}
       proxyToken: ${{ env.NEKOIL_PROXY_TOKEN }}
       assets:
         endpoint: ${{ env.NEKOIL_ASSETS_ENDPOINT }}

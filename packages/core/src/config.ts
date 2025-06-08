@@ -2,6 +2,7 @@ import { Schema } from 'koishi'
 
 export interface Config {
   env: string
+  tgBotName: string
   proxyToken: string
   assets: {
     endpoint: string
@@ -11,7 +12,8 @@ export interface Config {
 }
 
 export const Config: Schema<Config> = Schema.object({
-  env: Schema.string().default('production'),
+  env: Schema.string().required(),
+  tgBotName: Schema.string().required(),
   proxyToken: Schema.string().required(),
   assets: Schema.object({
     endpoint: Schema.string().required(),

@@ -31,11 +31,6 @@ declare module 'koishi' {
   }
 }
 
-const envBotNameMap = {
-  beta: 'nekoilbetabot',
-  production: 'nekoilbot',
-} as const
-
 export class NekoilCpService extends Service {
   static inject = ['database', 'nekoilAssets']
 
@@ -51,7 +46,7 @@ export class NekoilCpService extends Service {
   }
 
   public getTgStartAppUrl = (handle: string) =>
-    `https://t.me/${envBotNameMap[this.nekoilConfig.env as keyof typeof envBotNameMap]}?startapp=${Buffer.from(encodeURIComponent(handle)).toString('base64url')}`
+    `https://t.me/${this.nekoilConfig.tgBotName}?startapp=${Buffer.from(encodeURIComponent(handle)).toString('base64url')}`
 
   public cpGet = async <TFull extends boolean = false>(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
