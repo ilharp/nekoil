@@ -7,6 +7,7 @@ import find from 'puppeteer-finder'
 
 const browser = await launch({
   executablePath: find() as string,
+  args: ['--no-sandbox', '--disable-gpu'],
 })
 
 const controller = async (req: IncomingMessage, res: ServerResponse) => {
