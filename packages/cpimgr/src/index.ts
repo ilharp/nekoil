@@ -1,9 +1,9 @@
+import type { CpimgrPayload } from 'nekoil-typedef'
 import { Buffer } from 'node:buffer'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
 import { launch } from 'puppeteer-core'
 import find from 'puppeteer-finder'
-import './preinit'
 
 const browser = await launch({
   executablePath: find() as string,
@@ -17,16 +17,20 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
     return
   }
 
+  const payload = JSON.parse(await req2String(req)) as CpimgrPayload
+
   const page = await browser.newPage()
 
   let screenshot: Buffer
 
   try {
     await page.setExtraHTTPHeaders({
-      'Nekoil-Cpssr-Data': (await req2Buffer(req)).toString('base64'),
+      'Nekoil-Cpssr-Data': Buffer.from(
+        JSON.stringify(payload.cpwfData),
+      ).toString('base64'),
     })
     await page.setJavaScriptEnabled(false)
-    await page.goto(process.env['NEKOIL_CPSSR_URL']!)
+    await page.goto(payload.cpssrUrl)
     await page.waitForNetworkIdle()
 
     const body = (await page.$('body'))!
@@ -69,5 +73,5 @@ const req2Buffer = (req: IncomingMessage) => {
   })
 }
 
-// const req2String = (req: IncomingMessage) =>
-//   req2Buffer(req).then((b) => b.toString('utf-8'))
+const req2String = (req: IncomingMessage) =>
+  req2Buffer(req).then((b) => b.toString('utf-8'))

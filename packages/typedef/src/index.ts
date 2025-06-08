@@ -1,3 +1,4 @@
 export type * from './common'
 export type * from './cp'
+export type * from './cpimgr'
 export type * from './niassets'

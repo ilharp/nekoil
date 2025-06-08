@@ -9,6 +9,7 @@ export interface Config {
     bucketId: string
   }
   cpimgrUrl: string
+  cpssrUrl: string
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -20,4 +21,5 @@ export const Config: Schema<Config> = Schema.object({
     bucketId: Schema.string().required(),
   }),
   cpimgrUrl: Schema.string().required(),
+  cpssrUrl: Schema.string().required(),
 })
