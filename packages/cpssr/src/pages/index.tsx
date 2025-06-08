@@ -54,6 +54,8 @@ const symAioHost: SymAioHost = {
   frCanRemoveBubble: () => false,
   frRenderers: {
     ...frRenderers,
+    'nekoil:oversizedimg': (_frCtx, _element) => ['[过大图片]'],
+    'nekoil:failedimg': (_frCtx, _element) => ['[图片保存失败]'],
   },
 }
 

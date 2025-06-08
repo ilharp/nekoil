@@ -66,6 +66,8 @@ const symAioHost: SymAioHost = {
   frRenderers: {
     ...frRenderers,
     img: (_frCtx, element) => [<FRImg elem={element} />],
+    'nekoil:oversizedimg': (_frCtx, _element) => ['[过大图片]'],
+    'nekoil:failedimg': (_frCtx, _element) => ['[图片保存失败]'],
   },
 }
 
