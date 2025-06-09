@@ -483,7 +483,7 @@ export class NekoilCpMsgService extends Service {
       content.map(async (node) => {
         const children = await OneBot.adaptElements(node.data.content, bot)
 
-        const elements = this.#processOneBotMessages(
+        const elements = await this.#processOneBotMessages(
           children,
           bot,
           createdCount,
@@ -512,29 +512,31 @@ export class NekoilCpMsgService extends Service {
     sessions: NekoilMsgSession[],
     bot: OneBotBaseBot,
   ): Promise<h[]> => {
-    const result = sessions.map((session) => {
-      const author = h('author', {
-        id: session.event.user!.id,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        name: session.event.user!.nick || session.event.user!.name,
-        avatar: session.event.user!.avatar,
-      })
+    const result = await Promise.all(
+      sessions.map(async (session) => {
+        const author = h('author', {
+          id: session.event.user!.id,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          name: session.event.user!.nick || session.event.user!.name,
+          avatar: session.event.user!.avatar,
+        })
 
-      const elements = this.#processOneBotMessages(
-        session.event.message!.elements,
-        bot,
-        0,
-      )
+        const elements = await this.#processOneBotMessages(
+          session.event.message!.elements!,
+          bot,
+          0,
+        )
 
-      const message: h = (
-        <message>
-          {author}
-          {elements}
-        </message>
-      )
+        const message: h = (
+          <message>
+            {author}
+            {elements}
+          </message>
+        )
 
-      return message
-    })
+        return message
+      }),
+    )
 
     return result
   }
@@ -553,7 +555,7 @@ export class NekoilCpMsgService extends Service {
             await bot.internal.getForwardMsg(elem.attrs['id'])
           ).message
 
-          const messages = this.#parseOneBotIntl(
+          const messages = await this.#parseOneBotIntl(
             oneBotForwardMsg,
             bot,
             createdCount,
