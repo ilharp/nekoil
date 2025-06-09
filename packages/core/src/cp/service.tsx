@@ -322,12 +322,26 @@ export class NekoilCpService extends Service {
     for (const elem of elements) {
       if (elem.type === 'message' && elem.attrs['forward']) {
         // 处理嵌套 cp
-        const { cpHandle } = await this.#cpCreateIntl(
+        const { cpHandle, cpAll } = await this.#cpCreateIntl(
           elem.children.filter((x) => x.type === 'message'),
           option,
           state,
         )
-        result.push((<nekoil:cp handle={getHandle(cpHandle)} />) as h)
+        result.push(
+          (
+            <nekoil:cp
+              handle={getHandle(cpHandle)}
+              title={cpAll.summary.title}
+              count={cpAll.summary.count}
+            >
+              <nekoil:cpsummarylist>
+                {cpAll.summary.summary.map((x) => (
+                  <nekoil:cpsummary content={x} />
+                ))}
+              </nekoil:cpsummarylist>
+            </nekoil:cp>
+          ) as h,
+        )
       } else if (elem.type === 'nekoil:tgsticker' || elem.type === 'img') {
         const isTgsticker = elem.type === 'nekoil:tgsticker'
         let img: h
