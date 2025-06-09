@@ -20,6 +20,7 @@ import {
   generateHandle,
   getHandle,
   NoLoggingError,
+  UserSafeError,
   zstdCompressAsync,
   zstdDecompressAsync,
 } from '../utils'
@@ -195,7 +196,7 @@ export class NekoilCpService extends Service {
   ): Promise<CpCreateResult> => {
     state.createdCount++
 
-    if (state.createdCount > 32) throw new Error('套娃层数超过限制。')
+    if (state.createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
 
     if (state.createdCount > 1)
       option.onProgress(`正在创建 ${state.createdCount} 组记录。`)

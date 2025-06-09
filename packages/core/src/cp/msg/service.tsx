@@ -341,7 +341,10 @@ export class NekoilCpMsgService extends Service {
           }
           break
         case 'onebot':
-          parsedContent = await this.#parseOneBot(parsedOneBotContent!)
+          // 从 OneBot 的 json 文本创建消息记录，
+          // 此时 bot 可能是任意平台
+          // 因此我们传我们的 obBot 进去，只用来解析内层的合并转发
+          parsedContent = await this.#parseOneBot(parsedOneBotContent!, obBot)
           cpCreateOptionId = {
             idType: 'unlisted',
           }
@@ -349,7 +352,11 @@ export class NekoilCpMsgService extends Service {
         case 'forward':
           switch (platform) {
             case 'onebot': {
-              parsedContent = await this.#parseOneBotForward(sessions)
+              // 此时 platform 已经是 onebot，可以直接传 bot 进去
+              parsedContent = await this.#parseOneBotForward(
+                sessions,
+                bot as OneBotBaseBot,
+              )
               break
             }
             case 'telegram': {
@@ -453,7 +460,7 @@ export class NekoilCpMsgService extends Service {
 
   #parseOneBot = async (
     content: OneBotForwardMsg,
-    bot?: OneBotBaseBot,
+    bot: OneBotBaseBot,
   ): Promise<h[]> => {
     return this.#parseOneBotIntl(content, bot, 0)
   }
@@ -465,16 +472,22 @@ export class NekoilCpMsgService extends Service {
    */
   #parseOneBotIntl = async (
     content: OneBotForwardMsg,
-    bot: OneBotBaseBot | undefined,
+    bot: OneBotBaseBot,
     createdCount: number,
   ): Promise<h[]> => {
     createdCount++
 
-    if (createdCount > 32) throw new Error('套娃层数超过限制。')
+    if (createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
 
     return Promise.all(
       content.map(async (node) => {
         const children = await OneBot.adaptElements(node.data.content, bot)
+
+        const elements = this.#processOneBotMessages(
+          children,
+          bot,
+          createdCount,
+        )
 
         const message: h = (
           <message>
@@ -483,7 +496,7 @@ export class NekoilCpMsgService extends Service {
               name={node.data.nickname}
               avatar={`http://thirdqq.qlogo.cn/headimg_dl?dst_uin=${node.data.user_id}&spec=640`}
             />
-            {children}
+            {elements}
           </message>
         )
 
@@ -495,7 +508,10 @@ export class NekoilCpMsgService extends Service {
   /**
    * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
    */
-  #parseOneBotForward = async (sessions: NekoilMsgSession[]): Promise<h[]> => {
+  #parseOneBotForward = async (
+    sessions: NekoilMsgSession[],
+    bot: OneBotBaseBot,
+  ): Promise<h[]> => {
     const result = sessions.map((session) => {
       const author = h('author', {
         id: session.event.user!.id,
@@ -504,15 +520,58 @@ export class NekoilCpMsgService extends Service {
         avatar: session.event.user!.avatar,
       })
 
+      const elements = this.#processOneBotMessages(
+        session.event.message!.elements,
+        bot,
+        0,
+      )
+
       const message: h = (
         <message>
           {author}
-          {session.event.message!.elements}
+          {elements}
         </message>
       )
 
       return message
     })
+
+    return result
+  }
+
+  #processOneBotMessages = async (
+    elements: h[],
+    bot: OneBotBaseBot,
+    createdCount: number,
+  ) => {
+    const result: h[] = []
+
+    for (const elem of elements) {
+      if (elem.type === 'forward' && elem.attrs['id']) {
+        try {
+          const oneBotForwardMsg = (
+            await bot.internal.getForwardMsg(elem.attrs['id'])
+          ).message
+
+          const messages = this.#parseOneBotIntl(
+            oneBotForwardMsg,
+            bot,
+            createdCount,
+          )
+
+          result.push(<message forward>{messages}</message>)
+        } catch (e) {
+          this.#l.error(`error processing ob forward ${elem.attrs['id']}`)
+          this.#l.error(e)
+
+          result.push(
+            <nekoil:failedfwd platform="onebot" id={elem.attrs['id']} />,
+          )
+        }
+      } else {
+        result.push(elem)
+      }
+    }
 
     return result
   }
