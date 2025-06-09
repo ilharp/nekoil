@@ -495,8 +495,26 @@ export class NekoilCpMsgService extends Service {
   /**
    * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
    */
-  #parseOneBotForward = async (_sessions: NekoilMsgSession[]): Promise<h[]> => {
-    return []
+  #parseOneBotForward = async (sessions: NekoilMsgSession[]): Promise<h[]> => {
+    const result = sessions.map((session) => {
+      const author = h('author', {
+        id: session.event.user!.id,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        name: session.event.user!.nick || session.event.user!.name,
+        avatar: session.event.user!.avatar,
+      })
+
+      const message: h = (
+        <message>
+          {author}
+          {session.event.message!.elements}
+        </message>
+      )
+
+      return message
+    })
+
+    return result
   }
 
   /**
