@@ -303,11 +303,12 @@ export class NekoilCpMsgService extends Service {
       }
 
       const onProgress = async (text: string) => {
-        await notifBot.internal.editMessageText({
-          chat_id: pidNumber,
-          message_id: progressMsg!,
-          text: `${loadingContent}\n${text}`,
-        })
+        if (progressMsg)
+          await notifBot.internal.editMessageText({
+            chat_id: pidNumber,
+            message_id: progressMsg,
+            text: `${loadingContent}\n${text}`,
+          })
       }
 
       /**
