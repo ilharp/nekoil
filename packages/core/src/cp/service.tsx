@@ -468,7 +468,11 @@ export class NekoilCpService extends Service {
 }
 
 const buildOriginsStripper = (t: string) => (attrs: Dict, children: h[]) =>
-  h(t, { ...attrs, 'nekoil:origins': undefined }, children)
+  h(
+    t,
+    attrs,
+    children.filter((x) => x.type !== 'nekoil:origins'),
+  )
 
 const queryPrefixList = [
   'http://390721.xyz/',
