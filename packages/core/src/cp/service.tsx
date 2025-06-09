@@ -273,11 +273,12 @@ export class NekoilCpService extends Service {
     const cp = await this.ctx.database.create('cp_v1', cpCreate)
 
     let handle_type: number
-    let handle: string
+    let handle: string = undefined as unknown as string
+    let regenerate = false
     switch (option.idType) {
       case 'unlisted': {
         handle_type = 1
-        handle = generateHandle(16, true)
+        regenerate = true
         break
       }
       case 'resid': {
@@ -289,6 +290,8 @@ export class NekoilCpService extends Service {
 
     let cpHandle: ContentPackHandleV1
     while (true) {
+      if (regenerate) handle = generateHandle(16, true)
+
       try {
         cpHandle = await this.ctx.database.create('cp_handle_v1', {
           created_time: new Date(),
@@ -301,8 +304,9 @@ export class NekoilCpService extends Service {
         })
 
         break
-      } catch (_) {
-        // continue
+      } catch (e) {
+        if (!regenerate) throw e
+        // else continue
       }
     }
 
