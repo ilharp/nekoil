@@ -161,26 +161,12 @@ export class NekoilCpService extends Service {
     content: h[],
     option: CpCreateOption,
   ): Promise<CpCreateResult> => {
-    const niaids: number[] = []
-
     const result = await this.#cpCreateIntl(
       content.map((x) => h.parse(x.toString())[0]!),
       option,
       {
         createdCount: 0,
-        niaids,
       },
-    )
-
-    // niassets 入 ref 库
-    await this.ctx.database.upsert(
-      'niassets_rc_v1',
-      niaids.map((niaid) => ({
-        niaid,
-        ref_type: 1, // cp
-        ref: result.cp.cpid,
-      })),
-      ['niaid', 'ref_type', 'ref'],
     )
 
     return result
@@ -192,11 +178,9 @@ export class NekoilCpService extends Service {
   #cpCreateIntl = async (
     content: h[],
     option: CpCreateOption,
-    state: CpCreateStateIntl,
+    state: CpCreateState,
   ): Promise<CpCreateResult> => {
     state.createdCount++
-
-    if (state.createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
 
     if (state.createdCount > 1)
       option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
@@ -286,6 +270,14 @@ export class NekoilCpService extends Service {
       }
     }
 
+    // 已经存在的 cp 就不算套娃了
+    // 当然循环引用不会因此而豁免，因为 processMessages 时 cp 和 cp_handle 都还没创建
+    if (state.createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
+
+    const intlState: CpCreateIntlState = {
+      niaids: [],
+    }
+
     const pack: Partial<ContentPackWithAll> = {
       created_time: new Date(),
       deleted: 0,
@@ -304,7 +296,12 @@ export class NekoilCpService extends Service {
         const author = elem.children.find((x) => x.type === 'author')
         let elements = elem.children.filter((x) => x !== author)
 
-        elements = await this.#processMessages(elements, { option, state })
+        elements = await this.#processMessages(
+          elements,
+          option,
+          state,
+          intlState,
+        )
 
         const protocolMessage: Message = {
           content: elements.join(''),
@@ -356,6 +353,17 @@ export class NekoilCpService extends Service {
     delete cpCreate.summary
 
     const cp = await this.ctx.database.create('cp_v1', cpCreate)
+
+    // niassets 入 ref 库
+    await this.ctx.database.upsert(
+      'niassets_rc_v1',
+      intlState.niaids.map((niaid) => ({
+        niaid,
+        ref_type: 1, // cp
+        ref: cp.cpid,
+      })),
+      ['niaid', 'ref_type', 'ref'],
+    )
 
     const cpHandleCreate = {
       created_time: new Date(),
@@ -411,7 +419,9 @@ export class NekoilCpService extends Service {
 
   #processMessages = async (
     elements: h[],
-    { option, state }: { option: CpCreateOption; state: CpCreateStateIntl },
+    option: CpCreateOption,
+    state: CpCreateState,
+    intlState: CpCreateIntlState,
   ): Promise<h[]> => {
     const result: h[] = []
 
@@ -472,7 +482,7 @@ export class NekoilCpService extends Service {
           img.attrs['nekoil:thumbhash'] = uploadImgResult.thumbhash
 
           // niassets 入 ref 库
-          state.niaids.push(uploadImgResult.niaid)
+          intlState.niaids.push(uploadImgResult.niaid)
         } catch (e) {
           if (e instanceof NekoilAssetsOversizedError) {
             img = (
@@ -602,8 +612,11 @@ export type CpCreateOptionId =
 
 export type CpCreateOption = CpCreateOptionBase & CpCreateOptionId
 
-interface CpCreateStateIntl {
+interface CpCreateState {
   createdCount: number
+}
+
+interface CpCreateIntlState {
   niaids: number[]
 }
 
