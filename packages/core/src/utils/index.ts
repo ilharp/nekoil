@@ -73,7 +73,9 @@ const handleHLength = handleH.length
 const handleM = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 const handleMLength = handleM.length
 
-export const getHandle = (cpHandle: ContentPackHandleV1) => {
+export const getHandle = (
+  cpHandle: Pick<ContentPackHandleV1, 'handle' | 'handle_type'>,
+) => {
   if ([1, 4].includes(cpHandle.handle_type)) return `_${cpHandle.handle}`
   return cpHandle.handle
 }

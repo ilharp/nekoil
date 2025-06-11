@@ -201,6 +201,86 @@ export class NekoilCpService extends Service {
     if (state.createdCount > 1)
       option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
 
+    let handle_type: number
+    let handle: string | undefined
+
+    switch (option.idType) {
+      case 'unlisted': {
+        handle_type = 1
+        handle = undefined
+        break
+      }
+      case 'resid': {
+        handle_type = 3
+        handle = option.resid
+        break
+      }
+    }
+
+    if (handle) {
+      // 固定 handle
+      // 先来查一下 handle 是否已经存在了
+      const [existedHandle] = await this.ctx.database.get(
+        'cp_handle_v1',
+        {
+          handle,
+        },
+        ['handle_id', 'handle', 'handle_type', 'deleted'],
+      )
+
+      if (existedHandle) {
+        // 看下 deleted
+        if (existedHandle.deleted) {
+          // deleted 了的 handle 应该在 delete 的时候就被挪到另一张表里了，这里不该出现 deleted
+          // 总之先抛出异常吧
+          throw new Error(
+            `deleted cp_handle found in table cp_handle_v1, id ${existedHandle.handle_id}`,
+          )
+        }
+
+        // 看下 handle_type
+        if (existedHandle.handle_type !== handle_type) {
+          // 这个也不可能出现，也抛出异常
+          throw new Error(
+            `found existed cp_handle ${existedHandle.handle_id} type ${existedHandle.handle_type}, but want to insert type ${handle_type}`,
+          )
+        }
+
+        // 现在 existedHandle 就是足够使用的了，直接拿到足够的数据返回即可
+        const [cp] = await this.ctx.database.get(
+          'cp_v1',
+          (cp_v1) =>
+            $.and(
+              $.eq(cp_v1.deleted, 0),
+              $.in(
+                cp_v1.cpid,
+                this.ctx.database
+                  .select('cp_handle_v1', (cp_handle_v1) =>
+                    $.and(
+                      $.eq(cp_handle_v1.deleted, 0),
+                      $.eq(cp_handle_v1.handle, handle),
+                      $.eq(cp_handle_v1.handle_type, handle_type),
+                    ),
+                  )
+                  .evaluate('cpid'),
+              ),
+            ),
+          ['data_summary'],
+        )
+
+        return {
+          cpData: {},
+          cp: {},
+          cpHandle: {
+            handle,
+            handle_type,
+          },
+        }
+      } else {
+        // 数据库里没有 existedHandle，那么继续往下走正常创建流程
+      }
+    }
+
     const pack: Partial<ContentPackWithAll> = {
       created_time: new Date(),
       deleted: 0,
@@ -272,46 +352,46 @@ export class NekoilCpService extends Service {
 
     const cp = await this.ctx.database.create('cp_v1', cpCreate)
 
-    let handle_type: number
-    let handle: string = undefined as unknown as string
-    let regenerate = false
-    switch (option.idType) {
-      case 'unlisted': {
-        handle_type = 1
-        regenerate = true
-        break
-      }
-      case 'resid': {
-        handle_type = 3
-        handle = option.resid
-        break
-      }
+    const cpHandleCreate = {
+      created_time: new Date(),
+      deleted: 0,
+      deleted_reason: 0,
+
+      cpid: cp.cpid,
+      handle_type,
     }
 
     let cpHandle: ContentPackHandleV1
-    while (true) {
-      if (regenerate) handle = generateHandle(16, true)
 
-      try {
-        cpHandle = await this.ctx.database.create('cp_handle_v1', {
-          created_time: new Date(),
-          deleted: 0,
-          deleted_reason: 0,
+    if (handle) {
+    } else {
+      let success = false
+      let e: unknown = undefined
 
-          cpid: cp.cpid,
-          handle_type,
-          handle,
-        })
+      for (let i = 0; i < 5; i++) {
+        const generatedHandle = generateHandle(16, true)
 
-        break
-      } catch (e) {
-        if (!regenerate) throw e
-        // else continue
+        try {
+          cpHandle = await this.ctx.database.create('cp_handle_v1', {
+            ...cpHandleCreate,
+            handle: generatedHandle,
+          })
+
+          success = true
+          break
+        } catch (err) {
+          e = err
+        }
+      }
+
+      if (!success) {
+        // 5 次尝试插入都失败，这不是生成重复，这是数据库错误
+        throw e
       }
     }
 
     return {
-      cpAll: pack as ContentPackWithAll,
+      cpData: pack as ContentPackWithAll,
       cp,
       cpHandle,
     }
@@ -516,7 +596,7 @@ interface CpCreateStateIntl {
 }
 
 interface CpCreateResult {
-  cpAll: ContentPackWithAll
-  cp: ContentPackV1
-  cpHandle: ContentPackHandleV1
+  cpData: Pick<ContentPackWithAll, 'summary'>
+  cp: Pick<ContentPackV1, never>
+  cpHandle: Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
 }
