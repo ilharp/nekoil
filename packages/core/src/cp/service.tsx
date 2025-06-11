@@ -430,7 +430,11 @@ export class NekoilCpService extends Service {
         // 处理嵌套 cp
         const { cpHandle, cpData } = await this.#cpCreateIntl(
           elem.children.filter((x) => x.type === 'message'),
-          option,
+          {
+            ...option,
+            idType: 'resid',
+            resid: elem.attrs['id'],
+          },
           state,
         )
         result.push(

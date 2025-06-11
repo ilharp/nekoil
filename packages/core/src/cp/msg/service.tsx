@@ -564,7 +564,11 @@ export class NekoilCpMsgService extends Service {
             createdCount,
           )
 
-          result.push(<message forward>{messages}</message>)
+          result.push(
+            <message forward id={elem.attrs['id']}>
+              {messages}
+            </message>,
+          )
         } catch (e) {
           this.#l.error(`error processing ob forward ${elem.attrs['id']}`)
           this.#l.error(e)
