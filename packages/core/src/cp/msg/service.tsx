@@ -411,6 +411,8 @@ export class NekoilCpMsgService extends Service {
         },
       )
 
+      const handle = getHandle(cpHandle)
+
       if (notifUserId) {
         await notifBot.internal.sendMessage({
           chat_id: notifUserId,
@@ -421,11 +423,11 @@ export class NekoilCpMsgService extends Service {
               [
                 {
                   text: `查看 ${cpAll.summary.count} 条聊天记录`,
-                  url: this.ctx.nekoilCp.getTgStartAppUrl(getHandle(cpHandle)),
+                  url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
                 },
                 {
                   text: '转发',
-                  switch_inline_query: getHandle(cpHandle),
+                  switch_inline_query: handle,
                 },
               ],
             ],
@@ -433,7 +435,7 @@ export class NekoilCpMsgService extends Service {
         })
       } else {
         this.#l.info(
-          `cp ${getHandle(cpHandle)} created, platform ${platform} pid ${pidNumber}`,
+          `cp ${handle} created, platform ${platform} pid ${pidNumber}`,
         )
       }
 
