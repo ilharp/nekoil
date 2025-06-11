@@ -400,7 +400,7 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
-      const { cpAll, cpHandle } = await this.ctx.nekoilCp.cpCreate(
+      const { cpData, cpHandle } = await this.ctx.nekoilCp.cpCreate(
         parsedContent,
         {
           cpPlatform,
@@ -416,13 +416,13 @@ export class NekoilCpMsgService extends Service {
       if (notifUserId) {
         await notifBot.internal.sendMessage({
           chat_id: notifUserId,
-          text: `<b>${escape(cpAll.summary.title)}</b>\n\n${cpAll.summary.summary.map(escape).join('\n')}`,
+          text: `<b>${escape(cpData.summary.title)}</b>\n\n${cpData.summary.summary.map(escape).join('\n')}`,
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: `查看 ${cpAll.summary.count} 条聊天记录`,
+                  text: `查看 ${cpData.summary.count} 条聊天记录`,
                   url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
                 },
                 {

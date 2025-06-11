@@ -268,8 +268,13 @@ export class NekoilCpService extends Service {
           ['data_summary'],
         )
 
+        const cpData = {
+          ...cp,
+          summary: JSON.parse(cp!.data_summary) as ContentPackSummary,
+        } satisfies Partial<ContentPackWithAll>
+
         return {
-          cpData: {},
+          cpData,
           cp: {},
           cpHandle: {
             handle,
@@ -361,9 +366,16 @@ export class NekoilCpService extends Service {
       handle_type,
     }
 
-    let cpHandle: ContentPackHandleV1
+    let cpHandle: ContentPackHandleV1 =
+      undefined as unknown as ContentPackHandleV1
 
     if (handle) {
+      // 上文已检查过，当前该 handle 尚未创建，不加 try 直接创建即可
+      // FIXME: 解决上文到这里之间的竞态问题
+      cpHandle = await this.ctx.database.create('cp_handle_v1', {
+        ...cpHandleCreate,
+        handle,
+      })
     } else {
       let success = false
       let e: unknown = undefined
@@ -406,7 +418,7 @@ export class NekoilCpService extends Service {
     for (const elem of elements) {
       if (elem.type === 'message' && elem.attrs['forward']) {
         // 处理嵌套 cp
-        const { cpHandle, cpAll } = await this.#cpCreateIntl(
+        const { cpHandle, cpData } = await this.#cpCreateIntl(
           elem.children.filter((x) => x.type === 'message'),
           option,
           state,
@@ -415,11 +427,11 @@ export class NekoilCpService extends Service {
           (
             <nekoil:cp
               handle={getHandle(cpHandle)}
-              title={cpAll.summary.title}
-              count={cpAll.summary.count}
+              title={cpData.summary.title}
+              count={cpData.summary.count}
             >
               <nekoil:cpsummarylist>
-                {cpAll.summary.summary.map((x) => (
+                {cpData.summary.summary.map((x) => (
                   <nekoil:cpsummary content={x} />
                 ))}
               </nekoil:cpsummarylist>
