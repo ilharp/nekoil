@@ -82,8 +82,10 @@ export class NekoilCpMsgService extends Service {
   #buildFn = (channel: string, emitter: Emitter) => async () => {
     if (emitter.lock) return
 
+    let client
+
     try {
-      const client = await this.ctx.redis.isolate()
+      client = await this.ctx.redis.isolate()
 
       const lmtKey = `nekoilv1:msg:${channel}:time`
       const dataKey = `nekoilv1:msg:${channel}:data`
@@ -128,6 +130,8 @@ export class NekoilCpMsgService extends Service {
         //   this.#buildFn(channel, emitter)
         // }, 5000)
       }
+    } finally {
+      if (client) client.destroy()
     }
   }
 
