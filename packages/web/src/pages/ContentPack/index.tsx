@@ -62,7 +62,17 @@ export const ContentPack = () => {
 }
 
 const symAioHost: SymAioHost = {
-  frCanRemoveBubble: () => false,
+  frCanRemoveBubble: (x) => {
+    if (
+      x.length === 1 &&
+      typeof x[0] === 'object' &&
+      'type' in x[0]! &&
+      x[0].type === FRCp
+    )
+      return true
+
+    return false
+  },
   frRenderers: {
     ...frRenderers,
     img: (_frCtx, element) => [<FRImg elem={element} />],
