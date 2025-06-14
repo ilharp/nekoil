@@ -39,7 +39,7 @@ const queryClient = new QueryClient({
 
 export const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SymProvider>
+    <SymProvider className="sym-aio-msg-solidheader">
       <RouterProvider router={router} />
     </SymProvider>
   </QueryClientProvider>
