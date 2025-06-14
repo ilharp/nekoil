@@ -2,43 +2,45 @@ import type h from '@satorijs/element'
 
 type DisplayComponent = string
 
-// const prepare = async () => {}
+// type FRRenderer = (element: h) => Promise<DisplayComponent[]>
+type FRRendererNullable = (element: h) => Promise<DisplayComponent[] | null>
 
-const render = async (elements: h[]): Promise<DisplayComponent[] | false> => {
-  if (!elements.length) return ['空消息']
-  const result = await Promise.all(elements.map(visit))
-  if (result.every((x) => x === false)) return false
-  return result.flatMap((x) => (x === false ? ['[不支持的消息]'] : x))
-}
+const EMPTY = ['[空消息]']
+const UNSUPPORTED = ['[不支持的消息]']
 
-// export const send = async (
-//   content: string | null | undefined,
-// ): Promise<DisplayComponent[]> => {
-//   if (!content) return ['空消息']
-//   // await prepare()
-//   const elements = h.normalize(content)
-//   let result = await render(elements)
-//   if (result === false) result = ['[不支持的消息]']
-//   return result
-// }
-
-export const summaryMessagerSend = async (
+const renderIntl = async (
   elements: h[],
-): Promise<DisplayComponent[]> => {
-  let result = await render(elements)
-  if (result === false) result = ['[不支持的消息]']
-  return result
+): Promise<DisplayComponent[] | null> => {
+  const result = await Promise.all(elements.map(visit))
+  if (result.every((x) => x === null)) return null
+  return result.flatMap((x) => x ?? UNSUPPORTED)
 }
 
-const visit = async (element: h): Promise<DisplayComponent[] | false> => {
+/**
+ * @param elements 实际情况下这里应该不会出现 undefined，不过这里做了兼容
+ */
+export const summaryMessagerSend = async (
+  elements: h[] | undefined,
+): Promise<DisplayComponent[]> => {
+  if (!elements?.length) return EMPTY
+  return (await renderIntl(elements)) ?? UNSUPPORTED
+}
+
+const visit: FRRendererNullable = async (element) => {
   const { type, attrs, children } = element
 
   switch (type) {
     case 'text':
       return [attrs['content'] as string]
 
+    case 'nekoil:oversizedimg':
+    case 'nekoil:failedimg':
     case 'img': {
       return ['[图片]']
+    }
+
+    case 'nekoil:tgsticker': {
+      return ['[表情]']
     }
 
     case 'audio': {
@@ -68,15 +70,20 @@ const visit = async (element: h): Promise<DisplayComponent[] | false> => {
         }
       } else {
         // 普通切割消息
-        const result = await render(children)
+        const result = await renderIntl(children)
         if (result) return ['[消息]', ...result]
         else return ['[消息]']
       }
     }
 
+    case 'nekoil:failedfwd':
+    case 'nekoil:cp': {
+      return ['[聊天记录]']
+    }
+
     default: {
       // 兜底
-      return await render(children)
+      return await renderIntl(children)
     }
   }
 }
