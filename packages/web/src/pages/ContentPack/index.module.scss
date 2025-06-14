@@ -19,3 +19,23 @@
 .msgList {
   margin: 12px;
 }
+
+.backBtn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 48px;
+  width: 48px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  &Icon {
+    height: 24px;
+    width: 24px;
+  }
+}

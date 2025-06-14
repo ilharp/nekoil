@@ -8,8 +8,10 @@ import {
   SymMsgVirtualList,
 } from '@sym-app/components'
 import { useQuery } from '@tanstack/react-query'
+import { ChevronLeft } from 'lucide-react'
 import type { ContentPackWithFull, NekoilCpCpGetRequest } from 'nekoil-typedef'
-import { useParams } from 'react-router'
+import { useCallback } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import { Footer } from '../../components/Footer'
 import { FRCp } from '../../components/frs/FRCp'
 import { FRImg } from '../../components/frs/FRImg'
@@ -30,6 +32,14 @@ export const ContentPack = () => {
     }),
   })
 
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleBack = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    navigate(-1)
+  }, [navigate])
+
   if (isPending) return <Splash />
 
   if (isError) return <ResultError e={error} />
@@ -38,6 +48,11 @@ export const ContentPack = () => {
     <>
       <div className={styles.headerContainer}>
         <h1 className={styles.title}>{data.summary.title}</h1>
+        {location.key !== 'default' && (
+          <div onClick={handleBack} className={styles.backBtn}>
+            <ChevronLeft className={styles.backBtnIcon} />
+          </div>
+        )}
       </div>
       <SymAioHostContext value={symAioHost}>
         <SymAioCtxContext.Provider
