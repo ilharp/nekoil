@@ -1,3 +1,4 @@
+import { SymProvider } from '@sym-app/components'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { Banned } from './pages/Banned'
@@ -38,6 +39,8 @@ const queryClient = new QueryClient({
 
 export const App = () => (
   <QueryClientProvider client={queryClient}>
-    <RouterProvider router={router} />
+    <SymProvider>
+      <RouterProvider router={router} />
+    </SymProvider>
   </QueryClientProvider>
 )

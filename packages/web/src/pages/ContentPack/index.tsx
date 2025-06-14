@@ -6,12 +6,12 @@ import {
   SymAioHostContext,
   SymMsgGroupContext,
   SymMsgVirtualList,
-  SymProvider,
 } from '@sym-app/components'
 import { useQuery } from '@tanstack/react-query'
 import type { ContentPackWithFull, NekoilCpCpGetRequest } from 'nekoil-typedef'
 import { useParams } from 'react-router'
 import { Footer } from '../../components/Footer'
+import { FRCp } from '../../components/frs/FRCp'
 import { FRImg } from '../../components/frs/FRImg'
 import { ResultError } from '../../components/ResultError'
 import { Splash } from '../../components/Splash'
@@ -35,7 +35,7 @@ export const ContentPack = () => {
   if (isError) return <ResultError e={error} />
 
   return (
-    <SymProvider className={styles.symProvider}>
+    <>
       <div className={styles.headerContainer}>
         <h1 className={styles.title}>{data.summary.title}</h1>
       </div>
@@ -57,7 +57,7 @@ export const ContentPack = () => {
       <div className="nekoil-separator" />
       <Footer />
       <div className={styles.bottomFix} />
-    </SymProvider>
+    </>
   )
 }
 
@@ -68,6 +68,7 @@ const symAioHost: SymAioHost = {
     img: (_frCtx, element) => [<FRImg elem={element} />],
     'nekoil:oversizedimg': (_frCtx, _element) => ['[过大图片]'],
     'nekoil:failedimg': (_frCtx, _element) => ['[图片保存失败]'],
+    'nekoil:cp': (_frCtx, element) => [<FRCp elem={element} />],
     'nekoil:failedfwd': (_frCtx, _element) => ['[聊天记录保存失败]'],
   },
 }

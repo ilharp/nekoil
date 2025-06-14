@@ -2,3 +2,9 @@
   background-color: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
 }
+
+.sym-provider {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
