@@ -169,6 +169,8 @@ export class NekoilCpService extends Service {
       {
         createdCount: 0,
         imgMap: {},
+        imgQueue:
+          Promise.resolve() as unknown as Promise<NekoilAssetsUploadImgResult>,
       },
     )
 
@@ -315,7 +317,10 @@ export class NekoilCpService extends Service {
             const uploadImgResult =
               await this.ctx.nekoilAssets.uploadImgWithFileMap(
                 avatarOriginSrc,
-                state.imgMap,
+                {
+                  imgMap: state.imgMap,
+                  queue: state.imgQueue,
+                },
               )
 
             avatar = uploadImgResult.src
@@ -508,10 +513,10 @@ export class NekoilCpService extends Service {
 
         try {
           const uploadImgResult =
-            await this.ctx.nekoilAssets.uploadImgWithFileMap(
-              originSrc,
-              state.imgMap,
-            )
+            await this.ctx.nekoilAssets.uploadImgWithFileMap(originSrc, {
+              imgMap: state.imgMap,
+              queue: state.imgQueue,
+            })
 
           img.attrs['src'] = uploadImgResult.src
           img.attrs['title'] = uploadImgResult.title
@@ -661,6 +666,7 @@ interface CpCreateState {
    * false：文件下载失败
    */
   imgMap: Record<string, NekoilAssetsUploadImgResult | false>
+  imgQueue: Promise<NekoilAssetsUploadImgResult>
 }
 
 interface CpCreateIntlState {

@@ -603,6 +603,7 @@ export class NekoilCpMsgService extends Service {
      * false：头像链接获取失败
      */
     const avatarMap: Record<string, string | false> = {}
+    let avatarQueue = Promise.resolve()
 
     const result = await Promise.all(
       sessions.map(async (session) => {
@@ -612,19 +613,23 @@ export class NekoilCpMsgService extends Service {
           if (avatar === false) {
             avatar = undefined
           } else {
-            try {
-              const photos = await bot.internal.getUserProfilePhotos({
-                user_id: Number(session.event.user!.id),
-                limit: 1,
-              })
-              const file_id = photos.photos![0]!.sort(
-                (a, b) => b.width! - a.width!,
-              )[0]!.file_id!
-              const file = await bot.internal.getFile({ file_id })
-              avatar = (await bot.$getFileFromPath(file.file_path!)).src
-            } catch (_) {
-              avatarMap[session.event.user!.id] = false
-            }
+            avatarQueue = avatarQueue.then(async () => {
+              try {
+                const photos = await bot.internal.getUserProfilePhotos({
+                  user_id: Number(session.event.user!.id),
+                  limit: 1,
+                })
+                const file_id = photos.photos![0]!.sort(
+                  (a, b) => b.width! - a.width!,
+                )[0]!.file_id!
+                const file = await bot.internal.getFile({ file_id })
+                avatar = (await bot.$getFileFromPath(file.file_path!)).src
+              } catch (_) {
+                avatarMap[session.event.user!.id] = false
+              }
+            })
+
+            await avatarQueue
           }
         }
 

@@ -144,12 +144,21 @@ export class NekoilAssetsService extends Service {
    */
   public uploadImgWithFileMap = async (
     src: string,
-    imgMap: Record<string, NekoilAssetsUploadImgResult | false>,
+    options: {
+      imgMap: Record<string, NekoilAssetsUploadImgResult | false>
+      queue: Promise<NekoilAssetsUploadImgResult>
+    },
   ) => {
-    let result = imgMap[src]
-    if (result === false) throw new NekoilAssetsCachedFailedError()
-    result ??= await this.uploadImg(src)
-    return result
+    options.queue = options.queue.then(async () => {
+      {
+        let result = options.imgMap[src]
+        if (result === false) throw new NekoilAssetsCachedFailedError()
+        result ??= await this.uploadImg(src)
+        return result
+      }
+    })
+
+    return await options.queue
   }
 }
 
