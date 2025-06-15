@@ -9,9 +9,14 @@ import {
 } from '@sym-app/components'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft } from 'lucide-react'
-import type { ContentPackWithFull, NekoilCpCpGetRequest } from 'nekoil-typedef'
+import type {
+  ContentPackWithFull,
+  NekoilCpCpGetRequest,
+  NekoilSatoriUser,
+} from 'nekoil-typedef'
 import { useCallback } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
+import { AioAvatar } from '../../components/AioAvatar'
 import { Footer } from '../../components/Footer'
 import { FRCp } from '../../components/frs/FRCp'
 import { FRImg } from '../../components/frs/FRImg'
@@ -77,6 +82,7 @@ export const ContentPack = () => {
 }
 
 const symAioHost: SymAioHost = {
+  avatarRenderer: (msg) => <AioAvatar user={msg.user! as NekoilSatoriUser} />,
   frCanRemoveBubble: (x) => {
     if (
       x.length === 1 &&
