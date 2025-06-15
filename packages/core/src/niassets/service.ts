@@ -34,7 +34,7 @@ export class NekoilAssetsService extends Service {
 
   #s3 = new S3Client({})
 
-  public uploadImg = async (
+  #uploadImgIntl = async (
     src: string,
   ): Promise<NekoilAssetsUploadImgResult> => {
     try {
@@ -139,31 +139,36 @@ export class NekoilAssetsService extends Service {
   }
 
   /**
+   * TODO: 先加一把全局大锁，后面用一个 map 解决这个问题，
+   * 进函数之前先把 map 的 src 键设为当前 task，这样就解决了
+   *
+   * 函数跑完以后别忘了清理 map
+   */
+  #uploadImgQueue = Promise.resolve(
+    undefined as unknown as NekoilAssetsUploadImgResult,
+  )
+
+  public uploadImg = async (src: string) => {
+    const task = this.#uploadImgQueue.then(async () => this.#uploadImgIntl(src))
+    this.#uploadImgQueue = task.catch(
+      // 这个值使用者不会取到的，给 undefined 就行
+      () => undefined as unknown as NekoilAssetsUploadImgResult,
+    )
+    return await task
+  }
+
+  /**
    *
    * @param imgMap false：文件下载失败
    */
   public uploadImgWithFileMap = async (
     src: string,
-    options: {
-      imgMap: Record<string, NekoilAssetsUploadImgResult | false>
-      queue: Promise<NekoilAssetsUploadImgResult>
-    },
+    imgMap: Record<string, NekoilAssetsUploadImgResult | false>,
   ) => {
-    const task = options.queue.then(async () => {
-      {
-        let result = options.imgMap[src]
-        if (result === false) throw new NekoilAssetsCachedFailedError()
-        result ??= await this.uploadImg(src)
-        return result
-      }
-    })
-
-    options.queue = task.catch(
-      // 这个值使用者不会取到的，给 undefined 就行
-      () => undefined as unknown as NekoilAssetsUploadImgResult,
-    )
-
-    return await task
+    let result = imgMap[src]
+    if (result === false) throw new NekoilAssetsCachedFailedError()
+    result ??= await this.uploadImg(src)
+    return result
   }
 }
 

@@ -317,10 +317,7 @@ export class NekoilCpService extends Service {
             const uploadImgResult =
               await this.ctx.nekoilAssets.uploadImgWithFileMap(
                 avatarOriginSrc,
-                {
-                  imgMap: state.imgMap,
-                  queue: state.imgQueue,
-                },
+                state.imgMap,
               )
 
             avatar = uploadImgResult.src
@@ -513,10 +510,10 @@ export class NekoilCpService extends Service {
 
         try {
           const uploadImgResult =
-            await this.ctx.nekoilAssets.uploadImgWithFileMap(originSrc, {
-              imgMap: state.imgMap,
-              queue: state.imgQueue,
-            })
+            await this.ctx.nekoilAssets.uploadImgWithFileMap(
+              originSrc,
+              state.imgMap,
+            )
 
           img.attrs['src'] = uploadImgResult.src
           img.attrs['title'] = uploadImgResult.title
