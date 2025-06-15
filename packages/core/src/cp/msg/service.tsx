@@ -367,7 +367,7 @@ export class NekoilCpMsgService extends Service {
             case 'telegram': {
               parsedContent = await this.#parseTelegramForward(
                 sessions,
-                bot as TelegramBot,
+                bot as unknown as TelegramBot,
               )
               break
             }
