@@ -278,7 +278,7 @@ export class NekoilCpService extends Service {
     if (state.createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
 
     const intlState: CpCreateIntlState = {
-      niaids: [],
+      niaids: new Set(),
     }
 
     const pack: Partial<ContentPackWithAll> = {
@@ -324,7 +324,7 @@ export class NekoilCpService extends Service {
             nekoilUserExt.avatar_height = uploadImgResult.height
             nekoilUserExt.avatar_thumbhash = uploadImgResult.thumbhash
 
-            intlState.niaids.push(uploadImgResult.niaid)
+            intlState.niaids.add(uploadImgResult.niaid)
           } catch (e) {
             this.#l.error(
               `error processing avatar img:\n${avatarOriginSrc}\nin cpPlatform ${option.cpPlatform} userid ${author?.attrs['id']}`,
@@ -388,7 +388,7 @@ export class NekoilCpService extends Service {
     // niassets 入 ref 库
     await this.ctx.database.upsert(
       'niassets_rc_v1',
-      intlState.niaids.map((niaid) => ({
+      Array.from(intlState.niaids).map((niaid) => ({
         niaid,
         ref_type: 1, // cp
         ref: cp.cpid,
@@ -520,7 +520,7 @@ export class NekoilCpService extends Service {
           img.attrs['nekoil:thumbhash'] = uploadImgResult.thumbhash
 
           // niassets 入 ref 库
-          intlState.niaids.push(uploadImgResult.niaid)
+          intlState.niaids.add(uploadImgResult.niaid)
         } catch (e) {
           if (e instanceof NekoilAssetsOversizedError) {
             img = (
@@ -664,7 +664,7 @@ interface CpCreateState {
 }
 
 interface CpCreateIntlState {
-  niaids: number[]
+  niaids: Set<number>
 }
 
 interface CpCreateResult {
