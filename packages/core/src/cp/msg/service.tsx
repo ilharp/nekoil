@@ -365,7 +365,10 @@ export class NekoilCpMsgService extends Service {
               break
             }
             case 'telegram': {
-              parsedContent = await this.#parseTelegramForward(sessions)
+              parsedContent = await this.#parseTelegramForward(
+                sessions,
+                bot as TelegramBot,
+              )
               break
             }
             default:
@@ -594,51 +597,81 @@ export class NekoilCpMsgService extends Service {
    */
   #parseTelegramForward = async (
     sessions: NekoilMsgSession[],
+    bot: TelegramBot,
   ): Promise<h[]> => {
-    const result = sessions.map((session) => {
-      let author = h('author', {
-        id: session.event.user!.id,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        name: session.event.user!.nick || session.event.user!.name,
-        avatar: session.event.user!.avatar,
-      })
+    /**
+     * false：头像链接获取失败
+     */
+    const avatarMap: Record<string, string | false> = {}
 
-      const forward = session.event._data?.message?.forward_origin
+    const result = await Promise.all(
+      sessions.map(async (session) => {
+        let avatar = avatarMap[session.event.user!.id]
 
-      if (forward) {
-        // 避免正在创建 cp 的用户隐私泄漏
-        author = h('author')
-
-        switch (forward.type) {
-          case 'user':
-            author.attrs['id'] = forward.sender_user.id
-            author.attrs['name'] =
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              `${forward.sender_user.first_name || ''} ${forward.sender_user.last_name || ''}`
-            break
-
-          case 'hidden_user':
-            author.attrs['name'] = forward.sender_user_name
-            break
-
-          case 'channel':
-          case 'chat':
-            author.attrs['name'] =
-              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-              forward.chat.title || forward.author_signature
-            break
+        if (!avatar) {
+          if (avatar === false) {
+            avatar = undefined
+          } else {
+            try {
+              const photos = await bot.internal.getUserProfilePhotos({
+                user_id: Number(session.event.user!.id),
+                limit: 1,
+              })
+              const file_id = photos.photos![0]!.sort(
+                (a, b) => b.width! - a.width!,
+              )[0]!.file_id!
+              const file = await bot.internal.getFile({ file_id })
+              avatar = (await bot.$getFileFromPath(file.file_path!)).src
+            } catch (_) {
+              avatarMap[session.event.user!.id] = false
+            }
+          }
         }
-      }
 
-      const message: h = (
-        <message>
-          {author}
-          {session.event.message!.elements}
-        </message>
-      )
+        let author = h('author', {
+          id: session.event.user!.id,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          name: session.event.user!.nick || session.event.user!.name,
+          avatar,
+        })
 
-      return message
-    })
+        const forward = session.event._data?.message?.forward_origin
+
+        if (forward) {
+          // 避免正在创建 cp 的用户隐私泄漏
+          author = h('author')
+
+          switch (forward.type) {
+            case 'user':
+              author.attrs['id'] = forward.sender_user.id
+              author.attrs['name'] =
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                `${forward.sender_user.first_name || ''} ${forward.sender_user.last_name || ''}`
+              break
+
+            case 'hidden_user':
+              author.attrs['name'] = forward.sender_user_name
+              break
+
+            case 'channel':
+            case 'chat':
+              author.attrs['name'] =
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                forward.chat.title || forward.author_signature
+              break
+          }
+        }
+
+        const message: h = (
+          <message>
+            {author}
+            {session.event.message!.elements}
+          </message>
+        )
+
+        return message
+      }),
+    )
 
     return result
   }
