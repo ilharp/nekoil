@@ -149,7 +149,7 @@ export class NekoilAssetsService extends Service {
       queue: Promise<NekoilAssetsUploadImgResult>
     },
   ) => {
-    options.queue = options.queue.then(async () => {
+    const task = options.queue.then(async () => {
       {
         let result = options.imgMap[src]
         if (result === false) throw new NekoilAssetsCachedFailedError()
@@ -158,7 +158,12 @@ export class NekoilAssetsService extends Service {
       }
     })
 
-    return await options.queue
+    options.queue = task.catch(
+      // 这个值使用者不会取到的，给 undefined 就行
+      () => undefined as unknown as NekoilAssetsUploadImgResult,
+    )
+
+    return await task
   }
 }
 
