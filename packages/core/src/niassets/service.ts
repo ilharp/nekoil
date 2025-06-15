@@ -34,7 +34,9 @@ export class NekoilAssetsService extends Service {
 
   #s3 = new S3Client({})
 
-  public uploadImg = async (src: string) => {
+  public uploadImg = async (
+    src: string,
+  ): Promise<NekoilAssetsUploadImgResult> => {
     try {
       const file = await this.ctx.http.file(src)
       const size = file.data.byteLength
@@ -135,12 +137,37 @@ export class NekoilAssetsService extends Service {
       throw e
     }
   }
+
+  /**
+   *
+   * @param imgMap false：文件下载失败
+   */
+  public uploadImgWithFileMap = async (
+    src: string,
+    imgMap: Record<string, NekoilAssetsUploadImgResult | false>,
+  ) => {
+    let result = imgMap[src]
+    if (result === false) throw new NekoilAssetsCachedFailedError()
+    result ??= await this.uploadImg(src)
+    return result
+  }
 }
 
 export class NekoilAssetsError extends Error {}
+
+export class NekoilAssetsCachedFailedError extends NekoilAssetsError {}
 
 export class NekoilAssetsOversizedError extends NekoilAssetsError {
   constructor(public filename: string) {
     super()
   }
+}
+
+export interface NekoilAssetsUploadImgResult {
+  src: string
+  title: string
+  width: number
+  height: number
+  thumbhash: string
+  niaid: number
 }

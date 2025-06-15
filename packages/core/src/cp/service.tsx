@@ -13,7 +13,10 @@ import type {
   NekoilResponseBody,
 } from 'nekoil-typedef'
 import type { Config } from '../config'
-import { NekoilAssetsOversizedError } from '../niassets/service'
+import {
+  NekoilAssetsOversizedError,
+  NekoilAssetsUploadImgResult,
+} from '../niassets/service'
 import type { NekoilUser } from '../services/user'
 import {
   ellipsis,
@@ -166,6 +169,7 @@ export class NekoilCpService extends Service {
       option,
       {
         createdCount: 0,
+        imgMap: {},
       },
     )
 
@@ -477,7 +481,10 @@ export class NekoilCpService extends Service {
 
         try {
           const uploadImgResult =
-            await this.ctx.nekoilAssets.uploadImg(originSrc)
+            await this.ctx.nekoilAssets.uploadImgWithFileMap(
+              originSrc,
+              state.imgMap,
+            )
 
           img.attrs['src'] = uploadImgResult.src
           img.attrs['title'] = uploadImgResult.title
@@ -618,6 +625,10 @@ export type CpCreateOption = CpCreateOptionBase & CpCreateOptionId
 
 interface CpCreateState {
   createdCount: number
+  /**
+   * false：文件下载失败
+   */
+  imgMap: Record<string, NekoilAssetsUploadImgResult | false>
 }
 
 interface CpCreateIntlState {
