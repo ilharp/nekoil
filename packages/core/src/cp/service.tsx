@@ -1,4 +1,3 @@
-import type { Message } from '@satorijs/protocol'
 import type { Context, Dict, FlatKeys, User } from 'koishi'
 import { $, h, Service } from 'koishi'
 import type {} from 'koishi-plugin-redis'
@@ -11,12 +10,12 @@ import type {
   ContentPackWithFull,
   ContentPackWithSummary,
   NekoilResponseBody,
+  NekoilSatoriMessage,
+  NekoilSatoriUserExt,
 } from 'nekoil-typedef'
 import type { Config } from '../config'
-import {
-  NekoilAssetsOversizedError,
-  NekoilAssetsUploadImgResult,
-} from '../niassets/service'
+import type { NekoilAssetsUploadImgResult } from '../niassets/service'
+import { NekoilAssetsOversizedError } from '../niassets/service'
 import type { NekoilUser } from '../services/user'
 import {
   ellipsis,
@@ -307,12 +306,40 @@ export class NekoilCpService extends Service {
           intlState,
         )
 
-        const protocolMessage: Message = {
+        const avatarOriginSrc = author?.attrs['avatar'] as string | undefined
+        let avatar: string | undefined
+        const nekoilUserExt = {} as NekoilSatoriUserExt
+
+        if (avatarOriginSrc) {
+          try {
+            const uploadImgResult =
+              await this.ctx.nekoilAssets.uploadImgWithFileMap(
+                avatarOriginSrc,
+                state.imgMap,
+              )
+
+            avatar = uploadImgResult.src
+            nekoilUserExt.avatar_origins = [avatarOriginSrc]
+            nekoilUserExt.avatar_width = uploadImgResult.width
+            nekoilUserExt.avatar_height = uploadImgResult.height
+            nekoilUserExt.avatar_thumbhash = uploadImgResult.thumbhash
+
+            intlState.niaids.push(uploadImgResult.niaid)
+          } catch (e) {
+            this.#l.error(
+              `error processing avatar img:\n${avatarOriginSrc}\nin cpPlatform ${option.cpPlatform} userid ${author?.attrs['id']}`,
+            )
+            this.#l.error(e)
+          }
+        }
+
+        const protocolMessage: NekoilSatoriMessage = {
           content: elements.join(''),
           user: {
             id: author?.attrs['id'],
             name: author?.attrs['name'],
-            avatar: author?.attrs['avatar'],
+            avatar: avatar!,
+            nekoil: nekoilUserExt,
           },
         }
 
@@ -503,7 +530,7 @@ export class NekoilCpService extends Service {
             ) as h
           } else {
             this.#l.error(
-              `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} platform ${option.cpPlatform} pid ${option.pid}`,
+              `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} pid ${option.pid}`,
             )
             this.#l.error(e)
 
@@ -578,6 +605,11 @@ export class NekoilCpService extends Service {
       message.content = h.transform(message.content!, {
         img: buildOriginsStripper('img'),
       })
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (message?.user?.nekoil?.avatar_origins)
+        // @ts-expect-error 在 core 里永远存在，在前端永远不在
+        delete message.user.nekoil.avatar_origins
     })
 
     return result
