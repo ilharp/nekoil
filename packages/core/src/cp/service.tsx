@@ -605,6 +605,9 @@ export class NekoilCpService extends Service {
       delete (result as Partial<ContentPackWithFull>).data_full
     }
 
+    // 让首个用户的 id 为 1，避免出现 id 为 0 的情况
+    const userIdList = ['']
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     result.full?.messages.forEach((message) => {
       message.content = h.transform(message.content!, {
@@ -612,9 +615,15 @@ export class NekoilCpService extends Service {
       })
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (message?.user?.nekoil?.avatar_origins)
+      if (message.user?.nekoil?.avatar_origins)
         // @ts-expect-error 在 core 里永远存在，在前端永远不在
         delete message.user.nekoil.avatar_origins
+
+      if (message.user.id) {
+        if (!userIdList.includes(message.user.id))
+          userIdList.push(message.user.id)
+        message.user.id = String(userIdList.indexOf(message.user.id))
+      }
     })
 
     return result
