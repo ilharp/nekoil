@@ -671,6 +671,8 @@ export class NekoilCpMsgService extends Service {
                       avatarMap[String(forward.sender_user.id)] = false
                     }
                   })
+
+                  await avatarQueue
                 }
               }
               author.attrs['id'] = forward.sender_user.id
