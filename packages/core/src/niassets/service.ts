@@ -143,6 +143,8 @@ export class NekoilAssetsService extends Service {
    * 进函数之前先把 map 的 src 键设为当前 task，这样就解决了
    *
    * 函数跑完以后别忘了清理 map
+   *
+   * 注意 map 要放 redis 里
    */
   #uploadImgQueue = Promise.resolve(
     undefined as unknown as NekoilAssetsUploadImgResult,
