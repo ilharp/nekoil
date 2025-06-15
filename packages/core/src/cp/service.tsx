@@ -617,6 +617,10 @@ export class NekoilCpService extends Service {
         delete message.user.nekoil.avatar_origins
 
       if (message.user.id) {
+        if (message.user.id === '1094950020') {
+          userIdList.push('')
+          message.user.id = String(userIdList.length - 1)
+        }
         if (!userIdList.includes(message.user.id))
           userIdList.push(message.user.id)
         message.user.id = String(userIdList.indexOf(message.user.id))
