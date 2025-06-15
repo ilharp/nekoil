@@ -647,23 +647,52 @@ export class NekoilCpMsgService extends Service {
           author = h('author')
 
           switch (forward.type) {
-            case 'user':
+            case 'user': {
+              let forwardUserAvatar = avatarMap[String(forward.sender_user.id)]
+
+              if (!forwardUserAvatar) {
+                if (forwardUserAvatar === false) {
+                  forwardUserAvatar = undefined
+                } else {
+                  avatarQueue = avatarQueue.then(async () => {
+                    try {
+                      const photos = await bot.internal.getUserProfilePhotos({
+                        user_id: Number(forward.sender_user.id),
+                        limit: 1,
+                      })
+                      const file_id = photos.photos![0]!.sort(
+                        (a, b) => b.width! - a.width!,
+                      )[0]!.file_id!
+                      const file = await bot.internal.getFile({ file_id })
+                      forwardUserAvatar = (
+                        await bot.$getFileFromPath(file.file_path!)
+                      ).src
+                    } catch (_) {
+                      avatarMap[String(forward.sender_user.id)] = false
+                    }
+                  })
+                }
+              }
               author.attrs['id'] = forward.sender_user.id
               author.attrs['name'] =
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 `${forward.sender_user.first_name || ''} ${forward.sender_user.last_name || ''}`
+              author.attrs['avatar'] = forwardUserAvatar
               break
+            }
 
-            case 'hidden_user':
+            case 'hidden_user': {
               author.attrs['name'] = forward.sender_user_name
               break
+            }
 
             case 'channel':
-            case 'chat':
+            case 'chat': {
               author.attrs['name'] =
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 forward.chat.title || forward.author_signature
               break
+            }
           }
         }
 
