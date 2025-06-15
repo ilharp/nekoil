@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@sym-app/components'
 import { useQuery } from '@tanstack/react-query'
 import type { NekoilSatoriUser } from 'nekoil-typedef'
 import { useMemo } from 'react'
@@ -30,12 +31,11 @@ export const AioAvatar = ({ user }: { user: NekoilSatoriUser }) => {
   })
 
   return (
-    <div className="sym-aio-avatar">
-      <img
-        src={isSuccess ? data : thumbhashUrl}
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        width={`${user.nekoil?.avatar_width}px`}
-      />
-    </div>
+    <Avatar className="sym-aio-avatar">
+      {Boolean(isSuccess ? data : thumbhashUrl) && (
+        <AvatarImage src={isSuccess ? data : thumbhashUrl} alt={user.name} />
+      )}
+      <AvatarFallback>{user.name?.slice(0, 2)}</AvatarFallback>
+    </Avatar>
   )
 }
