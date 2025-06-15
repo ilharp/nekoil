@@ -1,5 +1,5 @@
-import type { Message } from '@satorijs/protocol'
 import type { DatabaseBase } from './common'
+import type { NekoilSatoriMessage } from './satori'
 
 export interface ContentPackV1 extends DatabaseBase {
   cpid: number
@@ -49,7 +49,7 @@ export interface ContentPackWithSummary extends ContentPackV1 {
 }
 
 export interface ContentPackFull {
-  messages: Message[]
+  messages: NekoilSatoriMessage[]
 }
 
 export interface ContentPackWithFull extends ContentPackWithSummary {
