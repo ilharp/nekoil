@@ -22,7 +22,7 @@ import { FRCp } from '../../components/frs/FRCp'
 import { FRImg } from '../../components/frs/FRImg'
 import { ResultError } from '../../components/ResultError'
 import { Splash } from '../../components/Splash'
-import { requestV1 } from '../../utils'
+import { requestV1 } from '../../utils/request'
 import styles from './index.module.scss'
 
 export const ContentPack = () => {

@@ -1,5 +1,5 @@
 import { CircleX } from 'lucide-react'
-import { NekoilApiError } from '../../utils'
+import { NekoilApiError } from '../../utils/request'
 
 export const ResultError = ({ e }: { e: Error }) => (
   <div className="nekoil-result-container">

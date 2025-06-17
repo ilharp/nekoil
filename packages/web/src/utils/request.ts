@@ -1,5 +1,6 @@
 import type { QueryFunctionContext } from '@tanstack/react-query'
 import type { NekoilResponseBody } from 'nekoil-typedef'
+import { isUrlAbsolute } from '.'
 
 const baseUrl = {
   beta: 'https://beta-api.390721.xyz',
@@ -64,6 +65,14 @@ export const requestBlobV1 =
     const blob = await response.blob()
     return URL.createObjectURL(blob)
   }
+
+// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+const reject = () => Promise.reject()
+
+export const requestProxyV1 = (
+  api: string | undefined,
+  init: RequestInit = {},
+) => (api ? requestBlobV1(`/nekoil/v0/proxy/${api}`, init) : reject)
 
 export class NekoilApiError extends Error {
   constructor(

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { NekoilSatoriUser } from 'nekoil-typedef'
 import { useMemo } from 'react'
 import { thumbHashToDataURL } from 'thumbhash'
-import { requestBlobV1 } from '../../utils'
+import { requestProxyV1 } from '../../utils/request'
 
 export const AioAvatar = ({ user }: { user: NekoilSatoriUser }) => {
   const thumbhashUrl = useMemo(
@@ -23,11 +23,7 @@ export const AioAvatar = ({ user }: { user: NekoilSatoriUser }) => {
 
   const { isSuccess, data } = useQuery({
     queryKey: ['nia', user.avatar],
-    queryFn: (qfc) =>
-      user.avatar
-        ? requestBlobV1(`/nekoil/v0/proxy/${user.avatar}`)(qfc)
-        : // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-          Promise.reject<string>(),
+    queryFn: requestProxyV1(user.avatar),
   })
 
   return (
