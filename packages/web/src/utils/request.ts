@@ -1,6 +1,5 @@
 import type { QueryFunctionContext } from '@tanstack/react-query'
 import type { NekoilResponseBody } from 'nekoil-typedef'
-import { isUrlAbsolute } from '.'
 
 const baseUrl = {
   beta: 'https://beta-api.390721.xyz',
