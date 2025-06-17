@@ -169,7 +169,10 @@ export class NekoilAssetsService extends Service {
   ) => {
     let result = imgMap[src]
     if (result === false) throw new NekoilAssetsCachedFailedError()
-    result ??= await this.uploadImg(src)
+    if (!result) {
+      result = await this.uploadImg(src)
+      imgMap[src] = result
+    }
     return result
   }
 }
