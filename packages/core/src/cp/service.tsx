@@ -456,97 +456,87 @@ export class NekoilCpService extends Service {
     state: CpCreateState,
     intlState: CpCreateIntlState,
   ): Promise<h[]> => {
-    const result: h[] = []
+    const messageProcessor = async (attrs: Dict, children: h[]) => {
+      if (!attrs['forward']) return h('message', attrs, children)
 
-    for (const elem of elements) {
-      if (elem.type === 'message' && elem.attrs['forward']) {
-        // 处理嵌套 cp
-        const { cpHandle, cpData } = await this.#cpCreateIntl(
-          elem.children.filter((x) => x.type === 'message'),
-          {
-            ...option,
-            idType: 'resid',
-            resid: elem.attrs['id'],
-          },
-          state,
-        )
-        result.push(
-          (
-            <nekoil:cp
-              handle={getHandle(cpHandle)}
-              title={cpData.summary.title}
-              count={cpData.summary.count}
-            >
-              <nekoil:cpsummarylist>
-                {cpData.summary.summary.map((x) => (
-                  <nekoil:cpsummary content={x} />
-                ))}
-              </nekoil:cpsummarylist>
-            </nekoil:cp>
-          ) as h,
-        )
-      } else if (elem.type === 'nekoil:tgsticker' || elem.type === 'img') {
-        const isTgsticker = elem.type === 'nekoil:tgsticker'
-        let img: h
-        let tgsticker: h | undefined = undefined
-        if (isTgsticker) {
-          tgsticker = h.parse(elem.toString())[0]!
-          img = tgsticker.children.find((x) => x.type === 'img')!
-        } else {
-          img = h.parse(elem.toString())[0]!
-        }
+      // 处理嵌套 cp
+      const { cpHandle, cpData } = await this.#cpCreateIntl(
+        children.filter((x) => x.type === 'message'),
+        {
+          ...option,
+          idType: 'resid',
+          resid: attrs['id'],
+        },
+        state,
+      )
 
-        // 处理图片
-        let origins = img.children.find((x) => x.type === 'nekoil:origins')
-        if (!origins) {
-          origins = (<nekoil:origins />)! as h
-          img.children.unshift(origins)
-        }
-        const originSrc = img.attrs['src'] as string
-        origins.children.unshift((<nekoil:origin src={originSrc} />) as h)
-
-        // 防御性，避免 originSrc 泄漏
-        img.attrs['src'] = ''
-
-        try {
-          const uploadImgResult =
-            await this.ctx.nekoilAssets.uploadImgWithFileMap(
-              originSrc,
-              state.imgMap,
-            )
-
-          img.attrs['src'] = uploadImgResult.src
-          img.attrs['title'] = uploadImgResult.title
-          img.attrs['width'] = uploadImgResult.width
-          img.attrs['height'] = uploadImgResult.height
-          img.attrs['nekoil:thumbhash'] = uploadImgResult.thumbhash
-
-          // niassets 入 ref 库
-          intlState.niaids.add(uploadImgResult.niaid)
-        } catch (e) {
-          if (e instanceof NekoilAssetsOversizedError) {
-            img = (
-              <nekoil:oversizedimg title={e.filename}>
-                {img.children}
-              </nekoil:oversizedimg>
-            ) as h
-          } else {
-            this.#l.error(
-              `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} pid ${option.pid}`,
-            )
-            this.#l.error(e)
-
-            img = (<nekoil:failedimg>{img.children}</nekoil:failedimg>) as h
-          }
-        }
-
-        result.push(isTgsticker ? tgsticker! : img)
-      } else {
-        result.push(elem)
-      }
+      return (
+        <nekoil:cp
+          handle={getHandle(cpHandle)}
+          title={cpData.summary.title}
+          count={cpData.summary.count}
+        >
+          <nekoil:cpsummarylist>
+            {cpData.summary.summary.map((x) => (
+              <nekoil:cpsummary content={x} />
+            ))}
+          </nekoil:cpsummarylist>
+        </nekoil:cp>
+      ) as h
     }
 
-    return result
+    const imgProcessor = async (attrs: Dict, children: h[]) => {
+      // 处理图片
+      let origins = children.find((x) => x.type === 'nekoil:origins')
+      if (!origins) {
+        origins = (<nekoil:origins />)! as h
+        children.unshift(origins)
+      }
+      const originSrc = attrs['src'] as string
+      origins.children.unshift((<nekoil:origin src={originSrc} />) as h)
+
+      // 防御性，避免 originSrc 泄漏
+      attrs['src'] = ''
+
+      try {
+        const uploadImgResult =
+          await this.ctx.nekoilAssets.uploadImgWithFileMap(
+            originSrc,
+            state.imgMap,
+          )
+
+        attrs['src'] = uploadImgResult.src
+        attrs['title'] = uploadImgResult.title
+        attrs['width'] = uploadImgResult.width
+        attrs['height'] = uploadImgResult.height
+        attrs['nekoil:thumbhash'] = uploadImgResult.thumbhash
+
+        // niassets 入 ref 库
+        intlState.niaids.add(uploadImgResult.niaid)
+      } catch (e) {
+        if (e instanceof NekoilAssetsOversizedError) {
+          return (
+            <nekoil:oversizedimg title={e.filename}>
+              {children}
+            </nekoil:oversizedimg>
+          ) as h
+        } else {
+          this.#l.error(
+            `error processing img:\n${originSrc}\nin cpPlatform ${option.cpPlatform} pid ${option.pid}`,
+          )
+          this.#l.error(e)
+
+          return (<nekoil:failedimg>{children}</nekoil:failedimg>) as h
+        }
+      }
+
+      return h('img', attrs, children)
+    }
+
+    return await h.transformAsync(elements, {
+      message: messageProcessor,
+      img: imgProcessor,
+    })
   }
 
   /**
