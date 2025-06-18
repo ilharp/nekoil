@@ -2,6 +2,7 @@ import type { CpimgrPayload } from 'nekoil-typedef'
 import { Buffer } from 'node:buffer'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
+import type { BoundingBox } from 'puppeteer-core'
 import { launch } from 'puppeteer-core'
 import find from 'puppeteer-finder'
 
@@ -58,16 +59,20 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       }
 
       case '/measure': {
-        const body = (await page.$('body'))!
-        const clip = (await body.boundingBox())!
-        const screenshot = (await page.screenshot({
-          clip,
-        })) as unknown as Buffer
+        const result: Record<string, BoundingBox> = {}
+        const elements = (await page.evaluate(
+          "Array.from(document.querySelectorAll('[data-cpimgr-measure]')).map(x => x.getAttribute('data-cpimgr-measure'))",
+        )) as string[]
+
+        for (const elemId of elements) {
+          const elem = (await page.$(`[data-cpimgr-measure="${elemId}"]`))!
+          result[elemId] = (await elem.boundingBox())!
+        }
 
         res.writeHead(200, {
-          'content-type': 'image/png',
+          'content-type': 'application/json',
         })
-        res.end(screenshot)
+        res.end(result)
 
         break
       }
