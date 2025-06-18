@@ -1,22 +1,11 @@
 import type { Context } from 'koishi'
-import { Service } from 'koishi'
 import type { Config } from '../../config'
-import type { ContentPackWithFull } from 'nekoil-typedef'
+import * as commands from './commands'
+import { NekoilCpImgrService } from './service'
 
-export class NekoilCpImgrService extends Service {
-  constructor(
-    ctx: Context,
-    private nekoilConfig: Config,
-  ) {
-    super(ctx, 'nekoilCpImgr')
-  }
+export const name = 'nekoil-cp-imgr'
 
-  public render = async (data: ContentPackWithFull) => {
-    const image = await this.ctx.http(this.nekoilConfig.cpimgrUrl, {
-      data,
-      responseType: 'arraybuffer',
-    })
-
-    return image
-  }
+export const apply = (ctx: Context, config: Config) => {
+  ctx.plugin(NekoilCpImgrService, config)
+  ctx.plugin(commands, config)
 }

@@ -1,6 +1,6 @@
 import type { Context } from 'koishi'
 
-export const name = 'nekoil-cp-msg-command'
+export const name = 'nekoil-cp-msg-commands'
 
 export const inject = ['nekoilCpMsg']
 

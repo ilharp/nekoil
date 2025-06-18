@@ -13,7 +13,7 @@ const browser = await launch({
 
 const controller = async (req: IncomingMessage, res: ServerResponse) => {
   if (!req.url) {
-    console.error('[ctrl] 400 bad request')
+    console.log('[ctrl] 400 bad request')
     res.writeHead(400)
     res.end('400 bad request')
     return
@@ -22,7 +22,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
   const url = new URL(req.url, 'http://dummy')
 
   if (req.method !== 'POST') {
-    console.error('[ctrl] 405 method not allowed')
+    console.log('[ctrl] 405 method not allowed')
     res.writeHead(405)
     res.end('405 method not allowed')
     return
@@ -37,6 +37,8 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       'Nekoil-Cpssr-Data': Buffer.from(
         JSON.stringify(payload.cpwfData),
       ).toString('base64'),
+      'Nekoil-Proxy-Token': payload.proxyToken,
+      'Nekoil-Internal-Token': payload.internalToken,
     })
     await page.setJavaScriptEnabled(false)
     await page.goto(payload.cpssrUrl)
@@ -72,21 +74,21 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
         res.writeHead(200, {
           'content-type': 'application/json',
         })
-        res.end(result)
+        res.end(JSON.stringify(result))
 
         break
       }
 
       default: {
-        console.error('[ctrl] 404 not found')
+        console.log('[ctrl] 404 not found')
         res.writeHead(404)
         res.end('404 not found')
         break
       }
     }
   } catch (e) {
-    console.error('[puppeteer]')
-    console.error(e)
+    console.log('[puppeteer]')
+    console.log(e)
 
     try {
       res.writeHead(500)
