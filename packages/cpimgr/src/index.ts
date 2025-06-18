@@ -11,18 +11,25 @@ const browser = await launch({
 })
 
 const controller = async (req: IncomingMessage, res: ServerResponse) => {
+  if (!req.url) {
+    console.error('[ctrl] 400 bad request')
+    res.writeHead(400)
+    res.end('400 bad request')
+    return
+  }
+
+  const url = new URL(req.url, 'http://dummy')
+
   if (req.method !== 'POST') {
     console.error('[ctrl] 405 method not allowed')
     res.writeHead(405)
-    res.end()
+    res.end('405 method not allowed')
     return
   }
 
   const payload = JSON.parse(await req2String(req)) as CpimgrPayload
 
   const page = await browser.newPage()
-
-  let screenshot: Buffer
 
   try {
     await page.setExtraHTTPHeaders({
@@ -34,26 +41,58 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
     await page.goto(payload.cpssrUrl)
     await page.waitForNetworkIdle()
 
-    const body = (await page.$('body'))!
-    const clip = (await body.boundingBox())!
-    screenshot = (await page.screenshot({ clip })) as unknown as Buffer
+    switch (url.pathname) {
+      case '/render': {
+        const body = (await page.$('body'))!
+        const clip = (await body.boundingBox())!
+        const screenshot = (await page.screenshot({
+          clip,
+        })) as unknown as Buffer
+
+        res.writeHead(200, {
+          'content-type': 'image/png',
+        })
+        res.end(screenshot)
+
+        break
+      }
+
+      case '/measure': {
+        const body = (await page.$('body'))!
+        const clip = (await body.boundingBox())!
+        const screenshot = (await page.screenshot({
+          clip,
+        })) as unknown as Buffer
+
+        res.writeHead(200, {
+          'content-type': 'image/png',
+        })
+        res.end(screenshot)
+
+        break
+      }
+
+      default: {
+        console.error('[ctrl] 404 not found')
+        res.writeHead(404)
+        res.end('404 not found')
+        break
+      }
+    }
   } catch (e) {
     console.error('[puppeteer]')
     console.error(e)
 
-    res.writeHead(500)
-    res.end(Buffer.allocUnsafe(0))
-
-    return
+    try {
+      res.writeHead(500)
+      res.end(Buffer.allocUnsafe(0))
+    } catch (_) {
+      // Ignore
+    }
   } finally {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     page.close()
   }
-
-  res.writeHead(200, {
-    'content-type': 'image/png',
-  })
-  res.end(screenshot)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
