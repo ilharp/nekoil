@@ -87,6 +87,7 @@ plugins:
       env: ${{ env.NEKOIL_ENV }}
       tgBotName: ${{ env.TG_BOT_NAME }}
       proxyToken: ${{ env.NEKOIL_PROXY_TOKEN }}
+      internalToken: ${{ env.NEKOIL_INTERNAL_TOKEN }}
       assets:
         endpoint: ${{ env.NEKOIL_ASSETS_ENDPOINT }}
         bucketId: ${{ env.NEKOIL_ASSETS_BUCKET_ID }}

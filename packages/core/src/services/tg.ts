@@ -1,10 +1,11 @@
 import type { Middleware } from '@koa/router'
+import type { User } from '@telegram-apps/types'
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
 import type { TelegramBot } from 'koishi-plugin-nekoil-adapter-telegram'
 import type { BinaryLike } from 'node:crypto'
 import { createHmac } from 'node:crypto'
-import type { User } from '@telegram-apps/types'
+import type { Config } from '../config'
 
 declare module 'koishi' {
   interface Context {
@@ -19,7 +20,10 @@ declare module 'koa' {
 }
 
 export class NekoilTgService extends Service {
-  constructor(ctx: Context) {
+  constructor(
+    ctx: Context,
+    private nekoilConfig: Config,
+  ) {
     super(ctx, 'nekoilTg')
   }
 
@@ -71,6 +75,15 @@ export class NekoilTgService extends Service {
 
   public middlewareInitData = () =>
     ((c, next) => {
+      const nekoilInternalToken = c.request.header['nekoil-internal-token']
+      if (
+        nekoilInternalToken &&
+        !Array.isArray(nekoilInternalToken) &&
+        nekoilInternalToken.length &&
+        nekoilInternalToken === this.nekoilConfig.internalToken
+      )
+        return next()
+
       const initDataRaw = c.request.header['nekoil-init-data']
       if (!initDataRaw || Array.isArray(initDataRaw) || !initDataRaw.length) {
         c.body = {

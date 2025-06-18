@@ -16,7 +16,7 @@ export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(UpusrService)
   ctx.plugin(NekoilUserService)
   ctx.plugin(NekoilPermissionService)
-  ctx.plugin(NekoilTgService)
+  ctx.plugin(NekoilTgService, config)
   ctx.plugin(cp, config)
   ctx.plugin(niassets, config)
   ctx.plugin(bind)
