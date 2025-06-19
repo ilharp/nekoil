@@ -29,7 +29,8 @@ export function apply(ctx: Context) {
     .option('remove', '-r')
     .action(async ({ session, options }) => {
       if (options!.remove) {
-        const { platform, userId: pid } = session!
+        const platform = session!.platform
+        const pid = session!.userId!
 
         const bindings = await ctx.database.get('binding', {
           aid: session!.user!.id,
@@ -65,7 +66,7 @@ export function apply(ctx: Context) {
       const token = generateToken()
 
       tokens[token] = {
-        id: session!.userId,
+        id: session!.userId!,
         bot: session!.bot as unknown as Bot,
       }
 
@@ -101,7 +102,7 @@ ${token}
       ['aid'],
     )
 
-    await bind(binding!.aid, session.platform, session.userId)
+    await bind(binding!.aid, session.platform, session.userId!)
 
     await originalBot.sendPrivateMessage(originalUserId, '账号绑定成功！')
   }, true)
