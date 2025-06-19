@@ -108,7 +108,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
     }
   } finally {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    page.close()
+    if (!dev) page.close()
   }
 }
 
