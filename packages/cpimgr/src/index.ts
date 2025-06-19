@@ -56,7 +56,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
 
     switch (url.pathname) {
       case '/render': {
-        const body = (await page.$('body'))!
+        const body = (await page.$('#cpimgr-capture'))!
         const clip = (await body.boundingBox())!
         const screenshot = (await page.screenshot({
           clip,
