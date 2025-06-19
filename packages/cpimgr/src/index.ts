@@ -2,12 +2,16 @@ import type { CpimgrPayload } from 'nekoil-typedef'
 import { Buffer } from 'node:buffer'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
+import { argv } from 'node:process'
 import type { BoundingBox } from 'puppeteer-core'
 import { launch } from 'puppeteer-core'
 import find from 'puppeteer-finder'
 
+const dev = argv.slice(1).includes('--dev')
+
 const browser = await launch({
   executablePath: find() as string,
+  headless: !dev,
   args: ['--no-sandbox', '--disable-gpu'],
   defaultViewport: {
     deviceScaleFactor: 2,
@@ -46,7 +50,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       'Nekoil-Internal-Token': payload.internalToken,
       'Nekoil-SelfUrl-Internal': payload.selfUrlInternal,
     })
-    await page.setJavaScriptEnabled(false)
+    if (!dev) await page.setJavaScriptEnabled(false)
     await page.goto(payload.cpssrUrl)
     await page.waitForNetworkIdle()
 
