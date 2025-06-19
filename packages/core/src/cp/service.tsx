@@ -1,6 +1,5 @@
 import type { Context, Dict, FlatKeys, User } from 'koishi'
 import { $, h, Service } from 'koishi'
-import type {} from 'koishi-plugin-redis'
 import type {
   ContentPackFull,
   ContentPackHandleV1,

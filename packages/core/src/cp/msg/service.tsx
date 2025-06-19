@@ -9,7 +9,6 @@ import type {
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
-import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
@@ -117,15 +116,11 @@ export class NekoilCpMsgService extends Service {
         this.#process(platform, sessions)
       }
     } catch (e) {
-      if (e instanceof WatchError) {
-        return this.#buildFn(channel, emitter)
-      } else {
-        this.#l.error(`error processing channel ${channel}`)
-        this.#l.error(e)
-        // setTimeout(() => {
-        //   this.#buildFn(channel, emitter)
-        // }, 5000)
-      }
+      this.#l.error(`error processing channel ${channel}`)
+      this.#l.error(e)
+      // setTimeout(() => {
+      //   this.#buildFn(channel, emitter)
+      // }, 5000)
     }
   }
 
