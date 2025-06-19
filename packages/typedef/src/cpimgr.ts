@@ -5,4 +5,5 @@ export interface CpimgrPayload {
   cpwfData: ContentPackWithFull
   proxyToken: string
   internalToken: string
+  selfUrlInternal: string
 }

@@ -5,6 +5,7 @@ export interface Config {
   tgBotName: string
   proxyToken: string
   internalToken: string
+  selfUrlInternal: string
   assets: {
     endpoint: string
     bucketId: string
@@ -18,6 +19,7 @@ export const Config: Schema<Config> = Schema.object({
   tgBotName: Schema.string().required(),
   proxyToken: Schema.string().required(),
   internalToken: Schema.string().required(),
+  selfUrlInternal: Schema.string().required(),
   assets: Schema.object({
     endpoint: Schema.string().required(),
     bucketId: Schema.string().required(),

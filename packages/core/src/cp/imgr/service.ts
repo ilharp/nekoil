@@ -31,6 +31,7 @@ export class NekoilCpImgrService extends Service {
         cpwfData: data,
         proxyToken: this.nekoilConfig.proxyToken,
         internalToken: this.nekoilConfig.internalToken,
+        selfUrlInternal: this.nekoilConfig.selfUrlInternal,
       } satisfies CpimgrPayload,
     )) as unknown as Record<string, BoundingBox>
 
@@ -42,6 +43,7 @@ export class NekoilCpImgrService extends Service {
           cpwfData: data,
           proxyToken: this.nekoilConfig.proxyToken,
           internalToken: this.nekoilConfig.internalToken,
+          selfUrlInternal: this.nekoilConfig.selfUrlInternal,
         } satisfies CpimgrPayload,
         responseType: 'arraybuffer',
       })
