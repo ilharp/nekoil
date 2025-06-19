@@ -29,7 +29,6 @@
     "@satorijs/element": "^3.1.7",
     "http-proxy": "^1.18.1",
     "koishi-plugin-nekoil-adapter-onebot": "workspace:^",
-    "koishi-plugin-redis": "workspace:^",
     "lodash-es": "^4.17.21",
     "mime": "^4.0.7",
     "sharp": "^0.34.1",
@@ -39,8 +38,7 @@
     "service": {
       "required": [
         "server",
-        "database",
-        "redis"
+        "database"
       ]
     }
   }

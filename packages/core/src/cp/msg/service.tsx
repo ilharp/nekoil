@@ -9,7 +9,6 @@ import type {
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
-import type {} from 'koishi-plugin-redis'
 import { WatchError } from 'koishi-plugin-redis'
 import { debounce, escape } from 'lodash-es'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
@@ -42,7 +41,7 @@ type OneBotForwardMsg = {
 }[]
 
 export class NekoilCpMsgService extends Service {
-  static inject = ['nekoilCp', 'redis', 'database']
+  static inject = ['nekoilCp', 'database']
 
   #l
 
@@ -51,6 +50,14 @@ export class NekoilCpMsgService extends Service {
 
     this.#l = ctx.logger('nekoilCpMsg')
   }
+
+  #msgMap: Record<
+    string,
+    {
+      lmt: number
+      sessions: NekoilMsgSession[]
+    }
+  > = {}
 
   #emitMap: Record<string, Emitter> = {}
 
@@ -63,6 +70,19 @@ export class NekoilCpMsgService extends Service {
       this.#emitMap[channel] = emitter
     }
     return this.#emitMap[channel]
+  }
+
+  push = (channel: string, session: NekoilMsgSession) => {
+    if (!this.#msgMap[channel]) {
+      this.#msgMap[channel] = {
+        lmt: new Date().getTime(),
+        sessions: [session],
+      }
+      return
+    }
+
+    this.#msgMap[channel].lmt = new Date().getTime()
+    this.#msgMap[channel].sessions.push(session)
   }
 
   emit = (channel: string) => {
@@ -82,32 +102,11 @@ export class NekoilCpMsgService extends Service {
   #buildFn = (channel: string, emitter: Emitter) => async () => {
     if (emitter.lock) return
 
-    let client
-
     try {
-      client = await this.ctx.redis.isolate()
+      const { lmt, sessions } = this.#msgMap[channel]!
 
-      const lmtKey = `nekoilv1:msg:${channel}:time`
-      const dataKey = `nekoilv1:msg:${channel}:data`
-
-      await client.watch(dataKey)
-
-      let multi = client.multi()
-      multi.get(lmtKey)
-      const [lmt] = (await multi.exec()) as unknown as [string]
       if (new Date().getTime() - Number(lmt) < 3500)
         return this.#buildFn(channel, emitter)
-
-      multi = client.multi()
-      multi.lRange(dataKey, 0, -1)
-      multi.del(dataKey)
-      multi.del(lmtKey)
-
-      const [sessions] = (await multi.exec()) as unknown as [
-        string[],
-        number,
-        number,
-      ]
 
       if (sessions.length) {
         const splitIndex = channel.indexOf(':')
@@ -115,10 +114,7 @@ export class NekoilCpMsgService extends Service {
         // const channelId = channel.slice(splitIndex + 1)
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.#process(
-          platform,
-          sessions.map((x) => JSON.parse(x) as NekoilMsgSession),
-        )
+        this.#process(platform, sessions)
       }
     } catch (e) {
       if (e instanceof WatchError) {
@@ -130,8 +126,6 @@ export class NekoilCpMsgService extends Service {
         //   this.#buildFn(channel, emitter)
         // }, 5000)
       }
-    } finally {
-      if (client) client.destroy()
     }
   }
 
