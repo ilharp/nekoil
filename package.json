@@ -88,7 +88,6 @@
     "@koishijs/plugin-inspect": "^1.1.7",
     "@koishijs/plugin-locales": "^2.5.3",
     "@koishijs/plugin-logger": "^2.6.9",
-    "@koishijs/plugin-market": "^2.11.6",
     "@koishijs/plugin-notifier": "^1.2.1",
     "@koishijs/plugin-oobe": "^0.0.2",
     "@koishijs/plugin-proxy-agent": "^0.3.3",

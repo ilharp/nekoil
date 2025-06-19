@@ -34,9 +34,6 @@ plugins:
     explorer:u2zb6t: {}
     logger:cir834: {}
     insight:hat3yy: {}
-    market:3yl89x:
-      search:
-        endpoint: https://kp.itzdrli.cc
     notifier:02ioyo: {}
     oobe:7ht2tf: {}
     sandbox:ia3k3p: {}

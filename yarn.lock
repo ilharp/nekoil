@@ -2859,28 +2859,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-market@npm:^2.11.6":
-  version: 2.11.6
-  resolution: "@koishijs/plugin-market@npm:2.11.6"
-  dependencies:
-    "@koishijs/console": "npm:^5.30.7"
-    "@koishijs/registry": "npm:^7.0.3"
-    execa: "npm:^5.1.1"
-    get-registry: "npm:^1.2.0"
-    ns-require: "npm:^1.1.4"
-    p-map: "npm:^4.0.0"
-    semver: "npm:^7.6.3"
-    which-pm-runs: "npm:^1.1.0"
-  peerDependencies:
-    "@koishijs/plugin-console": ^5.30.7
-    koishi: ^4.18.7
-  peerDependenciesMeta:
-    "@koishijs/plugin-console":
-      optional: true
-  checksum: 10c0/cab747bad1af49dcbfdd1c96815940d4eae97e7ef98cafe53c75cdc02f1a589f9ab84b601efce42191f2805b715ce7f78002253008142ef3583a7d39b23d542f
-  languageName: node
-  linkType: hard
-
 "@koishijs/plugin-notifier@npm:^1.2.1":
   version: 1.2.1
   resolution: "@koishijs/plugin-notifier@npm:1.2.1"
@@ -11949,7 +11927,6 @@ __metadata:
     "@koishijs/plugin-inspect": "npm:^1.1.7"
     "@koishijs/plugin-locales": "npm:^2.5.3"
     "@koishijs/plugin-logger": "npm:^2.6.9"
-    "@koishijs/plugin-market": "npm:^2.11.6"
     "@koishijs/plugin-notifier": "npm:^1.2.1"
     "@koishijs/plugin-oobe": "npm:^0.0.2"
     "@koishijs/plugin-proxy-agent": "npm:^0.3.3"
