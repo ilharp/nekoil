@@ -10,30 +10,54 @@ import {
 } from '@sym-app/components'
 import type { ContentPackWithFull } from 'nekoil-typedef'
 import type { GetServerSideProps } from 'next'
+import { useMemo } from 'react'
+
+import styles from './index.module.scss'
 
 interface Props {
   data: ContentPackWithFull
+  selfUrlInternal: string
 }
 
-export default function Page({ data }: Props) {
+// eslint-disable-next-line import/no-default-export
+export default function Page({ data, selfUrlInternal }: Props) {
+  const symAioHost = useMemo<SymAioHost>(
+    () => ({
+      ...baseSymAioHost,
+      frRenderers: {
+        ...baseSymAioHost.frRenderers,
+        img: (_frCtx, element) => [
+          <img
+            width={`${element.attrs.width}px`}
+            src={`${selfUrlInternal}/nekoil/v0/proxy/${element.attrs.src}`}
+          />,
+        ],
+      },
+    }),
+    [selfUrlInternal],
+  )
+
   return (
-    <SymProvider>
-      <SymAioHostContext value={symAioHost}>
-        <SymAioCtxContext.Provider
-          value={{
-            messages: data.full.messages.map((x) => ({
-              ...x,
-              symHeader: x.user?.name,
-              elements: h.parse(x.content!),
-            })),
-          }}
-        >
-          <SymMsgGroupContext value={symMsgGroupCtx}>
-            <SymMsgVirtualList />
-          </SymMsgGroupContext>
-        </SymAioCtxContext.Provider>
-      </SymAioHostContext>
-    </SymProvider>
+    <div className={styles.rootContainer}>
+      <SymProvider className="sym-aio-msg-solidheader">
+        <SymAioHostContext value={symAioHost}>
+          <SymAioCtxContext.Provider
+            value={{
+              messages: data.full.messages.map((x) => ({
+                ...x,
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                symHeader: x.user?.name,
+                elements: h.parse(x.content!),
+              })),
+            }}
+          >
+            <SymMsgGroupContext value={symMsgGroupCtx}>
+              <SymMsgVirtualList />
+            </SymMsgGroupContext>
+          </SymAioCtxContext.Provider>
+        </SymAioHostContext>
+      </SymProvider>
+    </div>
   )
 }
 
@@ -46,11 +70,12 @@ export const getServerSideProps = (async (ctx) => {
           'base64',
         ).toString('utf-8'),
       ) as ContentPackWithFull,
+      selfUrlInternal: ctx.req.headers['nekoil-selfurl-internal'] as string,
     },
   }
 }) satisfies GetServerSideProps<Props>
 
-const symAioHost: SymAioHost = {
+const baseSymAioHost: SymAioHost = {
   frCanRemoveBubble: () => false,
   frRenderers: {
     ...frRenderers,
