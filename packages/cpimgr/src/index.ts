@@ -9,6 +9,11 @@ import find from 'puppeteer-finder'
 const browser = await launch({
   executablePath: find() as string,
   args: ['--no-sandbox', '--disable-gpu'],
+  defaultViewport: {
+    deviceScaleFactor: 2,
+    width: 50,
+    height: 50,
+  },
 })
 
 const controller = async (req: IncomingMessage, res: ServerResponse) => {
