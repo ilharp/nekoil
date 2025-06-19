@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@satorijs/element": "3.1.7",
-    "@satorijs/protocol": "1.6.0",
+    "@satorijs/element": "^3.1.7",
+    "@satorijs/protocol": "^1.6.1",
     "@sym-app/components": "workspace:^",
     "@tanstack/react-query": "^5.74.4",
     "@types/telegram-web-app": "^7.10.1",
@@ -18,8 +18,8 @@
     "lucide-react": "^0.501.0",
     "nekoil-typedef": "workspace:^",
     "normalize.css": "^8.0.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-router": "^7.4.1",
     "typescript": "^5.8.2",
     "vite": "^6.2.0"

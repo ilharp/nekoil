@@ -8,8 +8,8 @@
     "start": "next start --port 5142"
   },
   "dependencies": {
-    "@satorijs/element": "3.1.7",
-    "@satorijs/protocol": "1.6.0",
+    "@satorijs/element": "^3.1.7",
+    "@satorijs/protocol": "^1.6.1",
     "@sym-app/components": "workspace:^",
     "nekoil-typedef": "workspace:^",
     "next": "15.3.3",
