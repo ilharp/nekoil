@@ -15,7 +15,7 @@ const browser = await launch({
   args: ['--no-sandbox', '--disable-gpu'],
   defaultViewport: {
     deviceScaleFactor: 2,
-    width: 500,
+    width: 800,
     height: dev ? 800 : 50,
   },
 })
