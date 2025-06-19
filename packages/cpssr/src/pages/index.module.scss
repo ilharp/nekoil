@@ -1,3 +1,7 @@
-.rootContainer {
+.outerContainer {
+  display: flex;
+}
+
+.innerContainer {
   padding: 8px 8px 8px 0;
 }

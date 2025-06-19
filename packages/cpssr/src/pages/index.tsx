@@ -38,25 +38,27 @@ export default function Page({ data, selfUrlInternal }: Props) {
   )
 
   return (
-    <div className={styles.rootContainer}>
-      <SymProvider className="sym-aio-msg-solidheader">
-        <SymAioHostContext value={symAioHost}>
-          <SymAioCtxContext.Provider
-            value={{
-              messages: data.full.messages.map((x) => ({
-                ...x,
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                symHeader: x.user?.name,
-                elements: h.parse(x.content!),
-              })),
-            }}
-          >
-            <SymMsgGroupContext value={symMsgGroupCtx}>
-              <SymMsgVirtualList />
-            </SymMsgGroupContext>
-          </SymAioCtxContext.Provider>
-        </SymAioHostContext>
-      </SymProvider>
+    <div className={styles.outerContainer}>
+      <div id="cpimgr-capture" className={styles.innerContainer}>
+        <SymProvider className="sym-aio-msg-solidheader">
+          <SymAioHostContext value={symAioHost}>
+            <SymAioCtxContext.Provider
+              value={{
+                messages: data.full.messages.map((x) => ({
+                  ...x,
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                  symHeader: x.user?.name,
+                  elements: h.parse(x.content!),
+                })),
+              }}
+            >
+              <SymMsgGroupContext value={symMsgGroupCtx}>
+                <SymMsgVirtualList />
+              </SymMsgGroupContext>
+            </SymAioCtxContext.Provider>
+          </SymAioHostContext>
+        </SymProvider>
+      </div>
     </div>
   )
 }
