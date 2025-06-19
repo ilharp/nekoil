@@ -109,6 +109,7 @@ const listeners: Record<number, (response: Response) => void> = {}
 
 export function accept(
   socket: Universal.WebSocket,
+  // @ts-expect-error
   bot: OneBotBot<Context, OneBotBot.BaseConfig & SharedConfig>,
 ) {
   socket.addEventListener('message', ({ data }) => {
