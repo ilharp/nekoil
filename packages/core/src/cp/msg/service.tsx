@@ -9,6 +9,7 @@ import type {
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
+import type { InlineKeyboardMarkup } from 'koishi-plugin-nekoil-adapter-telegram'
 import { debounce, escape } from 'lodash-es'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
@@ -40,7 +41,7 @@ type OneBotForwardMsg = {
 }[]
 
 export class NekoilCpMsgService extends Service {
-  static inject = ['nekoilCp', 'database']
+  static inject = ['nekoilCp', 'database', 'nekoilCpImgr', 'nekoilAssets']
 
   #l
 
@@ -396,7 +397,7 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
-      const { cpData, cpHandle } = await this.ctx.nekoilCp.cpCreate(
+      const { cpwf, cpHandle } = await this.ctx.nekoilCp.cpCreate(
         parsedContent,
         {
           cpPlatform,
@@ -409,34 +410,113 @@ export class NekoilCpMsgService extends Service {
 
       const handle = getHandle(cpHandle)
 
-      if (notifUserId) {
-        await notifBot.internal.sendMessage({
-          chat_id: notifUserId,
-          text: `<b>${escape(cpData.summary.title)}</b>\n\n${cpData.summary.summary.map(escape).join('\n')}`,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: `查看 ${cpData.summary.count} 条聊天记录`,
-                  url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
-                },
-                {
-                  text: '转发',
-                  switch_inline_query: handle,
-                },
-              ],
-            ],
-          },
+      if (progressMsg) {
+        await notifBot.internal.editMessageText({
+          chat_id: pidNumber,
+          message_id: progressMsg,
+          text: `已生成 ${cpwf.summary.count} 条聊天记录。正在生成图片…`,
         })
-      } else {
-        this.#l.info(
-          `cp ${handle} created, platform ${platform} pid ${pidNumber}`,
-        )
       }
+
+      try {
+        const [image] = await this.ctx.nekoilCpImgr.render(cpwf)
+
+        const niaResult = await this.ctx.nekoilAssets.uploadImg({
+          data: image!,
+          filename: '0.png',
+          type: 'image/png',
+        })
+
+        if (notifUserId) {
+          const formData = new FormData()
+          formData.append('chat_id', notifUserId)
+          formData.append(
+            'reply_markup',
+            JSON.stringify({
+              inline_keyboard: [
+                [
+                  {
+                    text: `查看 ${cpwf.summary.count} 条聊天记录`,
+                    url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
+                  },
+                  {
+                    text: '转发',
+                    switch_inline_query: handle,
+                  },
+                ],
+              ],
+            } satisfies InlineKeyboardMarkup),
+          )
+
+          formData.append('photo', 'attach://i.png')
+          formData.append(
+            'i.png',
+            new Blob([image!], {
+              type: 'image/png',
+            }),
+            'i.png',
+          )
+
+          // @ts-expect-error
+          const sendPhotoResult = await notifBot.internal.sendPhoto(formData)
+
+          await this.ctx.database.set('niassets_v1', niaResult.niaid, {
+            tgFileId: sendPhotoResult.photo![0]!.file_id!,
+          })
+
+          await this.ctx.database.set('cp_v1', cpwf.cpid, {
+            cpssrNiaid: niaResult.niaid,
+          })
+
+          await this.ctx.database.create('niassets_rc_v1', {
+            niaid: niaResult.niaid,
+            ref: cpwf.cpid,
+            ref_type: 2, // cpssr
+          })
+        }
+      } catch (e) {
+        this.#l.error(`cpssr err in cp create for cpid ${cpwf.cpid}`)
+        this.#l.error(e)
+
+        if (progressMsg) {
+          await notifBot.internal.editMessageText({
+            chat_id: pidNumber,
+            message_id: progressMsg,
+            text: `图片生成失败。`,
+          })
+
+          await notifBot.internal.sendMessage({
+            chat_id: notifUserId,
+            text: `<b>${escape(cpwf.summary.title)}</b>\n\n${cpwf.summary.summary.map(escape).join('\n')}`,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: `查看 ${cpwf.summary.count} 条聊天记录`,
+                    url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
+                  },
+                  {
+                    text: '转发',
+                    switch_inline_query: handle,
+                  },
+                ],
+              ],
+            },
+          })
+
+          // progressMsg 留给用户，不用删了
+          progressMsg = undefined
+        }
+      }
+
+      this.#l.info(
+        `cp ${handle} created, platform ${platform} pid ${pidNumber}`,
+      )
 
       if (progressMsg) {
         await notifBot.deleteMessage(notifUserId!, String(progressMsg))
+        progressMsg = undefined
       }
     } catch (e) {
       this.#l.error(`error processing message:`)
@@ -453,6 +533,7 @@ export class NekoilCpMsgService extends Service {
       if (progressMsg) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         notifBot.deleteMessage(notifUserId!, String(progressMsg))
+        progressMsg = undefined
       }
     }
   }
