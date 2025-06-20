@@ -6,4 +6,5 @@ export interface CpimgrPayload {
   proxyToken: string
   internalToken: string
   selfUrlInternal: string
+  showMoreTip: boolean
 }

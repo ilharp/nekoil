@@ -1,7 +1,6 @@
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
 import type { ContentPackWithFull, CpimgrPayload } from 'nekoil-typedef'
-import type { BoundingBox } from 'puppeteer-core'
 import type { Config } from '../../config'
 
 declare module 'koishi' {
@@ -23,7 +22,6 @@ export class NekoilCpImgrService extends Service {
   }
 
   public render = async (data: ContentPackWithFull) => {
-    // @ts-ignore
     const measure = (await this.ctx.http.post(
       this.nekoilConfig.cpimgrUrl + '/measure',
       {
@@ -32,8 +30,11 @@ export class NekoilCpImgrService extends Service {
         proxyToken: this.nekoilConfig.proxyToken,
         internalToken: this.nekoilConfig.internalToken,
         selfUrlInternal: this.nekoilConfig.selfUrlInternal,
+        showMoreTip: false,
       } satisfies CpimgrPayload,
-    )) as unknown as Record<string, BoundingBox>
+    )) as unknown as {
+      height: number
+    }
 
     const image = (
       await this.ctx.http(this.nekoilConfig.cpimgrUrl + '/render', {
@@ -44,6 +45,7 @@ export class NekoilCpImgrService extends Service {
           proxyToken: this.nekoilConfig.proxyToken,
           internalToken: this.nekoilConfig.internalToken,
           selfUrlInternal: this.nekoilConfig.selfUrlInternal,
+          showMoreTip: measure.height === 960,
         } satisfies CpimgrPayload,
         responseType: 'arraybuffer',
       })

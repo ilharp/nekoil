@@ -3,7 +3,6 @@ import { Buffer } from 'node:buffer'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
 import { argv } from 'node:process'
-import type { BoundingBox } from 'puppeteer-core'
 import { launch } from 'puppeteer-core'
 import find from 'puppeteer-finder'
 
@@ -15,8 +14,8 @@ const browser = await launch({
   args: ['--no-sandbox', '--disable-gpu'],
   defaultViewport: {
     deviceScaleFactor: 2.5,
-    width: 800,
-    height: dev ? 800 : 50,
+    width: 432,
+    height: dev ? 1000 : 50,
   },
 })
 
@@ -49,6 +48,7 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       'Nekoil-Proxy-Token': payload.proxyToken,
       'Nekoil-Internal-Token': payload.internalToken,
       'Nekoil-SelfUrl-Internal': payload.selfUrlInternal,
+      'Nekoil-ShowMoreTip': payload.showMoreTip ? 'true' : '',
     })
     if (!dev) await page.setJavaScriptEnabled(false)
     await page.goto(payload.cpssrUrl)
@@ -71,20 +71,27 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       }
 
       case '/measure': {
-        const result: Record<string, BoundingBox> = {}
-        const elements = (await page.evaluate(
-          "Array.from(document.querySelectorAll('[data-cpimgr-measure]')).map(x => x.getAttribute('data-cpimgr-measure'))",
-        )) as string[]
+        // const result: Record<string, BoundingBox> = {}
+        // const elements = (await page.evaluate(
+        //   "Array.from(document.querySelectorAll('[data-cpimgr-measure]')).map(x => x.getAttribute('data-cpimgr-measure'))",
+        // )) as string[]
 
-        for (const elemId of elements) {
-          const elem = (await page.$(`[data-cpimgr-measure="${elemId}"]`))!
-          result[elemId] = (await elem.boundingBox())!
-        }
+        // for (const elemId of elements) {
+        //   const elem = (await page.$(`[data-cpimgr-measure="${elemId}"]`))!
+        //   result[elemId] = (await elem.boundingBox())!
+        // }
+
+        const body = (await page.$('#cpimgr-capture'))!
+        const clip = (await body.boundingBox())!
 
         res.writeHead(200, {
           'content-type': 'application/json',
         })
-        res.end(JSON.stringify(result))
+        res.end(
+          JSON.stringify({
+            height: clip.height,
+          }),
+        )
 
         break
       }

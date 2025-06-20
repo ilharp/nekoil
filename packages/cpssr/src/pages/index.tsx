@@ -18,10 +18,11 @@ import styles from './index.module.scss'
 interface Props {
   data: ContentPackWithFull
   selfUrlInternal: string
+  showMoreTip: boolean
 }
 
 // eslint-disable-next-line import/no-default-export
-export default function Page({ data, selfUrlInternal }: Props) {
+export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
   const symAioHost = useMemo<SymAioHost>(
     () => ({
       ...baseSymAioHost,
@@ -62,15 +63,17 @@ export default function Page({ data, selfUrlInternal }: Props) {
         </SymProvider>
       </div>
 
-      <div className={styles.moreTipOuterContainer}>
-        <div className={styles.moreTipBg} />
-        <div className={styles.moreTipContentContainer}>
-          <div className={styles.moreTipContent}>
-            <ArrowRight className={styles.moreTipContentIcon} /> 查看{' '}
-            {data.summary.count} 条聊天记录
+      {showMoreTip && (
+        <div className={styles.moreTipOuterContainer}>
+          <div className={styles.moreTipBg} />
+          <div className={styles.moreTipContentContainer}>
+            <div className={styles.moreTipContent}>
+              <ArrowRight className={styles.moreTipContentIcon} /> 查看{' '}
+              {data.summary.count} 条聊天记录
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -85,6 +88,7 @@ export const getServerSideProps = (async (ctx) => {
         ).toString('utf-8'),
       ) as ContentPackWithFull,
       selfUrlInternal: ctx.req.headers['nekoil-selfurl-internal'] as string,
+      showMoreTip: (ctx.req.headers['nekoil-showmoretip'] as string) === 'true',
     },
   }
 }) satisfies GetServerSideProps<Props>
