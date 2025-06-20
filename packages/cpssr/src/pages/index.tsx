@@ -1,6 +1,9 @@
 import h from '@satorijs/element'
 import type { SymAioHost, SymMsgGroupCtx } from '@sym-app/components'
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   frRenderers,
   SymAioCtxContext,
   SymAioHostContext,
@@ -26,6 +29,15 @@ export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
   const symAioHost = useMemo<SymAioHost>(
     () => ({
       ...baseSymAioHost,
+      avatarRenderer: (msg) => (
+        <Avatar className="sym-aio-avatar">
+          <AvatarImage
+            src={`${selfUrlInternal}/nekoil/v0/proxy/${msg.user?.avatar}`}
+            alt={msg.user?.name}
+          />
+          <AvatarFallback>{msg.user?.name?.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+      ),
       frRenderers: {
         ...baseSymAioHost.frRenderers,
         img: (_frCtx, element) => [
