@@ -29,6 +29,7 @@ export default function Page({ data, selfUrlInternal }: Props) {
         ...baseSymAioHost.frRenderers,
         img: (_frCtx, element) => [
           <img
+            className={styles.frImg}
             width={`${element.attrs.width}px`}
             src={`${selfUrlInternal}/nekoil/v0/proxy/${element.attrs.src}`}
           />,
