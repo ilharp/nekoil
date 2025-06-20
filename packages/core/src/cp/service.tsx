@@ -146,7 +146,7 @@ export class NekoilCpService extends Service {
 
       return {
         code: 200,
-        data: await this.#parse(contentPack),
+        data: await this.#parseExternal(contentPack),
       }
     } catch (e) {
       if (!(e instanceof NoLoggingError)) this.#l.error(e)
@@ -539,28 +539,15 @@ export class NekoilCpService extends Service {
   }
 
   /**
-   * 转换 {@link ContentPackV1} 到 {@link ContentPackWithFull}
+   * 转换 {@link ContentPackV1} 到 {@link ContentPackWithFull} - 对内
    *
-   * 出了解压 data_ 字段以外，还需要做到前端安全，把不该传给前端的去掉。包括：
-   *
-   * - cpid 等
-   * - img 里的 origin
+   * 仅限内部用，外部要用的话调 parseExternal
    */
-  #parse = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
+  #parseIntl = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
     const result = structuredClone(cp) as unknown as ContentPackWithFull
-
-    if (Object.hasOwn(result, 'cpid' satisfies keyof ContentPackWithFull))
-      delete (result as Partial<ContentPackWithFull>).cpid
-
-    if (Object.hasOwn(result, 'creator' satisfies keyof ContentPackWithFull))
-      delete (result as Partial<ContentPackWithFull>).creator
-
-    if (Object.hasOwn(result, 'owner' satisfies keyof ContentPackWithFull))
-      delete (result as Partial<ContentPackWithFull>).owner
 
     if (result.data_summary) {
       result.summary = JSON.parse(result.data_summary) as ContentPackSummary
-      delete (result as Partial<ContentPackWithFull>).data_summary
     }
 
     if (result.data_full) {
@@ -586,7 +573,36 @@ export class NekoilCpService extends Service {
           throw new NoLoggingError()
         }
       }
+    }
 
+    return result
+  }
+
+  /**
+   * 转换 {@link ContentPackV1} 到 {@link ContentPackWithFull} - 对外
+   *
+   * 除了 parseIntl 的逻辑外，还需要做到前端安全，把不该传给前端的去掉。包括：
+   *
+   * - cpid 等
+   * - img 里的 origin
+   */
+  #parseExternal = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
+    const result = await this.#parseIntl(cp)
+
+    if (Object.hasOwn(result, 'cpid' satisfies keyof ContentPackWithFull))
+      delete (result as Partial<ContentPackWithFull>).cpid
+
+    if (Object.hasOwn(result, 'creator' satisfies keyof ContentPackWithFull))
+      delete (result as Partial<ContentPackWithFull>).creator
+
+    if (Object.hasOwn(result, 'owner' satisfies keyof ContentPackWithFull))
+      delete (result as Partial<ContentPackWithFull>).owner
+
+    if (result.data_summary) {
+      delete (result as Partial<ContentPackWithFull>).data_summary
+    }
+
+    if (result.data_full) {
       delete (result as Partial<ContentPackWithFull>).data_full_mode
       delete (result as Partial<ContentPackWithFull>).data_full
     }
