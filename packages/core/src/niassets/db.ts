@@ -68,6 +68,12 @@ export const apply = (ctx: Context) => {
         length: 4,
         nullable: false,
       },
+
+      tgFileId: {
+        type: 'string',
+        length: 100,
+        nullable: true,
+      },
     },
     {
       primary: 'niaid',

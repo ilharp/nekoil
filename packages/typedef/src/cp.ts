@@ -23,6 +23,8 @@ export interface ContentPackV1 extends DatabaseBase {
    * 1=manual 2=tg 3=qq
    */
   platform: number
+
+  cpssrNiaid: number
 }
 
 export interface ContentPackHandleV1 extends DatabaseBase {

@@ -73,6 +73,12 @@ export const apply = async (ctx: Context) => {
         length: 1,
         nullable: false,
       },
+
+      cpssrNiaid: {
+        type: 'unsigned',
+        length: 8,
+        nullable: true,
+      },
     },
     {
       primary: 'cpid',

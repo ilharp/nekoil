@@ -27,6 +27,8 @@ export interface NiAssetsV1 {
 
   width: number
   height: number
+
+  tgFileId: string
 }
 
 export interface NiAssetsRcV1 {
@@ -35,7 +37,7 @@ export interface NiAssetsRcV1 {
   niaid: number
 
   /**
-   * 1=cp
+   * 1=cp, 2=cpssr
    */
   ref_type: number
 
