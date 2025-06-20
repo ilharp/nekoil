@@ -235,34 +235,26 @@ export class NekoilCpService extends Service {
         }
 
         // 现在 existedHandle 就是足够使用的了，直接拿到足够的数据返回即可
-        const [cp] = await this.ctx.database.get(
-          'cp_v1',
-          (cp_v1) =>
-            $.and(
-              $.eq(cp_v1.deleted, 0),
-              $.in(
-                cp_v1.cpid,
-                this.ctx.database
-                  .select('cp_handle_v1', (cp_handle_v1) =>
-                    $.and(
-                      $.eq(cp_handle_v1.deleted, 0),
-                      $.eq(cp_handle_v1.handle, handle),
-                      $.eq(cp_handle_v1.handle_type, handle_type),
-                    ),
-                  )
-                  .evaluate('cpid'),
-              ),
+        const [cp] = await this.ctx.database.get('cp_v1', (cp_v1) =>
+          $.and(
+            $.eq(cp_v1.deleted, 0),
+            $.in(
+              cp_v1.cpid,
+              this.ctx.database
+                .select('cp_handle_v1', (cp_handle_v1) =>
+                  $.and(
+                    $.eq(cp_handle_v1.deleted, 0),
+                    $.eq(cp_handle_v1.handle, handle),
+                    $.eq(cp_handle_v1.handle_type, handle_type),
+                  ),
+                )
+                .evaluate('cpid'),
             ),
-          ['data_summary'],
+          ),
         )
 
-        const cpData = {
-          ...cp,
-          summary: JSON.parse(cp!.data_summary) as ContentPackSummary,
-        } satisfies Partial<ContentPackWithAll>
-
         return {
-          cpData,
+          cpwf: await this.#parseIntl(cp!),
           cp: {},
           cpHandle: {
             handle,
@@ -443,7 +435,7 @@ export class NekoilCpService extends Service {
     }
 
     return {
-      cpData: pack as ContentPackWithAll,
+      cpwf: pack as ContentPackWithAll,
       cp,
       cpHandle,
     }
@@ -459,7 +451,7 @@ export class NekoilCpService extends Service {
       if (!attrs['forward']) return h('message', attrs, children)
 
       // 处理嵌套 cp
-      const { cpHandle, cpData } = await this.#cpCreateIntl(
+      const { cpHandle, cpwf } = await this.#cpCreateIntl(
         children.filter((x) => x.type === 'message'),
         {
           ...option,
@@ -472,11 +464,11 @@ export class NekoilCpService extends Service {
       return (
         <nekoil:cp
           handle={getHandle(cpHandle)}
-          title={cpData.summary.title}
-          count={cpData.summary.count}
+          title={cpwf.summary.title}
+          count={cpwf.summary.count}
         >
           <nekoil:cpsummarylist>
-            {cpData.summary.summary.map((x) => (
+            {cpwf.summary.summary.map((x) => (
               <nekoil:cpsummary content={x} />
             ))}
           </nekoil:cpsummarylist>
@@ -690,6 +682,7 @@ interface CpCreateIntlState {
 
 interface CpCreateResult {
   cpData: Pick<ContentPackWithAll, 'summary'>
+  cpwf: ContentPackWithAll
   cp: Pick<ContentPackV1, never>
   cpHandle: Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
 }
