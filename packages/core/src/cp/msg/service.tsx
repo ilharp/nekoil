@@ -97,24 +97,30 @@ export class NekoilCpMsgService extends Service {
     this.#getEmitter(channel).lock--
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   #buildFn = (channel: string, emitter: Emitter) => async () => {
     if (emitter.lock) return
 
     try {
-      const { lmt, sessions } = this.#msgMap[channel]!
+      const msgSessions = this.#msgMap[channel]
 
-      if (new Date().getTime() - Number(lmt) < 3500)
-        return this.#buildFn(channel, emitter)
+      if (!msgSessions) return
 
-      if (sessions.length) {
+      if (new Date().getTime() - Number(msgSessions.lmt) < 3500) {
+        setTimeout(() => {
+          this.#buildFn(channel, emitter)
+        }, 1000)
+        return
+      }
+
+      delete this.#msgMap[channel]
+
+      if (msgSessions.sessions.length) {
         const splitIndex = channel.indexOf(':')
         const platform = channel.slice(0, splitIndex)
         // const channelId = channel.slice(splitIndex + 1)
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.#process(platform, sessions)
+        this.#process(platform, msgSessions.sessions)
       }
     } catch (e) {
       this.#l.error(`error processing channel ${channel}`)
