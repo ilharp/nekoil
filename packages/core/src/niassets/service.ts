@@ -3,6 +3,7 @@ import {
   S3Client,
   S3ServiceException,
 } from '@aws-sdk/client-s3'
+import type { FileResponse } from '@koishijs/plugin-http'
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
 import mime from 'mime'
@@ -35,10 +36,10 @@ export class NekoilAssetsService extends Service {
   #s3 = new S3Client({})
 
   #uploadImgIntl = async (
-    src: string,
+    src: string | FileResponse,
   ): Promise<NekoilAssetsUploadImgResult> => {
     try {
-      const file = await this.ctx.http.file(src)
+      const file = typeof src === 'string' ? await this.ctx.http.file(src) : src
       const size = file.data.byteLength
       const fileBuffer = Buffer.from(file.data)
 
@@ -150,7 +151,7 @@ export class NekoilAssetsService extends Service {
     undefined as unknown as NekoilAssetsUploadImgResult,
   )
 
-  public uploadImg = async (src: string) => {
+  public uploadImg = async (src: string | FileResponse) => {
     const task = this.#uploadImgQueue.then(async () => this.#uploadImgIntl(src))
     this.#uploadImgQueue = task.catch(
       // 这个值使用者不会取到的，给 undefined 就行
