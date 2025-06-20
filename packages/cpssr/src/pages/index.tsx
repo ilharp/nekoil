@@ -8,6 +8,7 @@ import {
   SymMsgVirtualList,
   SymProvider,
 } from '@sym-app/components'
+import { ArrowRight } from 'lucide-react'
 import type { ContentPackWithFull } from 'nekoil-typedef'
 import type { GetServerSideProps } from 'next'
 import { useMemo } from 'react'
@@ -38,8 +39,8 @@ export default function Page({ data, selfUrlInternal }: Props) {
   )
 
   return (
-    <div className={styles.outerContainer}>
-      <div id="cpimgr-capture" className={styles.innerContainer}>
+    <div id="cpimgr-capture" className={styles.outerContainer}>
+      <div className={styles.innerContainer}>
         <SymProvider className="sym-aio-msg-solidheader">
           <SymAioHostContext value={symAioHost}>
             <SymAioCtxContext.Provider
@@ -58,6 +59,16 @@ export default function Page({ data, selfUrlInternal }: Props) {
             </SymAioCtxContext.Provider>
           </SymAioHostContext>
         </SymProvider>
+      </div>
+
+      <div className={styles.moreTipOuterContainer}>
+        <div className={styles.moreTipBg} />
+        <div className={styles.moreTipContentContainer}>
+          <div className={styles.moreTipContent}>
+            <ArrowRight className={styles.moreTipContentIcon} /> 查看{' '}
+            {data.summary.count} 条聊天记录
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -11405,6 +11405,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.518.0":
+  version: 0.518.0
+  resolution: "lucide-react@npm:0.518.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/ba5483b54ef2a3571b488f9602fa18dfe762f0e0b15c0a1f6504713631ae4c50b7c4830f0c8ced4f5f41d2681f37bf67a759a0d0e62e07f00bdcdb50c7ea1279
+  languageName: node
+  linkType: hard
+
 "lz-string@npm:^1.5.0":
   version: 1.5.0
   resolution: "lz-string@npm:1.5.0"
@@ -11862,6 +11871,7 @@ __metadata:
     "@satorijs/element": "npm:^3.1.7"
     "@satorijs/protocol": "npm:^1.6.1"
     "@sym-app/components": "workspace:^"
+    lucide-react: "npm:^0.518.0"
     nekoil-typedef: "workspace:^"
     next: "npm:15.3.3"
     normalize.css: "npm:^8.0.1"

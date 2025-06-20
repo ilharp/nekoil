@@ -19,6 +19,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "lucide-react": "^0.518.0",
     "sass": "^1.89.1"
   }
 }
