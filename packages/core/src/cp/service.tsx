@@ -435,7 +435,10 @@ export class NekoilCpService extends Service {
     }
 
     return {
-      cpwf: pack as ContentPackWithAll,
+      cpwf: {
+        ...pack,
+        cpid: cp.cpid,
+      } as ContentPackWithAll,
       cp,
       cpHandle,
     }
@@ -681,7 +684,6 @@ interface CpCreateIntlState {
 }
 
 interface CpCreateResult {
-  cpData: Pick<ContentPackWithAll, 'summary'>
   cpwf: ContentPackWithAll
   cp: Pick<ContentPackV1, never>
   cpHandle: Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
