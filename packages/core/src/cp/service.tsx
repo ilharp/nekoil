@@ -249,7 +249,7 @@ export class NekoilCpService extends Service {
           cp: internal
             ? await this.#parseIntl(contentPack)
             : await this.#parseExternal(contentPack),
-          handle: queryHandle,
+          handle: isPlusHandle ? `_${queryHandle}` : queryHandle,
         },
       }
     } catch (e) {
