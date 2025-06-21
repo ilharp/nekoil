@@ -19,7 +19,7 @@ declare module 'koishi' {
 }
 
 export class NekoilCpImgrService extends Service {
-  static inject = ['database', 'nekoilAssets']
+  static inject = ['database', 'nekoilAssets', 'nekoilCp']
 
   // @ts-ignore
   #l
@@ -185,7 +185,7 @@ export class NekoilCpImgrService extends Service {
       // c. v1.1 以前的 cp
       // d. 上次 cpssr 生成失败了
 
-      const [image] = await this.ctx.nekoilCpImgr.render(cpwf)
+      const [image] = await this.render(cpwf)
 
       const niaResult = await this.ctx.nekoilAssets.uploadImg({
         data: image!,
