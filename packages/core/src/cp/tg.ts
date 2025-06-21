@@ -1,13 +1,122 @@
-import type {} from 'koishi-plugin-nekoil-adapter-telegram'
 import type { Context } from 'koishi'
-import type { NekoilUser } from '../services/user'
+import type { TelegramBot } from 'koishi-plugin-nekoil-adapter-telegram'
 import { escape } from 'lodash-es'
+import type { NekoilUser } from '../services/user'
+import { UserSafeError } from '../utils'
 
 export const name = 'nekoil-cp-tg'
 
-export const inject = ['nekoilCp']
+export const inject = ['nekoilCp', 'nekoilCpImgr']
 
 export const apply = (ctx: Context) => {
+  const l = ctx.logger('nekoilCpTg')
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpshow <handle:string>')
+    // @ts-expect-error
+    .action(async ({ session }, handle) => {
+      const cp = await ctx.nekoilCp.cpGetWithHandle(
+        undefined as unknown as NekoilUser,
+        handle,
+        true,
+        true,
+      )
+
+      if (cp.code !== 200)
+        return '找不到对应的聊天记录，请检查链接或 ID 是否正确。要从 resid 创建聊天记录，请先将 resid 私发给 nekoil。'
+
+      try {
+        await ctx.nekoilCpImgr.sendCpssr({
+          chatId: Number(session!.channelId),
+          cpwf: cp.data!.cp,
+          handle: cp.data!.handle,
+          bot: session!.bot as unknown as TelegramBot,
+          replyParameters: {
+            message_id: Number(session!.messageId),
+            allow_sending_without_reply: true,
+          },
+        })
+      } catch (e) {
+        l.error(
+          `nekoilcpshow: error sending message '${cp.data!.handle}' as img, try sending text.`,
+        )
+        l.error(e)
+
+        await session!.send(
+          `获取聊天记录截图时出现错误，将尝试以文本形式发送${e instanceof UserSafeError ? `：${e.message}` : '。'}`,
+        )
+
+        await ctx.nekoilCp.sendCptxt({
+          chatId: Number(session!.channelId),
+          cpwf: cp.data!.cp,
+          handle: cp.data!.handle,
+          bot: session!.bot as unknown as TelegramBot,
+          replyParameters: {
+            message_id: Number(session!.messageId),
+            allow_sending_without_reply: true,
+          },
+        })
+      }
+    })
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpshowimg <handle:string>')
+    // @ts-expect-error
+    .action(async ({ session }, handle) => {
+      const cp = await ctx.nekoilCp.cpGetWithHandle(
+        undefined as unknown as NekoilUser,
+        handle,
+        true,
+        true,
+      )
+
+      if (cp.code !== 200)
+        return '找不到对应的聊天记录，请检查链接或 ID 是否正确。要从 resid 创建聊天记录，请先将 resid 私发给 nekoil。'
+
+      await ctx.nekoilCpImgr.sendCpssr({
+        chatId: Number(session!.channelId),
+        cpwf: cp.data!.cp,
+        handle: cp.data!.handle,
+        bot: session!.bot as unknown as TelegramBot,
+        replyParameters: {
+          message_id: Number(session!.messageId),
+          allow_sending_without_reply: true,
+        },
+      })
+    })
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpshowtext <handle:string>')
+    // @ts-expect-error
+    .action(async ({ session }, handle) => {
+      const cp = await ctx.nekoilCp.cpGetWithHandle(
+        undefined as unknown as NekoilUser,
+        handle,
+        true,
+        true,
+      )
+
+      if (cp.code !== 200)
+        return '找不到对应的聊天记录，请检查链接或 ID 是否正确。要从 resid 创建聊天记录，请先将 resid 私发给 nekoil。'
+
+      await ctx.nekoilCp.sendCptxt({
+        chatId: Number(session!.channelId),
+        cpwf: cp.data!.cp,
+        handle: cp.data!.handle,
+        bot: session!.bot as unknown as TelegramBot,
+        replyParameters: {
+          message_id: Number(session!.messageId),
+          allow_sending_without_reply: true,
+        },
+      })
+    })
+
   ctx.on('telegram/inline-query', async (query, bot) => {
     // const user = await ctx.nekoilUser.getUser(
     //   'telegram',

@@ -11,9 +11,23 @@ plugins:
     admin:2rjo0n: {}
     commands:vnzxf1:
       nekoilpack:
+        name: /p
         aliases:
           p: null
-        name: /p
+      nekoilcpshow:
+        aliases:
+          show: null
+        name: /show
+      nekoilcpshowimg:
+        aliases:
+          showimg: null
+          showimage: null
+        name: /showimg
+      nekoilcpshowtext:
+        aliases:
+          showtxt: null
+          showtext: null
+        name: /showtxt
     help:k2t2x6: {}
     http:nsrnpu: {}
     inspect:jqy2ce: {}
