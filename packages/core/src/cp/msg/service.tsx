@@ -437,6 +437,12 @@ export class NekoilCpMsgService extends Service {
           const formData = new FormData()
           formData.append('chat_id', notifUserId)
           formData.append(
+            'caption',
+            `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
+          )
+          formData.append('parse_mode', 'HTML')
+          formData.append('show_caption_above_media', 'true')
+          formData.append(
             'reply_markup',
             JSON.stringify({
               inline_keyboard: [
@@ -493,7 +499,7 @@ export class NekoilCpMsgService extends Service {
 
           await notifBot.internal.sendMessage({
             chat_id: notifUserId,
-            text: `<b>${escape(cpwf.summary.title)}</b>\n\n${cpwf.summary.summary.map(escape).join('\n')}`,
+            text: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>\n\n${cpwf.summary.summary.map(escape).join('\n')}`,
             parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
