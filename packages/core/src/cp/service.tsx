@@ -59,7 +59,7 @@ export class NekoilCpService extends Service {
     user: NekoilUser,
     query: string,
     full: TFull = false as TFull,
-    {}: {} = {},
+    internal = false,
   ): Promise<
     NekoilResponseBody<
       TFull extends true ? ContentPackWithFull : ContentPackWithSummary
@@ -84,19 +84,6 @@ export class NekoilCpService extends Service {
       const isPlusHandle = queryHandle.startsWith('_')
       if (isPlusHandle) queryHandle = queryHandle.slice(1)
 
-      // Join ver.
-      //
-      // const [handle] = await this.ctx.database
-      //   .join(['cp_handle_v1', 'cp_v1'], (cp_handle_v1, cp_v1) =>
-      //     $.and(
-      //       $.eq(cp_handle_v1.deleted, false),
-      //       $.eq(cp_handle_v1.handle, queryHandle),
-      //       $.eq(cp_handle_v1.cpid, cp_v1.cpid),
-      //     ),
-      //   )
-      //   .execute()
-
-      // Subquery ver.
       const [contentPack] = await this.ctx.database.get(
         'cp_v1',
         (cp_v1) =>
@@ -149,7 +136,9 @@ export class NekoilCpService extends Service {
 
       return {
         code: 200,
-        data: await this.#parseExternal(contentPack),
+        data: internal
+          ? await this.#parseIntl(contentPack)
+          : await this.#parseExternal(contentPack),
       }
     } catch (e) {
       if (!(e instanceof NoLoggingError)) this.#l.error(e)
@@ -167,7 +156,7 @@ export class NekoilCpService extends Service {
     user: NekoilUser,
     query: string,
     full: TFull = false as TFull,
-    {}: {} = {},
+    internal = false,
   ): Promise<
     NekoilResponseBody<
       TFull extends true
@@ -253,7 +242,9 @@ export class NekoilCpService extends Service {
       return {
         code: 200,
         data: {
-          cp: await this.#parseExternal(contentPack),
+          cp: internal
+            ? await this.#parseIntl(contentPack)
+            : await this.#parseExternal(contentPack),
           handle: queryHandle,
         },
       }
