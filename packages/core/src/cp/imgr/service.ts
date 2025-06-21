@@ -149,7 +149,9 @@ export class NekoilCpImgrService extends Service {
       const sendPhotoResult = await bot.internal.sendPhoto(formData)
 
       await this.ctx.database.set('niassets_v1', niaid, {
-        tg_file_id: sendPhotoResult.photo![0]!.file_id!,
+        tg_file_id: sendPhotoResult.photo!.sort(
+          (a, b) => b.width! - a.width!,
+        )[0]!.file_id,
       })
     }
   }
