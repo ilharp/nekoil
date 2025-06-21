@@ -161,6 +161,112 @@ export class NekoilCpService extends Service {
     }
   }
 
+  public cpGetWithHandle = async <TFull extends boolean = false>(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    user: NekoilUser,
+    query: string,
+    full: TFull = false as TFull,
+    {}: {} = {},
+  ): Promise<
+    NekoilResponseBody<
+      TFull extends true
+        ? {
+            handle: string
+            cp: ContentPackWithFull
+          }
+        : {
+            handle: string
+            cp: ContentPackWithSummary
+          }
+    >
+  > => {
+    try {
+      let queryHandle = query
+
+      // Normal prefix
+      queryPrefixList.forEach(([prefix, length]) => {
+        if (queryHandle.startsWith(prefix))
+          queryHandle = decodeURIComponent(queryHandle.slice(length))
+      })
+
+      tgPrefixList.forEach(([prefix, length]) => {
+        if (queryHandle.startsWith(prefix))
+          queryHandle = decodeURIComponent(
+            Buffer.from(queryHandle.slice(length), 'base64').toString('utf-8'),
+          )
+      })
+
+      const isPlusHandle = queryHandle.startsWith('_')
+      if (isPlusHandle) queryHandle = queryHandle.slice(1)
+
+      const [contentPack] = await this.ctx.database.get(
+        'cp_v1',
+        (cp_v1) =>
+          $.and(
+            $.eq(cp_v1.deleted, 0),
+            $.in(
+              cp_v1.cpid,
+              this.ctx.database
+                .select('cp_handle_v1', (cp_handle_v1) =>
+                  $.and(
+                    $.eq(cp_handle_v1.deleted, 0),
+                    $.eq(cp_handle_v1.handle, queryHandle),
+                    isPlusHandle
+                      ? $.or(
+                          $.eq(cp_handle_v1.handle_type, 1),
+                          $.eq(cp_handle_v1.handle_type, 4),
+                        )
+                      : $.or(
+                          $.eq(cp_handle_v1.handle_type, 2),
+                          $.eq(cp_handle_v1.handle_type, 3),
+                        ),
+                  ),
+                )
+                .evaluate('cpid'),
+            ),
+          ),
+        [
+          'cpid',
+          'cp_version',
+          'created_time',
+          'creator',
+          'owner',
+          'data_summary',
+          'platform',
+          full ? 'data_full_mode' : false,
+          full ? 'data_full' : false,
+        ].filter(
+          Boolean as unknown as (
+            value: string | boolean,
+          ) => value is FlatKeys<ContentPackV1>,
+        ),
+      )
+
+      if (!contentPack) {
+        return {
+          code: 404,
+          msg: 'EXXXXX NOT FOUND',
+        }
+      }
+
+      return {
+        code: 200,
+        data: {
+          cp: await this.#parseExternal(contentPack),
+          handle: queryHandle,
+        },
+      }
+    } catch (e) {
+      if (!(e instanceof NoLoggingError)) this.#l.error(e)
+
+      return {
+        code: 500,
+        msg: 'EXXXXX INTERNAL SERVER ERROR',
+      }
+    }
+  }
+
   public sendCptxt = async ({
     chatId,
     bot,
