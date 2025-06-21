@@ -132,26 +132,28 @@ export const apply = (ctx: Context) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     queryHandle ||= 'help'
 
-    let cp = await ctx.nekoilCp.cpGet(
+    let cp = await ctx.nekoilCp.cpGetWithHandle(
       undefined as unknown as NekoilUser,
       queryHandle,
       false,
+      true,
     )
 
     if (cp.code !== 200) {
       noCache = true
 
       if (cp.code === 404)
-        cp = await ctx.nekoilCp.cpGet(
+        cp = await ctx.nekoilCp.cpGetWithHandle(
           undefined as unknown as NekoilUser,
           'notfound',
           false,
         )
       else
-        cp = await ctx.nekoilCp.cpGet(
+        cp = await ctx.nekoilCp.cpGetWithHandle(
           undefined as unknown as NekoilUser,
           'error',
           false,
+          true,
         )
     }
 
@@ -166,22 +168,22 @@ export const apply = (ctx: Context) => {
         {
           type: 'article',
           id: 'help',
-          title: cp.data!.summary.title,
-          description: cp.data!.summary.summary.join('\n'),
+          title: cp.data!.cp.summary.title,
+          description: cp.data!.cp.summary.summary.join('\n'),
           input_message_content: {
-            message_text: `<b>${escape(cp.data!.summary.title)}</b>\n\n${cp.data!.summary.summary.map(escape).join('\n')}`,
+            message_text: `<b>${escape(cp.data!.cp.summary.title)}</b>\n\n${cp.data!.cp.summary.summary.map(escape).join('\n')}`,
             parse_mode: 'HTML',
           },
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: `查看 ${cp.data!.summary.count} 条聊天记录`,
-                  url: ctx.nekoilCp.getTgStartAppUrl(queryHandle),
+                  text: `查看 ${cp.data!.cp.summary.count} 条聊天记录`,
+                  url: ctx.nekoilCp.getTgStartAppUrl(cp.data!.handle),
                 },
                 {
                   text: '转发',
-                  switch_inline_query: queryHandle,
+                  switch_inline_query: cp.data!.handle,
                 },
               ],
             ],
