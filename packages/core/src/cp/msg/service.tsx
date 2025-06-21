@@ -9,7 +9,6 @@ import type {
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
-import type { InlineKeyboardMarkup } from 'koishi-plugin-nekoil-adapter-telegram'
 import { debounce, escape } from 'lodash-es'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
@@ -425,67 +424,12 @@ export class NekoilCpMsgService extends Service {
       }
 
       try {
-        const [image] = await this.ctx.nekoilCpImgr.render(cpwf)
-
-        const niaResult = await this.ctx.nekoilAssets.uploadImg({
-          data: image!,
-          filename: '0.png',
-          type: 'image/png',
+        await this.ctx.nekoilCpImgr.sendCpssr({
+          chatId: notifUserId,
+          bot: notifBot,
+          cpwf,
+          handle,
         })
-
-        if (notifUserId) {
-          const formData = new FormData()
-          formData.append('chat_id', notifUserId)
-          formData.append(
-            'caption',
-            `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
-          )
-          formData.append('parse_mode', 'HTML')
-          formData.append('show_caption_above_media', 'true')
-          formData.append(
-            'reply_markup',
-            JSON.stringify({
-              inline_keyboard: [
-                [
-                  {
-                    text: `查看 ${cpwf.summary.count} 条聊天记录`,
-                    url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
-                  },
-                  {
-                    text: '转发',
-                    switch_inline_query: handle,
-                  },
-                ],
-              ],
-            } satisfies InlineKeyboardMarkup),
-          )
-
-          formData.append('photo', 'attach://i.png')
-          formData.append(
-            'i.png',
-            new Blob([image!], {
-              type: 'image/png',
-            }),
-            'i.png',
-          )
-
-          // @ts-expect-error
-          const sendPhotoResult = await notifBot.internal.sendPhoto(formData)
-
-          await this.ctx.database.set('niassets_v1', niaResult.niaid, {
-            tg_file_id: sendPhotoResult.photo![0]!.file_id!,
-          })
-
-          await this.ctx.database.set('cp_v1', cpwf.cpid, {
-            cpssr_niaid: niaResult.niaid,
-          })
-
-          await this.ctx.database.create('niassets_rc_v1', {
-            niaid: niaResult.niaid,
-            ref: cpwf.cpid,
-            ref_type: 2, // cpssr
-          })
-        }
       } catch (e) {
         this.#l.error(`cpssr err in cp create for cpid ${cpwf.cpid}`)
         this.#l.error(e)

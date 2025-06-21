@@ -107,3 +107,8 @@ export const zstdDecompressAsync = promisify(zstdDecompress)
 export const regexResid = /^[0-9a-zA-Z/+]{64}$/g
 
 export const authorId2Char = (id: number) => String.fromCodePoint(0x4e00 + id)
+
+export interface ReplyParameters {
+  message_id: number
+  allow_sending_without_reply?: boolean
+}
