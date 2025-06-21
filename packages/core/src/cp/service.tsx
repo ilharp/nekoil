@@ -285,6 +285,8 @@ export class NekoilCpService extends Service {
 
       creator: option.user.id,
       owner: option.user.id,
+
+      cpssr_version: 1,
     }
 
     const messages = await Promise.all(
