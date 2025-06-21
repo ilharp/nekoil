@@ -473,11 +473,11 @@ export class NekoilCpMsgService extends Service {
           const sendPhotoResult = await notifBot.internal.sendPhoto(formData)
 
           await this.ctx.database.set('niassets_v1', niaResult.niaid, {
-            tgFileId: sendPhotoResult.photo![0]!.file_id!,
+            tg_file_id: sendPhotoResult.photo![0]!.file_id!,
           })
 
           await this.ctx.database.set('cp_v1', cpwf.cpid, {
-            cpssrNiaid: niaResult.niaid,
+            cpssr_niaid: niaResult.niaid,
           })
 
           await this.ctx.database.create('niassets_rc_v1', {
