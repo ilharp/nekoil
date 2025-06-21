@@ -161,6 +161,7 @@ const cpBaseCreate = {
   owner: 0,
   data_full_mode: 2,
   platform: 1,
+  cpssr_version: 1,
 } as const
 
 const cpHandleBaseCreate = {
