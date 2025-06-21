@@ -306,6 +306,9 @@ export class NekoilCpService extends Service {
             ],
           ],
         },
+        link_preview_options: {
+          is_disabled: true,
+        },
       })
     }
   }
