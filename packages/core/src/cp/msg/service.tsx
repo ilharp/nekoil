@@ -9,7 +9,7 @@ import type {
 } from 'koishi-plugin-nekoil-adapter-onebot'
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
-import { debounce, escape } from 'lodash-es'
+import { debounce } from 'lodash-es'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
@@ -441,24 +441,11 @@ export class NekoilCpMsgService extends Service {
             text: `图片生成失败。`,
           })
 
-          await notifBot.internal.sendMessage({
-            chat_id: notifUserId,
-            text: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>\n\n${cpwf.summary.summary.map(escape).join('\n')}`,
-            parse_mode: 'HTML',
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: `查看 ${cpwf.summary.count} 条聊天记录`,
-                    url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
-                  },
-                  {
-                    text: '转发',
-                    switch_inline_query: handle,
-                  },
-                ],
-              ],
-            },
+          await this.ctx.nekoilCp.sendCptxt({
+            chatId: notifUserId,
+            bot: notifBot,
+            cpwf,
+            handle,
           })
 
           // progressMsg 留给用户，不用删了

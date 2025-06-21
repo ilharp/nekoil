@@ -1,5 +1,7 @@
 import type { Context, Dict, FlatKeys, User } from 'koishi'
 import { $, h, Service } from 'koishi'
+import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
+import { escape } from 'lodash-es'
 import type {
   ContentPackFull,
   ContentPackHandleV1,
@@ -16,6 +18,7 @@ import type { Config } from '../config'
 import type { NekoilAssetsUploadImgResult } from '../niassets/service'
 import { NekoilAssetsOversizedError } from '../niassets/service'
 import type { NekoilUser } from '../services/user'
+import type { ReplyParameters } from '../utils'
 import {
   ellipsis,
   generateHandle,
@@ -155,6 +158,49 @@ export class NekoilCpService extends Service {
         code: 500,
         msg: 'EXXXXX INTERNAL SERVER ERROR',
       }
+    }
+  }
+
+  public sendCptxt = async ({
+    chatId,
+    bot,
+    cpwf,
+    handle: originalHandle,
+    replyParameters,
+  }: {
+    chatId: number | string | undefined
+    bot: TelegramBot
+    cpwf: ContentPackWithFull
+    handle: string | Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
+    replyParameters?: ReplyParameters | undefined
+  }) => {
+    if (chatId) {
+      const handle =
+        typeof originalHandle === 'string'
+          ? originalHandle
+          : getHandle(originalHandle)
+
+      await bot.internal.sendMessage({
+        chat_id: chatId,
+        // @ts-expect-error
+        reply_parameters: replyParameters,
+        text: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>\n\n${cpwf.summary.summary.map(escape).join('\n')}`,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: `查看 ${cpwf.summary.count} 条聊天记录`,
+                url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
+              },
+              {
+                text: '转发',
+                switch_inline_query: handle,
+              },
+            ],
+          ],
+        },
+      })
     }
   }
 
