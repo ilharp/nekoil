@@ -304,7 +304,7 @@ export class NekoilCpMsgService extends Service {
       const onProgress = async (text: string) => {
         if (progressMsg)
           await notifBot.internal.editMessageText({
-            chat_id: pidNumber,
+            chat_id: notifUserId,
             message_id: progressMsg,
             text: `${loadingContent}\n${text}`,
           })
@@ -417,7 +417,7 @@ export class NekoilCpMsgService extends Service {
 
       if (progressMsg) {
         await notifBot.internal.editMessageText({
-          chat_id: pidNumber,
+          chat_id: notifUserId,
           message_id: progressMsg,
           text: `已生成 ${cpwf.summary.count} 条聊天记录。正在生成图片…`,
         })
@@ -436,7 +436,7 @@ export class NekoilCpMsgService extends Service {
 
         if (progressMsg) {
           await notifBot.internal.editMessageText({
-            chat_id: pidNumber,
+            chat_id: notifUserId,
             message_id: progressMsg,
             text: `图片生成失败。`,
           })
