@@ -118,6 +118,8 @@ export class NekoilCpService extends Service {
           'owner',
           'data_summary',
           'platform',
+          'cpssr_version',
+          'cpssr_niaid',
           full ? 'data_full_mode' : false,
           full ? 'data_full' : false,
         ].filter(
@@ -223,6 +225,8 @@ export class NekoilCpService extends Service {
           'owner',
           'data_summary',
           'platform',
+          'cpssr_version',
+          'cpssr_niaid',
           full ? 'data_full_mode' : false,
           full ? 'data_full' : false,
         ].filter(
