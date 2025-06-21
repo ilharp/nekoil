@@ -24,7 +24,9 @@ export interface ContentPackV1 extends DatabaseBase {
    */
   platform: number
 
-  cpssrNiaid: number
+  cpssr_version: number
+
+  cpssr_niaid: number
 }
 
 export interface ContentPackHandleV1 extends DatabaseBase {

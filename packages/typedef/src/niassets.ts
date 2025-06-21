@@ -28,7 +28,7 @@ export interface NiAssetsV1 {
   width: number
   height: number
 
-  tgFileId: string
+  tg_file_id: string
 }
 
 export interface NiAssetsRcV1 {

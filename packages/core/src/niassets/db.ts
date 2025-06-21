@@ -69,7 +69,7 @@ export const apply = (ctx: Context) => {
         nullable: false,
       },
 
-      tgFileId: {
+      tg_file_id: {
         type: 'string',
         length: 100,
         nullable: true,
