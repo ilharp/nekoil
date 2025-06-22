@@ -4,7 +4,7 @@ import type {} from '@koishijs/plugin-server'
 import type { Context } from 'koishi'
 import mime from 'mime'
 import type { Config } from '../config'
-import { setHeader, zstdDecompressAsync } from '../utils'
+import { setHeader } from '../utils'
 import { middlewareProxyToken } from '../utils/middlewares'
 
 export const name = 'nekoil-assets-controller'
@@ -49,19 +49,13 @@ export const apply = (ctx: Context, config: Config) => {
 
       const [_fileHandle, fileExt] = filenameSplit as [string, string]
 
-      const fileRes = await ctx.http(
-        `${config.assets.endpoint}/v1/${filename}`,
-        {
-          responseType: 'arraybuffer',
-        },
-      )
+      const fileRes = await ctx.nekoilAssets.get(filename)
 
-      for (const pair of fileRes.headers.entries())
+      for (const pair of fileRes.headers)
         if (pair[0] !== 'content-length' && pair[0] !== 'content-type')
           c.set(pair[0], pair[1])
 
-      const fileRaw = await zstdDecompressAsync(fileRes.data)
-      c.body = fileRaw
+      c.body = fileRes.data
 
       c.set('Content-Type', mime.getType(fileExt) || 'application/octet-stream')
 

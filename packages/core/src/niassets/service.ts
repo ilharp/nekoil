@@ -11,7 +11,8 @@ import { createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { rgbaToThumbHash } from 'thumbhash'
 import type { Config } from '../config'
-import { zstdCompressAsync } from '../utils'
+import { zstdCompressAsync, zstdDecompressAsync } from '../utils'
+import { NiAssetsV1 } from 'nekoil-typedef'
 
 declare module 'koishi' {
   interface Context {
@@ -34,6 +35,30 @@ export class NekoilAssetsService extends Service {
   }
 
   #s3 = new S3Client({})
+
+  public get = async (
+    filename: Pick<NiAssetsV1, 'filename' | 'mime'> | string,
+  ) => {
+    let parsedFilename: string
+
+    if (typeof filename === 'string') {
+      parsedFilename = filename
+    } else {
+      parsedFilename = `${filename.filename}.${mime.getExtension(filename.mime) ?? 'bin'}`
+    }
+
+    const fileRes = await this.ctx.http(
+      `${this.nekoilConfig.assets.endpoint}/v1/${parsedFilename}`,
+      {
+        responseType: 'arraybuffer',
+      },
+    )
+
+    return {
+      data: await zstdDecompressAsync(fileRes.data),
+      headers: fileRes.headers.entries(),
+    }
+  }
 
   #uploadImgIntl = async (
     src: string | FileResponse,
