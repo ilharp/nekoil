@@ -170,7 +170,7 @@ export class NekoilCpImgrService extends Service {
       const [nia] = await this.ctx.database.get(
         'niassets_v1',
         cpwf.cpssr_niaid,
-        ['tg_file_id'],
+        ['tg_file_id', 'filename', 'mime'],
       )
 
       if (nia!.tg_file_id) {
@@ -178,7 +178,14 @@ export class NekoilCpImgrService extends Service {
         await this.#sendCpssrUsingJson(payload, handle, nia!.tg_file_id)
       } else {
         // 没传 tg，传下 tg 然后存一下
-        throw new Error('cpssr: not implemented download nia and send to tg')
+        const { data: image } = await this.ctx.nekoilAssets.get(nia!)
+
+        await this.#sendCpssrUsingFormAndSave(
+          payload,
+          handle,
+          image,
+          cpwf.cpssr_niaid,
+        )
       }
     } else {
       // 没存 nia，那可能是
