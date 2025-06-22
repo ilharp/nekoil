@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 
 import type {} from '@koishijs/plugin-server'
-import { createProxyServer } from 'http-proxy'
 import type { Context } from 'koishi'
 import mime from 'mime'
 import type { Config } from '../config'
@@ -20,11 +19,6 @@ export const inject = [
 
 export const apply = (ctx: Context, config: Config) => {
   // const l = ctx.logger('nekoilAssetsController')
-
-  const proxy = createProxyServer()
-  ctx.on('dispose', () => {
-    proxy.close()
-  })
 
   ctx.server.all(
     '/nekoil/v0/proxy/internal\\:nekoil/2/:filename+',
