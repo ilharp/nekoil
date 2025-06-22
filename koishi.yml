@@ -102,6 +102,10 @@ plugins:
         bucketId: ${{ env.NEKOIL_ASSETS_BUCKET_ID }}
       cpimgrUrl: ${{ env.NEKOIL_CPIMGR_URL }}
       cpssrUrl: ${{ env.NEKOIL_CPSSR_URL }}
+      sch:
+        listen: ${{ JSON.parse(env.NEKOIL_SCH_LISTEN) }}
+        admins: ${{ JSON.parse(env.NEKOIL_SCH_ADMINS) }}
+        target: ${{ env.NEKOIL_SCH_TARGET }}
 prefix:
   - /
   - null
