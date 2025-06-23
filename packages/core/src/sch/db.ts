@@ -10,8 +10,8 @@ declare module 'koishi' {
 
 export interface NekoilSchV1 {
   schid: number
-  handle: string
-  last_access_time: Date
+  handle_id: number
+  // last_access_time: Date
 
   /**
    * 1=queue 2=approved 3=rejected 4=posted
@@ -31,16 +31,16 @@ export const apply = (ctx: Context) => {
         nullable: false,
       },
 
-      handle: {
-        type: 'string',
-        length: 64,
+      handle_id: {
+        type: 'unsigned',
+        length: 8,
         nullable: false,
       },
 
-      last_access_time: {
-        type: 'timestamp',
-        nullable: false,
-      },
+      // last_access_time: {
+      //   type: 'timestamp',
+      //   nullable: false,
+      // },
 
       state: {
         type: 'unsigned',
