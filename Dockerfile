@@ -1,4 +1,4 @@
-FROM ilharp/cordis-base:0.0.2
+FROM ilharp/cordis-base:1.0.0
 
 WORKDIR /cordis
 COPY . /cordis
