@@ -337,7 +337,7 @@ export class NekoilCpService extends Service {
     state.createdCount++
 
     if (state.createdCount > 1)
-      option.onProgress(`正在创建 ${state.createdCount} 组记录。`)
+      option.onProgress?.(`正在创建 ${state.createdCount} 组记录。`)
 
     let handle_type: number
     let handle: string | undefined
@@ -806,8 +806,8 @@ const tgPrefixList = [
 
 export interface CpCreateOptionBase {
   cpPlatform: 1 | 2 | 3
-  pid: string
-  onProgress: (text: string) => unknown
+  pid?: string
+  onProgress?: (text: string) => unknown
   user: User
 }
 

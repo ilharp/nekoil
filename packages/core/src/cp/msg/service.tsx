@@ -322,7 +322,7 @@ export class NekoilCpMsgService extends Service {
             await (bot as OneBotBaseBot).internal.getForwardMsg(resid!)
           ).message
 
-          parsedContent = await this.#parseOneBot(
+          parsedContent = await this.parseOneBot(
             oneBotForwardMsg,
             bot as OneBotBaseBot,
           )
@@ -344,7 +344,7 @@ export class NekoilCpMsgService extends Service {
           // 从 OneBot 的 json 文本创建消息记录，
           // 此时 bot 可能是任意平台
           // 因此我们传我们的 obBot 进去，只用来解析内层的合并转发
-          parsedContent = await this.#parseOneBot(parsedOneBotContent!, obBot)
+          parsedContent = await this.parseOneBot(parsedOneBotContent!, obBot)
           cpCreateOptionId = {
             idType: 'unlisted',
           }
@@ -481,7 +481,7 @@ export class NekoilCpMsgService extends Service {
     }
   }
 
-  #parseOneBot = async (
+  public parseOneBot = async (
     content: OneBotForwardMsg,
     bot: OneBotBaseBot,
   ): Promise<h[]> => {
