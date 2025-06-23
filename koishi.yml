@@ -28,6 +28,10 @@ plugins:
           showtxt: null
           showtext: null
         name: /showtxt
+      nekoilschpost:
+        aliases:
+          post: null
+        name: /post
     help:k2t2x6: {}
     http:nsrnpu: {}
     inspect:jqy2ce: {}
