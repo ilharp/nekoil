@@ -109,6 +109,7 @@ plugins:
       sch:
         listen: ${{ JSON.parse(env.NEKOIL_SCH_LISTEN) }}
         admins: ${{ JSON.parse(env.NEKOIL_SCH_ADMINS) }}
+        review: ${{ Number(env.NEKOIL_SCH_REVIEW) }}
         target: ${{ env.NEKOIL_SCH_TARGET }}
 prefix:
   - /

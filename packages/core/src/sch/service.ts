@@ -102,7 +102,7 @@ export class NekoilSchService extends Service {
     const handle = getHandle(cpHandle)
 
     await bot.internal.sendPhoto({
-      chat_id: this.nekoilConfig.sch.target,
+      chat_id: this.nekoilConfig.sch.review,
       photo: nia!.tg_file_id,
       caption: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
       parse_mode: 'HTML',

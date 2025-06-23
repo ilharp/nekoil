@@ -15,6 +15,7 @@ export interface Config {
   sch: {
     listen: number[]
     admins: number[]
+    review: number
     target: string
   }
 }
@@ -34,6 +35,7 @@ export const Config: Schema<Config> = Schema.object({
   sch: Schema.object({
     listen: Schema.array(Number).role('table').required(),
     admins: Schema.array(Number).role('table').required(),
+    review: Schema.number().required(),
     target: Schema.string().required(),
   }),
 })
