@@ -407,6 +407,7 @@ export class NekoilCpService extends Service {
           cpwf: await this.#parseIntl(cp!),
           cp: {},
           cpHandle: {
+            handle_id: existedHandle.handle_id,
             handle,
             handle_type,
           },
@@ -838,5 +839,5 @@ interface CpCreateIntlState {
 interface CpCreateResult {
   cpwf: ContentPackWithAll
   cp: Pick<ContentPackV1, never>
-  cpHandle: Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
+  cpHandle: Pick<ContentPackHandleV1, 'handle_id' | 'handle' | 'handle_type'>
 }
