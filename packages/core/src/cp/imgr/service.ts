@@ -194,7 +194,9 @@ export class NekoilCpImgrService extends Service {
       // c. v1.1 以前的 cp
       // d. 上次 cpssr 生成失败了
 
-      const [image] = await this.render(cpwf)
+      const renderCpwf = await this.ctx.nekoilCp.parseExternal(cpwf)
+
+      const [image] = await this.render(renderCpwf)
 
       const niaResult = await this.ctx.nekoilAssets.uploadImg({
         data: image!,
