@@ -1,9 +1,7 @@
+import { FRCp } from '@/components/frs/FRCp'
 import h from '@satorijs/element'
 import type { SymAioHost, SymMsgGroupCtx } from '@sym-app/components'
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   frRenderers,
   SymAioCtxContext,
   SymAioHostContext,
@@ -30,13 +28,18 @@ export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
     () => ({
       ...baseSymAioHost,
       avatarRenderer: (msg) => (
-        <Avatar className="sym-aio-avatar">
-          <AvatarImage
-            src={`${selfUrlInternal}/nekoil/v0/proxy/${msg.user?.avatar}`}
-            alt={msg.user?.name}
-          />
-          <AvatarFallback>{msg.user?.name?.slice(0, 2)}</AvatarFallback>
-        </Avatar>
+        <div className="sym-avatar sym-aio-avatar">
+          {msg.user?.avatar ? (
+            <img
+              className="sym-avatar-image"
+              src={`${selfUrlInternal}/nekoil/v0/proxy/${msg.user.avatar}`}
+            />
+          ) : (
+            <span className="sym-avatar-fallback">
+              {msg.user?.name?.slice(0, 2)}
+            </span>
+          )}
+        </div>
       ),
       frRenderers: {
         ...baseSymAioHost.frRenderers,
