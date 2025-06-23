@@ -114,6 +114,7 @@ const baseSymAioHost: SymAioHost = {
     ...frRenderers,
     'nekoil:oversizedimg': (_frCtx, _element) => ['[过大图片]'],
     'nekoil:failedimg': (_frCtx, _element) => ['[图片保存失败]'],
+    'nekoil:cp': (_frCtx, element) => [<FRCp elem={element} />],
     'nekoil:failedfwd': (_frCtx, _element) => ['[聊天记录保存失败]'],
   },
 }
