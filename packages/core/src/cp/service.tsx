@@ -139,8 +139,8 @@ export class NekoilCpService extends Service {
       return {
         code: 200,
         data: internal
-          ? await this.#parseIntl(contentPack)
-          : await this.#parseExternal(contentPack),
+          ? await this.parseIntl(contentPack)
+          : await this.parseExternal(contentPack),
       }
     } catch (e) {
       if (!(e instanceof NoLoggingError)) this.#l.error(e)
@@ -247,8 +247,8 @@ export class NekoilCpService extends Service {
         code: 200,
         data: {
           cp: internal
-            ? await this.#parseIntl(contentPack)
-            : await this.#parseExternal(contentPack),
+            ? await this.parseIntl(contentPack)
+            : await this.parseExternal(contentPack),
           handle: isPlusHandle ? `_${queryHandle}` : queryHandle,
         },
       }
@@ -404,7 +404,7 @@ export class NekoilCpService extends Service {
         )
 
         return {
-          cpwf: await this.#parseIntl(cp!),
+          cpwf: await this.parseIntl(cp!),
           cp: {},
           cpHandle: {
             handle_id: existedHandle.handle_id,
@@ -691,7 +691,9 @@ export class NekoilCpService extends Service {
    *
    * 仅限内部用，外部要用的话调 parseExternal
    */
-  #parseIntl = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
+  public parseIntl = async (
+    cp: ContentPackV1,
+  ): Promise<ContentPackWithFull> => {
     const result = structuredClone(cp) as unknown as ContentPackWithFull
 
     if (result.data_summary) {
@@ -734,8 +736,10 @@ export class NekoilCpService extends Service {
    * - cpid 等
    * - img 里的 origin
    */
-  #parseExternal = async (cp: ContentPackV1): Promise<ContentPackWithFull> => {
-    const result = await this.#parseIntl(cp)
+  public parseExternal = async (
+    cp: ContentPackV1,
+  ): Promise<ContentPackWithFull> => {
+    const result = await this.parseIntl(cp)
 
     if (Object.hasOwn(result, 'cpid' satisfies keyof ContentPackWithFull))
       delete (result as Partial<ContentPackWithFull>).cpid
