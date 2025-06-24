@@ -7,34 +7,44 @@ export const inject = ['database', 'nekoilSch']
 
 export const apply = (ctx: Context, _config: Config) => {
   ctx.on('telegram/callback-query', async (input, bot) => {
-    let data = input.data
-    if (!data) return
-    if (!data.startsWith('S')) return
-    data = data.slice(1)
+    let approve
 
-    // if (!config.sch.admins.includes(input.from!.id!)) {
-    //   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    //   bot.internal.answerCallbackQuery({
-    //     callback_query_id: input.id,
-    //     text: '你谁？',
-    //   })
+    try {
+      let data = input.data
+      if (!data) return
+      if (!data.startsWith('S')) return
+      data = data.slice(1)
 
-    //   return
-    // }
+      // if (!config.sch.admins.includes(input.from!.id!)) {
+      //   // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      //   bot.internal.answerCallbackQuery({
+      //     callback_query_id: input.id,
+      //     text: '你谁？',
+      //   })
 
-    const approve = data.startsWith('A')
-    data = data.slice(1)
+      //   return
+      // }
 
-    const schid = Number(data)
+      approve = data.startsWith('A')
+      data = data.slice(1)
 
-    if (approve) {
-      await ctx.database.set('sch_v1', schid, {
-        state: 2,
-      })
-      await ctx.nekoilSch.send(schid)
-    } else {
-      await ctx.database.set('sch_v1', schid, {
-        state: 3,
+      const schid = Number(data)
+
+      if (approve) {
+        await ctx.database.set('sch_v1', schid, {
+          state: 2,
+        })
+        await ctx.nekoilSch.send(schid)
+      } else {
+        await ctx.database.set('sch_v1', schid, {
+          state: 3,
+        })
+      }
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      bot.internal.answerCallbackQuery({
+        callback_query_id: input.id,
+        text: `报错了：${e}`,
       })
     }
 
