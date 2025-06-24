@@ -170,10 +170,6 @@ export class NekoilSchService extends Service {
               text: `查看 ${cpwf.summary.count} 条聊天记录`,
               url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
             },
-            {
-              text: '转发',
-              switch_inline_query: handle,
-            },
           ],
         ],
       },
