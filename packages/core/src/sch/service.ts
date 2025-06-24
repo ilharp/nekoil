@@ -2,6 +2,7 @@ import type { Context, User } from 'koishi'
 import { $, Service, sleep } from 'koishi'
 import type { BaseBot as OneBotBaseBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
+import type { InlineKeyboardMarkup } from 'koishi-plugin-nekoil-adapter-telegram'
 import { escape } from 'lodash-es'
 import type { ContentPackHandleV1, ContentPackWithFull } from 'nekoil-typedef'
 import type { Config } from '../config'
@@ -14,7 +15,13 @@ declare module 'koishi' {
 }
 
 export class NekoilSchService extends Service {
-  static inject = ['database', 'nekoilCpMsg', 'nekoilCp']
+  static inject = [
+    'database',
+    'nekoilCpMsg',
+    'nekoilCp',
+    'nekoilCpImgr',
+    'nekoilAssets',
+  ]
 
   #l
 
@@ -60,7 +67,27 @@ export class NekoilSchService extends Service {
           state: 1,
         })
 
-        this.#sendReview(sch.schid, cpwf, cpHandle)
+        const renderCpwf = await ctx.nekoilCp.parseExternal(cpwf)
+
+        const [image] = await ctx.nekoilCpImgr.render(renderCpwf)
+
+        const niaResult = await ctx.nekoilAssets.uploadImg({
+          data: image!,
+          filename: '0.png',
+          type: 'image/png',
+        })
+
+        await ctx.database.set('cp_v1', cpwf.cpid, {
+          cpssr_niaid: niaResult.niaid,
+        })
+
+        await ctx.database.create('niassets_rc_v1', {
+          niaid: niaResult.niaid,
+          ref: cpwf.cpid,
+          ref_type: 2, // cpssr
+        })
+
+        this.#sendReview(sch.schid, cpwf, cpHandle, niaResult.niaid, image!)
       } catch (e) {
         this.#l.error('sch recv msg failed:')
         this.#l.error(e)
@@ -74,10 +101,12 @@ export class NekoilSchService extends Service {
     schid: number,
     cpwf: ContentPackWithFull,
     cpHandle: Pick<ContentPackHandleV1, 'handle_id' | 'handle' | 'handle_type'>,
+    niaid: number,
+    image: ArrayBuffer,
   ) => {
     this.#reviewTask = this.#reviewTask
-      .then(() => this.#sendReviewIntl(schid, cpwf, cpHandle))
-      .catch((e) => {
+      .then(() => this.#sendReviewIntl(schid, cpwf, cpHandle, niaid, image))
+      .catch((e: unknown) => {
         this.#l.error(
           `sch send review failed, schid ${schid}, cpid ${cpwf.cpid}`,
         )
@@ -90,25 +119,26 @@ export class NekoilSchService extends Service {
     schid: number,
     cpwf: ContentPackWithFull,
     cpHandle: Pick<ContentPackHandleV1, 'handle_id' | 'handle' | 'handle_type'>,
+    niaid: number,
+    image: ArrayBuffer,
   ) => {
-    const [nia] = await this.ctx.database.get('niassets_v1', cpwf.cpssr_niaid, [
-      'tg_file_id',
-    ])
-
     const bot = this.ctx.bots.find(
       (x) => x.platform === 'telegram',
     )! as unknown as TelegramBot
 
     const handle = getHandle(cpHandle)
 
-    await bot.internal.sendPhoto({
-      chat_id: this.nekoilConfig.sch.review,
-      photo: nia!.tg_file_id,
-      caption: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
-      parse_mode: 'HTML',
-      // @ts-expect-error
-      show_caption_above_media: true,
-      reply_markup: {
+    const formData = new FormData()
+    formData.append('chat_id', String(this.nekoilConfig.sch.review))
+    formData.append(
+      'caption',
+      `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
+    )
+    formData.append('parse_mode', 'HTML')
+    formData.append('show_caption_above_media', 'true')
+    formData.append(
+      'reply_markup',
+      JSON.stringify({
         inline_keyboard: [
           [
             {
@@ -125,7 +155,24 @@ export class NekoilSchService extends Service {
             },
           ],
         ],
-      },
+      } satisfies InlineKeyboardMarkup),
+    )
+
+    formData.append('photo', 'attach://i.png')
+    formData.append(
+      'i.png',
+      new Blob([image], {
+        type: 'image/png',
+      }),
+      'i.png',
+    )
+
+    // @ts-expect-error
+    const sendPhotoResult = await bot.internal.sendPhoto(formData)
+
+    await this.ctx.database.set('niassets_v1', niaid, {
+      tg_file_id: sendPhotoResult.photo!.sort((a, b) => b.width! - a.width!)[0]!
+        .file_id,
     })
   }
 

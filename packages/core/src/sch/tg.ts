@@ -5,7 +5,7 @@ export const name = 'nekoil-sch-tg'
 
 export const inject = ['database', 'nekoilSch']
 
-export const apply = (ctx: Context, config: Config) => {
+export const apply = (ctx: Context, _config: Config) => {
   ctx.on('telegram/callback-query', async (input, bot) => {
     let data = input.data
     if (!data) return
@@ -27,12 +27,6 @@ export const apply = (ctx: Context, config: Config) => {
 
     const schid = Number(data)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    bot.internal.deleteMessage({
-      chat_id: input.message!.chat!.id,
-      message_id: input.message!.message_id,
-    })
-
     if (approve) {
       await ctx.database.set('sch_v1', schid, {
         state: 2,
@@ -47,6 +41,12 @@ export const apply = (ctx: Context, config: Config) => {
     await bot.internal.answerCallbackQuery({
       callback_query_id: input.id,
       text: approve ? '发了' : '拒了',
+    })
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    bot.internal.deleteMessage({
+      chat_id: input.message!.chat!.id,
+      message_id: input.message!.message_id,
     })
   })
 }
