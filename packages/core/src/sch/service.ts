@@ -187,7 +187,7 @@ export class NekoilSchService extends Service {
         $.in(
           cp_handle_v1.handle_id,
           this.ctx.database
-            .select('sch_v1', (sch_v1) => $.eq(sch_v1.handle_id, schid))
+            .select('sch_v1', (sch_v1) => $.eq(sch_v1.schid, schid))
             .evaluate('handle_id'),
         ),
       ['cpid', 'handle', 'handle_type'],
