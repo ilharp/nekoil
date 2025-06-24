@@ -6,6 +6,8 @@ export const name = 'nekoil-sch-tg'
 export const inject = ['database', 'nekoilSch']
 
 export const apply = (ctx: Context, _config: Config) => {
+  const l = ctx.logger('nekoilSchTg')
+
   ctx.on('telegram/callback-query', async (input, bot) => {
     let approve
 
@@ -41,6 +43,11 @@ export const apply = (ctx: Context, _config: Config) => {
         })
       }
     } catch (e) {
+      l.error(
+        `sch: error processing cb query ${input.id}, message ${input.message!.message_id}`,
+      )
+      l.error(e)
+
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       bot.internal.answerCallbackQuery({
         callback_query_id: input.id,
