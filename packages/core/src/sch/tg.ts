@@ -12,15 +12,15 @@ export const apply = (ctx: Context, config: Config) => {
     if (!data.startsWith('S')) return
     data = data.slice(1)
 
-    if (!config.sch.admins.includes(input.from!.id!)) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      bot.internal.answerCallbackQuery({
-        callback_query_id: input.id,
-        text: '你谁？',
-      })
+    // if (!config.sch.admins.includes(input.from!.id!)) {
+    //   // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    //   bot.internal.answerCallbackQuery({
+    //     callback_query_id: input.id,
+    //     text: '你谁？',
+    //   })
 
-      return
-    }
+    //   return
+    // }
 
     const approve = data.startsWith('A')
     data = data.slice(1)
