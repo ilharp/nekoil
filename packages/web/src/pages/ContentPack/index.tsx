@@ -51,14 +51,7 @@ export const ContentPack = () => {
 
   return (
     <>
-      <div className={styles.headerContainer}>
-        <h1 className={styles.title}>{data.summary.title}</h1>
-        {location.key !== 'default' && (
-          <div onClick={handleBack} className={styles.backBtn}>
-            <ChevronLeft className={styles.backBtnIcon} />
-          </div>
-        )}
-      </div>
+      <div className={styles.overlayPlaceholderTop} />
       <SymAioHostContext value={symAioHost}>
         <SymAioCtxContext.Provider
           value={{
@@ -77,6 +70,14 @@ export const ContentPack = () => {
       <div className="nekoil-separator" />
       <Footer />
       <div className={styles.bottomFix} />
+      <div className={styles.headerContainer}>
+        <h1 className={styles.title}>{data.summary.title}</h1>
+        {location.key !== 'default' && (
+          <div onClick={handleBack} className={styles.backBtn}>
+            <ChevronLeft className={styles.backBtnIcon} />
+          </div>
+        )}
+      </div>
     </>
   )
 }

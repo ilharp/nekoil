@@ -2,13 +2,24 @@
   margin-bottom: 2px;
 }
 
+$headerHeight: 48px;
+
 .headerContainer {
-  height: 48px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: $headerHeight;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+
+.overlayPlaceholderTop {
+  height: $headerHeight;
 }
 
 .title {
