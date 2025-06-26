@@ -15,7 +15,7 @@ $headerHeight: 48px;
   justify-content: center;
   flex-direction: column;
   border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
-  backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px);
 }
 
 .overlayPlaceholderTop {
