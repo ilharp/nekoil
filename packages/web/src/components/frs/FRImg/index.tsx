@@ -1,39 +1,45 @@
 import type h from '@satorijs/element'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { thumbHashToDataURL } from 'thumbhash'
-import { requestProxyV1 } from '../../../utils/request'
+import { getPlaceholderUrl } from '../../../utils'
+
 import styles from './index.module.scss'
 
 export const FRImg = ({ elem }: { elem: h }) => {
+  const width = Number(elem.attrs.width)
+  const height = Number(elem.attrs.height)
+
   const thumbhashUrl = useMemo(
     () =>
-      elem.attrs['nekoil:thumbhash']
-        ? thumbHashToDataURL(
-            Uint8Array.from(
-              atob(elem.attrs['nekoil:thumbhash'] as string),
-              (c) => c.charCodeAt(0),
-            ),
-          )
-        : undefined,
+      thumbHashToDataURL(
+        Uint8Array.from(atob(elem.attrs['nekoil:thumbhash'] as string), (c) =>
+          c.charCodeAt(0),
+        ),
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [elem.attrs['nekoil:thumbhash']],
   )
 
-  const { isSuccess, data } = useQuery({
-    queryKey: ['nia', elem.attrs.src],
-    queryFn: requestProxyV1(elem.attrs.src as string),
-  })
+  const [loading, setLoading] = useState(true)
 
-  return isSuccess || thumbhashUrl ? (
+  const handleImgLoad = useCallback(() => {
+    setLoading(false)
+  }, [])
+
+  const placeholderUrl = useMemo(
+    () => getPlaceholderUrl(width, height),
+    [width, height],
+  )
+
+  return (
     <div className={styles.container}>
+      <img className={styles.imgPlaceholder} src={placeholderUrl} />
+      {loading && <img className={styles.img} src={thumbhashUrl} />}
       <img
         className={styles.img}
-        src={isSuccess ? data : thumbhashUrl}
-        width={`${elem.attrs.width}px`}
+        src={`https://api.390721.xyz/nekoil/v0/proxy/${elem.attrs.src}`}
+        onLoad={handleImgLoad}
       />
     </div>
-  ) : (
-    '[图片]'
   )
 }
