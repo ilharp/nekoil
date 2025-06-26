@@ -35,7 +35,6 @@ export const apply = (ctx: Context, config: Config) => {
       return next()
     },
     middlewareProxyToken(config),
-    ctx.nekoilTg.middlewareInitData(),
     async (c) => {
       const filename = c.params['filename']!
       const filenameSplit = filename.split('.')
