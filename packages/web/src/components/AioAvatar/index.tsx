@@ -1,11 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@sym-app/components'
-import { useQuery } from '@tanstack/react-query'
 import type { NekoilSatoriUser } from 'nekoil-typedef'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { thumbHashToDataURL } from 'thumbhash'
-import { requestProxyV1 } from '../../utils/request'
 
 export const AioAvatar = ({ user }: { user: NekoilSatoriUser }) => {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
   const thumbhashUrl = useMemo(
     () =>
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -21,15 +22,26 @@ export const AioAvatar = ({ user }: { user: NekoilSatoriUser }) => {
     [user.nekoil?.avatar_thumbhash],
   )
 
-  const { isSuccess, data } = useQuery({
-    queryKey: ['nia', user.avatar],
-    queryFn: requestProxyV1(user.avatar),
-  })
+  const handleImgLoad = useCallback(() => {
+    setLoading(false)
+  }, [])
+
+  const handleImgError = useCallback(() => {
+    setError(true)
+  }, [])
 
   return (
     <Avatar className="sym-aio-avatar">
-      {Boolean(isSuccess ? data : thumbhashUrl) && (
-        <AvatarImage src={isSuccess ? data : thumbhashUrl} alt={user.name} />
+      {!error && loading && thumbhashUrl && (
+        <AvatarImage src={thumbhashUrl} alt={user.name} />
+      )}
+      {!error && (
+        <AvatarImage
+          src={`https://api.390721.xyz/nekoil/v0/proxy/${user.avatar}`}
+          alt={user.name}
+          onLoad={handleImgLoad}
+          onError={handleImgError}
+        />
       )}
       <AvatarFallback>{user.name?.slice(0, 2)}</AvatarFallback>
     </Avatar>
