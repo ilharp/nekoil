@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
-import styles from './index.module.scss'
+import type { MouseEvent, ReactNode } from 'react';
+import styles from './index.module.scss';
 
-const handleOpenChannel = () => {
+const handleOpenChannel = (e: MouseEvent<HTMLAnchorElement>) => {
+  e.preventDefault();
   window.Telegram.WebApp.openTelegramLink('https://t.me/nekoil')
 }
 
