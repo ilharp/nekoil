@@ -54,14 +54,6 @@ export const apply = (ctx: Context, _config: Config) => {
         text: `报错了：${e}`,
       })
     }
-
-    // await bot.internal.answerCallbackQuery({
-    //   callback_query_id: input.id,
-    //   text: approve ? '发了' : '拒了',
-    // })
-
-    // await sleep(2000)
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     bot.internal.deleteMessage({
       chat_id: input.message!.chat!.id,
