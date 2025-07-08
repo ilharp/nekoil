@@ -21,8 +21,8 @@ import { Footer } from '../../components/Footer'
 import { FRCp } from '../../components/frs/FRCp'
 import { FRImg } from '../../components/frs/FRImg'
 import { ResultError } from '../../components/ResultError'
-import { Splash } from '../../components/Splash'
 import { requestV1 } from '../../utils/request'
+import { ContentPackSplash } from './ContentPackSplash'
 import styles from './index.module.scss'
 
 export const ContentPack = () => {
@@ -45,7 +45,7 @@ export const ContentPack = () => {
     navigate(-1)
   }, [navigate])
 
-  if (isPending) return <Splash />
+  if (isPending) return <ContentPackSplash />
 
   if (isError) return <ResultError e={error} />
 
