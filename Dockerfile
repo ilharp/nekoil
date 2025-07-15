@@ -11,7 +11,7 @@ RUN ["corepack", "yarn", "workspace", "nekoil-cpssr", "build"]
 # RUN ["corepack", "yarn", "node", "-r", "esbuild-register", "scripts/prepare.mts"]
 RUN ["rm", "-rf", "node_modules"]
 
-FROM ilharp/cordis-base:0.0.2
+FROM ilharp/cordis-base:1.0.0
 
 WORKDIR /cordis
 COPY --from=0 /cordis /cordis
