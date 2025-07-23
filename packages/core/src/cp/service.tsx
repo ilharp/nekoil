@@ -632,6 +632,36 @@ export class NekoilCpService extends Service {
       ) as h
     }
 
+    const existedcpProcessor = async (attrs: Dict, _children: h[]) => {
+      if (!attrs['handle']) return <nekoil:failedfwd platform="nekoil" />
+
+      const res = await this.cpGet(
+        undefined as unknown as NekoilUser,
+        attrs['handle'],
+        true,
+        true,
+      )
+
+      if (res.code !== 200 || !res.data)
+        return <nekoil:failedfwd platform="nekoil" id={attrs['handle']} />
+
+      const cpwf = res.data
+
+      return (
+        <nekoil:cp
+          handle={attrs['handle']}
+          title={cpwf.summary.title}
+          count={cpwf.summary.count}
+        >
+          <nekoil:cpsummarylist>
+            {cpwf.summary.summary.map((x: string) => (
+              <nekoil:cpsummary content={x} />
+            ))}
+          </nekoil:cpsummarylist>
+        </nekoil:cp>
+      ) as h
+    }
+
     const imgProcessor = async (attrs: Dict, children: h[]) => {
       // 处理图片
       let origins = children.find((x) => x.type === 'nekoil:origins')
@@ -683,6 +713,7 @@ export class NekoilCpService extends Service {
     return await h.transformAsync(elements, {
       message: messageProcessor,
       img: imgProcessor,
+      'nekoil:existedcp': existedcpProcessor,
     })
   }
 

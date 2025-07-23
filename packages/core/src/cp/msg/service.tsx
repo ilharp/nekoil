@@ -10,6 +10,7 @@ import type {
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import { debounce } from 'lodash-es'
+import type { Config } from '../../config'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
@@ -44,7 +45,10 @@ export class NekoilCpMsgService extends Service {
 
   #l
 
-  constructor(ctx: Context) {
+  constructor(
+    ctx: Context,
+    private nekoilConfig: Config,
+  ) {
     super(ctx, 'nekoilCpMsg')
 
     this.#l = ctx.logger('nekoilCpMsg')
@@ -605,6 +609,20 @@ export class NekoilCpMsgService extends Service {
     return result
   }
 
+  #decodeHandleFromTgStartAppUrl = (url: string): string | undefined => {
+    const tgStartAppUrlRe = new RegExp(
+      `^https:\\/\\/t\\.me\\/${this.nekoilConfig.tgBotName}\\?startapp=([A-Za-z0-9_-]+)$`,
+    )
+    const match = tgStartAppUrlRe.exec(url)
+    if (!match?.[1]) return undefined
+    try {
+      const decoded = Buffer.from(match[1], 'base64url').toString('utf-8')
+      return decodeURIComponent(decoded)
+    } catch {
+      return undefined
+    }
+  }
+
   /**
    * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
    */
@@ -711,10 +729,22 @@ export class NekoilCpMsgService extends Service {
           }
         }
 
+        let elements = session.event.message!.elements!
+        elements = await h.transformAsync(elements, {
+          a: (attrs, children) => {
+            const href = attrs['href'] as string
+            const handle = href && this.#decodeHandleFromTgStartAppUrl(href)
+            if (handle) {
+              return h('nekoil:existedcp', { handle })
+            }
+            return h('a', attrs, children)
+          },
+        })
+
         const message: h = (
           <message>
             {author}
-            {session.event.message!.elements}
+            {elements}
           </message>
         )
 

@@ -14,6 +14,6 @@ export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(NekoilCpService, config)
   ctx.plugin(controller, config)
   ctx.plugin(tg, config)
-  ctx.plugin(msg)
+  ctx.plugin(msg, config)
   ctx.plugin(imgr, config)
 }
