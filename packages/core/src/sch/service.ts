@@ -208,18 +208,6 @@ export class NekoilSchService extends Service {
       photo: nia!.tg_file_id,
       caption: `<a href="${this.ctx.nekoilCp.getTgStartAppUrl(handle)}"><b>${escape(cpwf.summary.title)}</b></a>`,
       parse_mode: 'HTML',
-      // @ts-expect-error
-      show_caption_above_media: true,
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: `查看 ${cpwf.summary.count} 条聊天记录`,
-              url: this.ctx.nekoilCp.getTgStartAppUrl(handle),
-            },
-          ],
-        ],
-      },
     })
 
     await this.ctx.database.set('sch_v1', schid, {

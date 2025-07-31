@@ -54,10 +54,18 @@ export const apply = (ctx: Context, _config: Config) => {
         text: `报错了：${e}`,
       })
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    bot.internal.deleteMessage({
-      chat_id: input.message!.chat!.id,
-      message_id: input.message!.message_id,
-    })
+
+    try {
+      await bot.internal.deleteMessage({
+        chat_id: input.message!.chat!.id,
+        message_id: input.message!.message_id,
+      })
+    } catch (_e) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      bot.internal.answerCallbackQuery({
+        callback_query_id: input.id,
+        text: '删除消息失败，请手动删除此条消息',
+      })
+    }
   })
 }
