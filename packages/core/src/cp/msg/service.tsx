@@ -734,7 +734,16 @@ export class NekoilCpMsgService extends Service {
           a: (attrs, children) => {
             const href = attrs['href'] as string
             const handle = href && this.#decodeHandleFromTgStartAppUrl(href)
-            if (handle) {
+            if (
+              handle &&
+              children.length === 1 &&
+              children[0]!.type === 'b' &&
+              children[0]!.children.length === 1 &&
+              children[0]!.children[0]!.type === 'text' &&
+              (children[0]!.children[0]!.attrs['content'] as string).includes(
+                '的聊天记录',
+              )
+            ) {
               return h('nekoil:existedcp', { handle })
             }
             return h('a', attrs, children)
