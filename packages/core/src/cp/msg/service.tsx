@@ -750,6 +750,12 @@ export class NekoilCpMsgService extends Service {
           },
         })
 
+        // nekoil:existedcp 为独占元素
+        const [existedCp] = h.select(elements, 'nekoil:existedcp')
+        if (existedCp) {
+          elements = [existedCp]
+        }
+
         const message: h = (
           <message>
             {author}
