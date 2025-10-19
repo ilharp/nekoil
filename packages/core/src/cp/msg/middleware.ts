@@ -11,8 +11,6 @@ export const apply = async (ctx: Context) => {
     next(async () => {
       const channel = `${session.platform}:${session.channelId}`
 
-      ctx.nekoilCpMsg.lock(channel)
-
       ctx.nekoilCpMsg.push(channel, {
         isDirect: session.isDirect,
         event: {
@@ -25,7 +23,6 @@ export const apply = async (ctx: Context) => {
         user: session.user! as unknown as User,
       })
 
-      ctx.nekoilCpMsg.unlock(channel)
       ctx.nekoilCpMsg.emit(channel)
     }),
   )

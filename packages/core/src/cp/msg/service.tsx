@@ -16,7 +16,6 @@ import type { CpCreateOptionId } from '../service'
 
 interface Emitter {
   fn: () => unknown
-  lock: number
 }
 
 declare module 'koishi' {
@@ -66,9 +65,7 @@ export class NekoilCpMsgService extends Service {
 
   #getEmitter = (channel: string) => {
     if (!this.#emitMap[channel]) {
-      const emitter = {
-        lock: 0,
-      } as Emitter
+      const emitter = {} as Emitter
       emitter.fn = debounce(this.#buildFn(channel, emitter), 3500)
       this.#emitMap[channel] = emitter
     }
@@ -92,17 +89,7 @@ export class NekoilCpMsgService extends Service {
     this.#getEmitter(channel).fn()
   }
 
-  lock = (channel: string) => {
-    this.#getEmitter(channel).lock++
-  }
-
-  unlock = (channel: string) => {
-    this.#getEmitter(channel).lock--
-  }
-
   #buildFn = (channel: string, emitter: Emitter) => async () => {
-    if (emitter.lock) return
-
     try {
       const msgSessions = this.#msgMap[channel]
 
