@@ -3,7 +3,6 @@ import * as bind from './bind'
 import type { Config } from './config'
 import * as cp from './cp'
 import * as niassets from './niassets'
-import * as sch from './sch'
 import { NekoilPermissionService } from './services/perm'
 import { NekoilTgService } from './services/tg'
 import { UpusrService } from './services/upusr'
@@ -21,7 +20,7 @@ export const apply = (ctx: Context, config: Config) => {
   ctx.plugin(cp, config)
   ctx.plugin(niassets, config)
   ctx.plugin(bind)
-  ctx.plugin(sch, config)
+  // ctx.plugin(sch, config)
 
   ctx.on('before-send', (session) => {
     return session.platform === 'onebot'
