@@ -15,7 +15,8 @@ import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
 interface Emitter {
-  fn: () => unknown
+  instantFn: () => unknown
+  debounceFn: () => unknown
 }
 
 declare module 'koishi' {
@@ -66,7 +67,8 @@ export class NekoilCpMsgService extends Service {
   #getEmitter = (channel: string) => {
     if (!this.#emitMap[channel]) {
       const emitter = {} as Emitter
-      emitter.fn = debounce(this.#buildFn(channel, emitter), 3500)
+      emitter.instantFn = this.#buildFn(channel, emitter)
+      emitter.debounceFn = debounce(emitter.instantFn, 3500)
       this.#emitMap[channel] = emitter
     }
     return this.#emitMap[channel]
@@ -86,7 +88,7 @@ export class NekoilCpMsgService extends Service {
   }
 
   emit = (channel: string) => {
-    this.#getEmitter(channel).fn()
+    this.#getEmitter(channel).debounceFn()
   }
 
   #buildFn = (channel: string, emitter: Emitter) => async () => {
@@ -97,8 +99,7 @@ export class NekoilCpMsgService extends Service {
 
       if (new Date().getTime() - Number(msgSessions.lmt) < 3500) {
         setTimeout(() => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.#buildFn(channel, emitter)()
+          emitter.instantFn()
         }, 1000)
         return
       }
