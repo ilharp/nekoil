@@ -28,6 +28,10 @@ plugins:
           showtxt: null
           showtext: null
         name: /showtxt
+      nekoilcpnew:
+        aliases:
+          new: null
+        name: /new
       nekoilschpost:
         aliases:
           post: null

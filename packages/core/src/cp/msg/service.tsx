@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access */
 
 import type { Event } from '@satorijs/protocol'
-import type { Context, User } from 'koishi'
+import type { Bot, Context, User } from 'koishi'
 import { h, Service } from 'koishi'
 import type {
   CQCode,
@@ -14,9 +14,14 @@ import type { Config } from '../../config'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
 
+interface EmitOptions {
+  flush?: boolean
+  notifyWhenEmpty?: boolean
+}
+
 interface Emitter {
-  instantFn: () => unknown
-  debounceFn: () => unknown
+  instantFn: (options?: EmitOptions) => unknown
+  debounceFn: (options?: EmitOptions) => unknown
 }
 
 declare module 'koishi' {
@@ -29,6 +34,21 @@ export interface NekoilMsgSession {
   isDirect: boolean
   event: Event
   user: User
+}
+
+interface NekoilMsgQueue {
+  configMessageId?: number
+
+  bot: Bot
+  /** session.channelId */
+  channelId: string
+
+  /**
+   * 慢速模式下始终为值 0，快速模式下为最后修改时间
+   */
+  lmt: number
+
+  sessions: NekoilMsgSession[]
 }
 
 type OneBotForwardMsg = {
@@ -54,13 +74,7 @@ export class NekoilCpMsgService extends Service {
     this.#l = ctx.logger('nekoilCpMsg')
   }
 
-  #msgMap: Record<
-    string,
-    {
-      lmt: number
-      sessions: NekoilMsgSession[]
-    }
-  > = {}
+  #msgMap: Record<string, NekoilMsgQueue> = {}
 
   #emitMap: Record<string, Emitter> = {}
 
@@ -74,51 +88,138 @@ export class NekoilCpMsgService extends Service {
     return this.#emitMap[channel]
   }
 
-  push = (channel: string, session: NekoilMsgSession) => {
+  /**
+   * 将某个 channel 初始化为慢速模式
+   */
+  initSlow = (
+    channel: string,
+    bot: Bot,
+    channelId: string,
+    configMessageId: number,
+  ) => {
+    const msgSessions = this.#msgMap[channel]
+
+    if (msgSessions) {
+      // queue 里现在有东西，不管是什么模式，都直接清掉（flush
+      // 相当于给 /new 一个清 queue 的职能
+      this.#getEmitter(channel).instantFn({
+        flush: true,
+      })
+    }
+
+    // 开 flush 清掉后，#msgMap[channel] 必然已经 falsy 了，直接赋值
+    this.#msgMap[channel] = {
+      configMessageId,
+      bot,
+      channelId,
+      lmt: 0,
+      sessions: [],
+    }
+  }
+
+  /**
+   * 检查某个 channel 的当前模式
+   */
+  getMode = (channel: string) => {
+    const msgSessions = this.#msgMap[channel]
+    if (!msgSessions) return 'fast'
+    return msgSessions.lmt === 0 ? 'slow' : 'fast'
+  }
+
+  push = (
+    mode: 'fast' | 'slow',
+    channel: string,
+    bot: Bot,
+    channelId: string,
+    session: NekoilMsgSession,
+  ) => {
     if (!this.#msgMap[channel]) {
       this.#msgMap[channel] = {
-        lmt: new Date().getTime(),
+        bot,
+        channelId,
+        lmt: mode === 'fast' ? new Date().getTime() : 0,
         sessions: [session],
       }
       return
     }
 
-    this.#msgMap[channel].lmt = new Date().getTime()
+    if (mode === 'fast') this.#msgMap[channel].lmt = new Date().getTime()
     this.#msgMap[channel].sessions.push(session)
   }
 
-  emit = (channel: string) => {
-    this.#getEmitter(channel).debounceFn()
-  }
+  emit = (mode: 'fast' | 'slow' | 'flush', channel: string) => {
+    const emitter = this.#getEmitter(channel)
 
-  #buildFn = (channel: string, emitter: Emitter) => async () => {
-    try {
-      const msgSessions = this.#msgMap[channel]
-
-      if (!msgSessions) return
-
-      if (new Date().getTime() - Number(msgSessions.lmt) < 3500) {
-        setTimeout(() => {
-          emitter.instantFn()
-        }, 1000)
+    switch (mode) {
+      case 'fast':
+        emitter.debounceFn()
         return
-      }
-
-      delete this.#msgMap[channel]
-
-      if (msgSessions.sessions.length) {
-        const splitIndex = channel.indexOf(':')
-        const platform = channel.slice(0, splitIndex)
-        // const channelId = channel.slice(splitIndex + 1)
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.#process(platform, msgSessions.sessions)
-      }
-    } catch (e) {
-      this.#l.error(`error processing channel ${channel}`)
-      this.#l.error(e)
+      case 'slow':
+        // 对于慢速模式，由于 lmt 必为 0，所以 flush 不 flush 都一样
+        // 这里就不 flush 了，依靠 lmt = 0 这一点让他进入 process 流程
+        emitter.instantFn()
+        return
+      case 'flush':
+        // 用户明确希望提交（比如点击「创建」按钮）会进入 flush 模式，立即 flush 即可
+        // 此外也要 notifyWhenEmpty
+        emitter.instantFn({
+          flush: true,
+          notifyWhenEmpty: true,
+        })
+        return
     }
   }
+
+  #buildFn =
+    (channel: string, emitter: Emitter) =>
+    async (options: EmitOptions = {}) => {
+      try {
+        const msgSessions = this.#msgMap[channel]
+
+        if (!msgSessions) return
+
+        if (
+          !options.flush &&
+          new Date().getTime() - Number(msgSessions.lmt) < 3500
+        ) {
+          setTimeout(() => {
+            emitter.instantFn()
+          }, 1000)
+          return
+        }
+
+        delete this.#msgMap[channel]
+
+        if (msgSessions.configMessageId !== undefined) {
+          // 有 configMessageId 的一定是 tg
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(msgSessions.bot as unknown as TelegramBot).internal.deleteMessage({
+            chat_id: Number(msgSessions.channelId),
+            message_id: msgSessions.configMessageId,
+          })
+        }
+
+        if (msgSessions.sessions.length) {
+          const splitIndex = channel.indexOf(':')
+          const platform = channel.slice(0, splitIndex)
+          // const channelId = channel.slice(splitIndex + 1)
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this.#process(platform, msgSessions.sessions)
+        } else {
+          if (options.notifyWhenEmpty) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            msgSessions.bot.sendMessage(
+              msgSessions.channelId,
+              '没有收到可识别的消息。重新发送一些消息以创建聊天记录。',
+            )
+          }
+        }
+      } catch (e) {
+        this.#l.error(`error processing channel ${channel}`)
+        this.#l.error(e)
+      }
+    }
 
   #process = async (platform: string, sessions: NekoilMsgSession[]) => {
     let progressMsg: number | undefined = undefined

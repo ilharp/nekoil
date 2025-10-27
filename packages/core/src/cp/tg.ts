@@ -10,7 +10,7 @@ import { UserSafeError } from '../utils'
 
 export const name = 'nekoil-cp-tg'
 
-export const inject = ['nekoilCp', 'nekoilCpImgr', 'database']
+export const inject = ['nekoilCp', 'nekoilCpMsg', 'nekoilCpImgr', 'database']
 
 export const apply = (ctx: Context, config: Config) => {
   const l = ctx.logger('nekoilCpTg')
@@ -247,5 +247,31 @@ export const apply = (ctx: Context, config: Config) => {
       cache_time: noCache ? 0 : 300,
       results,
     })
+  })
+
+  ctx.on('telegram/callback-query', async (input, bot) => {
+    try {
+      const data = input.data
+      if (data !== 'CN') return
+
+      const user_id = input.from!.id
+
+      const channel = `telegram:${user_id}`
+
+      // 这里暂定，不管用户点了哪个按钮，不管处于哪个模式，都一律 flush
+      // 后续要改进的话，在 NekoilMsgQueue 里加个 /new 时随机生成的 uuid，在这里判断下
+      ctx.nekoilCpMsg.emit('flush', channel)
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      bot.internal.answerCallbackQuery({
+        callback_query_id: input.id,
+        text: '正在创建聊天记录……',
+      })
+    } catch (e) {
+      l.error(
+        `cp: error processing cb query ${input.id}, message ${input.message!.message_id}`,
+      )
+      l.error(e)
+    }
   })
 }
