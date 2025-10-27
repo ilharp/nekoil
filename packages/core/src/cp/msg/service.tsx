@@ -97,7 +97,8 @@ export class NekoilCpMsgService extends Service {
 
       if (new Date().getTime() - Number(msgSessions.lmt) < 3500) {
         setTimeout(() => {
-          this.#buildFn(channel, emitter)
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this.#buildFn(channel, emitter)()
         }, 1000)
         return
       }
@@ -115,9 +116,6 @@ export class NekoilCpMsgService extends Service {
     } catch (e) {
       this.#l.error(`error processing channel ${channel}`)
       this.#l.error(e)
-      // setTimeout(() => {
-      //   this.#buildFn(channel, emitter)
-      // }, 5000)
     }
   }
 
