@@ -36,7 +36,7 @@ export interface NekoilMsgSession {
   user: User
 }
 
-interface NekoilMsgQueue {
+export interface NekoilMsgQueue {
   configMessageId?: number
 
   bot: Bot
@@ -125,6 +125,9 @@ export class NekoilCpMsgService extends Service {
     if (!msgSessions) return 'fast'
     return msgSessions.lmt === 0 ? 'slow' : 'fast'
   }
+
+  getConfigMessageId = (channel: string) =>
+    this.#msgMap[channel]?.configMessageId
 
   push = (
     mode: 'fast' | 'slow',
