@@ -26,19 +26,9 @@ corepack yarn build
 
 ## 3. 调试
 
-### 3.1 调试后端
-
 先找人要到一个名为 `.env.local` 的文件置于项目根目录下。
 
-然后启动开发模式：
-
-```sh
-corepack yarn dev
-```
-
-然后进行开发即可。修改文件保存后会热重载。
-
-### 3.2 调试前端
+### 3.1 调试前端
 
 前端调试是使用 PC 端小程序环境进行调试，因此配置的主要目的就是让本机访问
 390721.xyz 时能访问到本机的开发服务器。
@@ -68,5 +58,29 @@ corepack yarn workspace nekoil-web dev
 ```
 
 然后正常在 tg 中打开小程序，翻到最下方显示「开发模式」则已进入开发模式，代码更改后右键刷新小程序即可生效。
+
+### 3.2 调试后端
+
+#### 3.2.1 开发模式
+
+```sh
+corepack yarn build && corepack yarn start
+```
+
+#### 3.2.2 只测试后端
+
+请求示例：
+
+```sh
+curl -fL -X POST -H 'Nekoil-Proxy-Token: 填 envlocal 里的对应值' -H 'Nekoil-Internal-Token: 填 envlocal 里的对应值' -H 'Content-Type: application/json' -d '{"query":"填你想获取的 cp 的 cpid"}' http://127.0.0.1:5140/nekoil/v0/cp/cp.get
+```
+
+#### 3.2.3 使用正式环境的前端测试本地开发模式的后端
+
+TODO
+
+#### 3.2.4 使用本地开发模式的前端测试本地开发模式的后端
+
+TODO
 
 ## 4. 提交代码
