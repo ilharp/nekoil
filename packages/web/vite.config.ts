@@ -1,10 +1,24 @@
 import react from '@vitejs/plugin-react'
+import { config } from 'dotenv'
 import type { SpawnOptions } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 
-// eslint-disable-next-line import/no-default-export
+const env: Record<string, string> = {}
+
+const envResult = config({
+  path: [
+    resolve(import.meta.dirname, '../../.env.local'),
+    resolve(import.meta.dirname, '../../.env'),
+  ],
+  quiet: true,
+  processEnv: env,
+})
+if (envResult.error) throw envResult.error
+
+// eslint-disable-next-line import-x/no-default-export
 export default defineConfig(async () => {
   const [_, versionString] = await buildVersion()
 
@@ -32,6 +46,15 @@ export default defineConfig(async () => {
             'react-dom/client': 'https://esm.sh/react-dom@19.1.0/client',
           },
         },
+      },
+    },
+
+    server: {
+      host: true,
+      port: 443,
+      https: {
+        key: await readFile(env.NEKOIL_FE_HTTPS_KEY),
+        cert: await readFile(env.NEKOIL_FE_HTTPS_CERT),
       },
     },
   }
