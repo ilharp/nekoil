@@ -5489,21 +5489,42 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.80.10":
-  version: 5.80.10
-  resolution: "@tanstack/query-core@npm:5.80.10"
-  checksum: 10c0/6391f4439f1f4676f5efeb07271e6b0b1418bd1192779f55cac537f0b35ec31c729eb43a30e0269534328c259c3ed6dd2f31555c42c68b6dd0c9ede410d46eb1
+"@tanstack/query-core@npm:5.90.7":
+  version: 5.90.7
+  resolution: "@tanstack/query-core@npm:5.90.7"
+  checksum: 10c0/82198b1ed8c6c1cfd87ec904e241af4839b82597a67744fb972008739cc89ded359509b8599ba7079040111c4a2a573884301d9a2fa39fc48337d2945300525c
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:^5.74.4":
-  version: 5.80.10
-  resolution: "@tanstack/react-query@npm:5.80.10"
+"@tanstack/query-persist-client-core@npm:5.91.6":
+  version: 5.91.6
+  resolution: "@tanstack/query-persist-client-core@npm:5.91.6"
   dependencies:
-    "@tanstack/query-core": "npm:5.80.10"
+    "@tanstack/query-core": "npm:5.90.7"
+  checksum: 10c0/73b1e7f8d96feb0295771b24067f2efa3a6ed761cbba6ce2ee33f4086316f5f562aede813520637c6baa2535d725be0cd1176756e70e9e91f722b47fb795b82c
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query-persist-client@npm:^5.90.9":
+  version: 5.90.9
+  resolution: "@tanstack/react-query-persist-client@npm:5.90.9"
+  dependencies:
+    "@tanstack/query-persist-client-core": "npm:5.91.6"
+  peerDependencies:
+    "@tanstack/react-query": ^5.90.7
+    react: ^18 || ^19
+  checksum: 10c0/73bf291a3a45531a4b4b0ad656ad3cd7a99d7e7896287da683a774c603a0b47932731268c7aa90dfcfba47542bbeb850ae9e0068e9b48e504345122028502aba
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.90.7":
+  version: 5.90.7
+  resolution: "@tanstack/react-query@npm:5.90.7"
+  dependencies:
+    "@tanstack/query-core": "npm:5.90.7"
   peerDependencies:
     react: ^18 || ^19
-  checksum: 10c0/1a759b264cc94b389f802f1183183a3fbe1669ec1bb354951cfab6b6cf175276885c5f5c9b3fc00340a87140fdff4b9cf0c688fb7af103d34fb3b209d33a0a95
+  checksum: 10c0/a4508f115f2b604962e534f7218c1a07707414456ffe900c50ab2dbbd2e46e7f2336d1c8793929722fb262a67cf8d118448e71b6bac4da6b2155d69c628d8855
   languageName: node
   linkType: hard
 
@@ -10989,6 +11010,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"idb-keyval@npm:^6.2.2":
+  version: 6.2.2
+  resolution: "idb-keyval@npm:6.2.2"
+  checksum: 10c0/b52f0d2937cc2ec9f1da536b0b5c0875af3043ca210714beaffead4ec1f44f2ad322220305fd024596203855224d9e3523aed83e971dfb62ddc21b5b1721aeef
+  languageName: node
+  linkType: hard
+
 "ieee754@npm:^1.1.13, ieee754@npm:^1.2.1":
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
@@ -13540,10 +13568,12 @@ __metadata:
     "@satorijs/element": "npm:^3.1.7"
     "@satorijs/protocol": "npm:^1.6.1"
     "@sym-app/components": "workspace:^"
-    "@tanstack/react-query": "npm:^5.74.4"
+    "@tanstack/react-query": "npm:^5.90.7"
+    "@tanstack/react-query-persist-client": "npm:^5.90.9"
     "@types/telegram-web-app": "npm:^7.10.1"
     "@vitejs/plugin-react": "npm:^4.3.4"
     dotenv: "npm:^17.2.3"
+    idb-keyval: "npm:^6.2.2"
     lucide-react: "npm:^0.501.0"
     nekoil-typedef: "workspace:^"
     normalize.css: "npm:^8.0.1"
