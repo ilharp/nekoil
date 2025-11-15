@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 const env: Record<string, string> = {}
 
@@ -23,7 +24,26 @@ export default defineConfig(async () => {
   const [_, versionString] = await buildVersion()
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'prompt',
+        injectRegister: 'inline',
+        manifest: false,
+
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+        },
+
+        devOptions: {
+          enabled: false,
+          navigateFallback: 'index.html',
+          type: 'module',
+        },
+      }),
+    ],
 
     optimizeDeps: {
       // Vite 的恶心 bug
