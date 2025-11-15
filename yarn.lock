@@ -6574,13 +6574,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@telegram-apps/types@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "@telegram-apps/types@npm:2.0.1"
-  checksum: 10c0/91d3e6cb0f96c9341f73867096edb3e3b292c0cbe8bab4259dd6b9fb3479eb5e3445ce466c8648bdb1aacdcc0f2766853064191f1ea620855ab502a3ebfedb08
-  languageName: node
-  linkType: hard
-
 "@testing-library/dom@npm:10.4.0":
   version: 10.4.0
   resolution: "@testing-library/dom@npm:10.4.0"
@@ -6618,6 +6611,13 @@ __metadata:
   peerDependencies:
     "@testing-library/dom": ">=7.21.4"
   checksum: 10c0/68a0c2aa28a3c8e6eb05cafee29705438d7d8a9427423ce5064d44f19c29e89b5636de46dd2f28620fb10abba75c67130185bbc3aa23ac1163a227a5f36641e1
+  languageName: node
+  linkType: hard
+
+"@tma.js/types@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@tma.js/types@npm:1.0.2"
+  checksum: 10c0/445ae52f20b931f316606344ad09d874d67d652028fdfe469c8b5dc57929ca0a9a31b9bb0474eb29f4bbdaa6596be66250379b38f3ae6e31ec3eabb2ad217694
   languageName: node
   linkType: hard
 
@@ -14047,7 +14047,7 @@ __metadata:
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.812.0"
     "@satorijs/element": "npm:^3.1.7"
-    "@telegram-apps/types": "npm:^2.0.0"
+    "@tma.js/types": "npm:^1.0.2"
     "@types/lodash-es": "npm:^4"
     koishi-plugin-nekoil-adapter-onebot: "workspace:^"
     koishi-plugin-nekoil-adapter-telegram: "workspace:^"

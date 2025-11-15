@@ -1,5 +1,5 @@
 import type { Middleware } from '@koa/router'
-import type { User } from '@telegram-apps/types'
+import type { User } from '@tma.js/types'
 import type { Context } from 'koishi'
 import { Service } from 'koishi'
 import type { TelegramBot } from 'koishi-plugin-nekoil-adapter-telegram'
