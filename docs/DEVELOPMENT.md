@@ -2,7 +2,15 @@
 
 ## 1. 开发
 
-### 1.1 Fork & Clone
+### 1.1 Fork & Clone & gsu
+
+项目 clone 下来以后需要拉子模块：
+
+```sh
+git submodule update --init --recursive
+```
+
+一些 shell 增强也会把这条命令 alias 为 `gsu`。
 
 ### 1.2 安装依赖
 
