@@ -21,7 +21,7 @@ corepack yarn --immutable
 ### 1.3 先成功构建一次
 
 ```sh
-corepack yarn build
+corepack yarn workspace @sym-app/components build && corepack yarn build
 ```
 
 ## 2. 修改代码
