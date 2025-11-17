@@ -51,6 +51,7 @@ plugins:
         password: ${{ env.ADMIN_PASSWORD }}
     config:0n6vxu: {}
     console:zsv61x:
+      $if: env.NODE_ENV === 'development'
       open: false
     dataview:j608ho: {}
     explorer:u2zb6t: {}
