@@ -1,6 +1,6 @@
 import type { Bot, Context } from 'koishi'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
-import type { NekoilMsgQueue } from './service'
+// import type { NekoilMsgQueue } from './service'
 
 export const name = 'nekoil-cp-msg-creator'
 
@@ -54,7 +54,7 @@ export const apply = async (ctx: Context) => {
 
     const channel = `telegram:${user_id}`
 
-    const configMessageId = ctx.nekoilCpMsg.getConfigMessageId(channel)
+    // const configMessageId = ctx.nekoilCpMsg.getConfigMessageId(channel)
 
     try {
       switch (cmd) {
@@ -89,40 +89,40 @@ export const apply = async (ctx: Context) => {
   })
 }
 
-const msg = (state: NekoilMsgQueue, cmd: (typeof callbackQueryCmd)[number]) => {
-  let inline_keyboard
+// const msg = (state: NekoilMsgQueue, cmd: (typeof callbackQueryCmd)[number]) => {
+//   let inline_keyboard
 
-  switch (cmd) {
-    case 'CM': {
-      inline_keyboard = [
-        [
-          {
-            text: '创建',
-            callback_data: 'CN',
-          },
-        ],
-      ]
+//   switch (cmd) {
+//     case 'CM': {
+//       inline_keyboard = [
+//         [
+//           {
+//             text: '创建',
+//             callback_data: 'CN',
+//           },
+//         ],
+//       ]
 
-      break
-    }
+//       break
+//     }
 
-    case 'CT': {
-      break
-    }
-  }
+//     case 'CT': {
+//       break
+//     }
+//   }
 
-  return {
-    text: '新聊天记录',
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard,
-    },
-    // @ts-expect-error
-    link_preview_options: {
-      is_disabled: true,
-    },
-  }
-}
+//   return {
+//     text: '新聊天记录',
+//     parse_mode: 'HTML',
+//     reply_markup: {
+//       inline_keyboard,
+//     },
+//     // @ts-expect-error
+//     link_preview_options: {
+//       is_disabled: true,
+//     },
+//   }
+// }
 
 const callbackQueryCmd = [
   // 创建

@@ -4,7 +4,7 @@ export const name = 'nekoil-cp-msg-commands'
 
 export const inject = ['nekoilCpMsg']
 
-export const apply = async (ctx: Context) => {
+export const apply = async (_ctx: Context) => {
   // ctx
   //   .platform('telegram')
   //   .command('nekoilpack [...rest]')
