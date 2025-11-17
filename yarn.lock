@@ -4053,12 +4053,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/console@npm:^5.19.1, @koishijs/console@npm:^5.20.0, @koishijs/console@npm:^5.24.3, @koishijs/console@npm:^5.25.6, @koishijs/console@npm:^5.25.8, @koishijs/console@npm:^5.29.2, @koishijs/console@npm:^5.30.0, @koishijs/console@npm:^5.30.2, @koishijs/console@npm:^5.30.7, @koishijs/console@npm:^5.30.8, @koishijs/console@npm:^5.30.9":
+"@koishijs/console@npm:^5.19.1, @koishijs/console@npm:^5.20.0, @koishijs/console@npm:^5.24.3, @koishijs/console@npm:^5.25.6, @koishijs/console@npm:^5.25.8, @koishijs/console@npm:^5.29.2, @koishijs/console@npm:^5.30.0, @koishijs/console@npm:^5.30.2, @koishijs/console@npm:^5.30.7, @koishijs/console@npm:^5.30.8":
   version: 5.30.9
   resolution: "@koishijs/console@npm:5.30.9"
   peerDependencies:
     koishi: ^4.18.8
   checksum: 10c0/aa034697f70bcd223645ec8ff104caec2c602e4073b3552422c6b1ca78f00e34e5e5c9fe03bf4fbf93862e7053f28a17391d2afb10b930ce48ea646d84a017de
+  languageName: node
+  linkType: hard
+
+"@koishijs/console@npm:^5.30.11":
+  version: 5.30.11
+  resolution: "@koishijs/console@npm:5.30.11"
+  peerDependencies:
+    koishi: ^4.18.9
+  checksum: 10c0/6ddf2571e371eb66542c5d121e0a73a07e41619cd095f7e47dad5968f4d869649f7a92fb3bd15122cf1e84d18a52b12399ac78c507d535d485322e8f2ac4f022
   languageName: node
   linkType: hard
 
@@ -4179,21 +4188,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@koishijs/plugin-console@npm:^5.30.7":
-  version: 5.30.9
-  resolution: "@koishijs/plugin-console@npm:5.30.9"
+"@koishijs/plugin-console@npm:^5.30.11":
+  version: 5.30.11
+  resolution: "@koishijs/plugin-console@npm:5.30.11"
   dependencies:
-    "@koishijs/console": "npm:^5.30.9"
+    "@koishijs/console": "npm:^5.30.11"
     open: "npm:^8.4.2"
     uuid: "npm:^8.3.2"
     ws: "npm:^8.16.0"
   peerDependencies:
-    "@koishijs/client": ^5.30.9
-    koishi: ^4.18.8
+    "@koishijs/client": ^5.30.11
+    koishi: ^4.18.9
   peerDependenciesMeta:
     "@koishijs/client":
       optional: true
-  checksum: 10c0/971207d958e315a4d8588c1999d6bcfdfe491577039120628dba5ec0d3e4cc8427aa340deab4ae8a0610e8a29f6a74f0c817b1ce91cfb0c39cbd40de520999c5
+  checksum: 10c0/aee281801f6ea10d526a25a5d3e438f6d5a4dafaaad1334d9812014910f4e6c0c0f11a86e858db77d73167c39947477e46acabd80145868f619bc3b897659a1c
   languageName: node
   linkType: hard
 
@@ -14864,7 +14873,7 @@ __metadata:
     "@koishijs/plugin-auth": "npm:^4.1.6"
     "@koishijs/plugin-commands": "npm:^3.5.4"
     "@koishijs/plugin-config": "npm:^2.8.6"
-    "@koishijs/plugin-console": "npm:^5.30.7"
+    "@koishijs/plugin-console": "npm:^5.30.11"
     "@koishijs/plugin-database-postgres": "npm:^2.6.0"
     "@koishijs/plugin-database-sqlite": "npm:^4.6.0"
     "@koishijs/plugin-explorer": "npm:^1.5.5"

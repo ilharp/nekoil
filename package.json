@@ -79,7 +79,7 @@
     "@koishijs/plugin-auth": "^4.1.6",
     "@koishijs/plugin-commands": "^3.5.4",
     "@koishijs/plugin-config": "^2.8.6",
-    "@koishijs/plugin-console": "^5.30.7",
+    "@koishijs/plugin-console": "^5.30.11",
     "@koishijs/plugin-database-postgres": "^2.6.0",
     "@koishijs/plugin-database-sqlite": "^4.6.0",
     "@koishijs/plugin-explorer": "^1.5.5",
