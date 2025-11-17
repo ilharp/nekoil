@@ -102,7 +102,7 @@ export class NekoilCpImgrService extends Service {
   #sendCpssrUsingFormAndSave = async (
     payload: NekoilCpImgrServiceCpssrPayload,
     handle: string,
-    image: ArrayBuffer,
+    image: ArrayBufferView<ArrayBuffer> | ArrayBuffer,
     niaid: number,
   ) => {
     const { bot, cpwf, chatId, replyParameters } = payload
