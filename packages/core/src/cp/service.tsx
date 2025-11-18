@@ -792,8 +792,8 @@ export class NekoilCpService extends Service {
 
     // 让首个用户的 id 为 1，避免出现 id 为 0 的情况
     const userIdList = ['']
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const nameIdList = ['']
+    // eslint-disable-next-liSSne @typescript-eslint/no-unnecessary-condition
     result.full?.messages.forEach((message) => {
       message.content = h.transform(message.content!, {
         img: buildOriginsStripper('img'),
@@ -806,12 +806,29 @@ export class NekoilCpService extends Service {
 
       if (message.user.id) {
         if (message.user.id === '1094950020') {
-          userIdList.push('')
-          message.user.id = String(userIdList.length - 1)
+          if (message.user.name && message.user.name !== 'QQ用户') {
+            if (!nameIdList.includes(message.user.name)) {
+              nameIdList.push(message.user.name)
+            }
+            message.user.id = String(
+              nameIdList.indexOf(message.user.name) + 10000000,
+            )
+          } else {
+            userIdList.push('')
+            message.user.id = String(userIdList.length - 1)
+          }
         }
-        if (!userIdList.includes(message.user.id))
+        if (!userIdList.includes(message.user.id)) {
           userIdList.push(message.user.id)
+        }
         message.user.id = String(userIdList.indexOf(message.user.id))
+      } else if (message.user?.name) {
+        if (!nameIdList.includes(message.user.name)) {
+          nameIdList.push(message.user.name)
+        }
+        message.user.id = String(
+          nameIdList.indexOf(message.user.name) + 10000000,
+        )
       }
     })
 
