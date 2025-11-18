@@ -145,5 +145,4 @@ external
 # Koishi env files
 .env.local
 
-#tsconfig.temp.json
 tsconfig.temp.json
