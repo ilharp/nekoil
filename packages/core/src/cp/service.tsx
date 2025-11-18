@@ -793,7 +793,8 @@ export class NekoilCpService extends Service {
     // 让首个用户的 id 为 1，避免出现 id 为 0 的情况
     const userIdList = ['']
     const nameIdList = ['']
-    // eslint-disable-next-liSSne @typescript-eslint/no-unnecessary-condition
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     result.full?.messages.forEach((message) => {
       message.content = h.transform(message.content!, {
         img: buildOriginsStripper('img'),
