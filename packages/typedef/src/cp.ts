@@ -46,6 +46,7 @@ export interface ContentPackSummary {
   count: number
   title: string
   summary: string[]
+  largePreview?: boolean
 }
 
 export interface ContentPackWithSummary extends ContentPackV1 {

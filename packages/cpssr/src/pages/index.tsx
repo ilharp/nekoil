@@ -10,20 +10,19 @@ import {
   SymProvider,
 } from '@sym-app/components'
 import { ArrowRight } from 'lucide-react'
-import type { ContentPackWithFull } from 'nekoil-typedef'
+import type { CpimgrPayload } from 'nekoil-typedef'
 import type { GetServerSideProps } from 'next'
 import { useMemo } from 'react'
 
 import styles from './index.module.scss'
 
-interface Props {
-  data: ContentPackWithFull
-  selfUrlInternal: string
-  showMoreTip: boolean
-}
-
-// eslint-disable-next-line import/no-default-export
-export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
+// eslint-disable-next-line import-x/no-default-export
+export default function Page({
+  cpwfData,
+  selfUrlInternal,
+  showMoreTip,
+  largePreview,
+}: CpimgrPayload) {
   const symAioHost = useMemo<SymAioHost>(
     () => ({
       ...baseSymAioHost,
@@ -56,13 +55,17 @@ export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
   )
 
   return (
-    <div id="cpimgr-capture" className={styles.outerContainer}>
+    <div
+      id="cpimgr-capture"
+      className={styles.outerContainer}
+      style={{ maxHeight: largePreview ? undefined : '960px' }}
+    >
       <div className={styles.innerContainer}>
         <SymProvider className="sym-aio-msg-solidheader">
           <SymAioHostContext value={symAioHost}>
             <SymAioCtxContext.Provider
               value={{
-                messages: data.full.messages.map((x) => ({
+                messages: cpwfData.full.messages.map((x) => ({
                   ...x,
                   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   symHeader: x.user?.name,
@@ -84,7 +87,7 @@ export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
           <div className={styles.moreTipContentContainer}>
             <div className={styles.moreTipContent}>
               <ArrowRight className={styles.moreTipContentIcon} /> 查看{' '}
-              {data.summary.count} 条聊天记录
+              {cpwfData.summary.count} 条聊天记录
             </div>
           </div>
         </div>
@@ -95,18 +98,14 @@ export default function Page({ data, selfUrlInternal, showMoreTip }: Props) {
 
 export const getServerSideProps = (async (ctx) => {
   return {
-    props: {
-      data: JSON.parse(
-        Buffer.from(
-          ctx.req.headers['nekoil-cpssr-data'] as string,
-          'base64',
-        ).toString('utf-8'),
-      ) as ContentPackWithFull,
-      selfUrlInternal: ctx.req.headers['nekoil-selfurl-internal'] as string,
-      showMoreTip: (ctx.req.headers['nekoil-showmoretip'] as string) === 'true',
-    },
+    props: JSON.parse(
+      Buffer.from(
+        ctx.req.headers['nekoil-cpssr-data'] as string,
+        'base64',
+      ).toString('utf-8'),
+    ) as CpimgrPayload,
   }
-}) satisfies GetServerSideProps<Props>
+}) satisfies GetServerSideProps<CpimgrPayload>
 
 const baseSymAioHost: SymAioHost = {
   frCanRemoveBubble: () => false,

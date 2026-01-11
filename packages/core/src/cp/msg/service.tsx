@@ -36,8 +36,13 @@ export interface NekoilMsgSession {
   user: User
 }
 
+export interface NekoilMsgQueueConfig {
+  largePreview: boolean
+}
+
 export interface NekoilMsgQueue {
   configMessageId?: number
+  config?: NekoilMsgQueueConfig
 
   bot: Bot
   /** session.channelId */
@@ -110,11 +115,29 @@ export class NekoilCpMsgService extends Service {
     // 开 flush 清掉后，#msgMap[channel] 必然已经 falsy 了，直接赋值
     this.#msgMap[channel] = {
       configMessageId,
+      config: { largePreview: false },
       bot,
       channelId,
       lmt: 0,
       sessions: [],
     }
+  }
+
+  /**
+   * 切换某个 channel 的 largePreview 状态
+   */
+  toggleLargePreview = (channel: string): boolean => {
+    const queue = this.#msgMap[channel]
+    if (!queue?.config) return false
+    queue.config.largePreview = !queue.config.largePreview
+    return queue.config.largePreview
+  }
+
+  /**
+   * 获取某个 channel 的 largePreview 状态
+   */
+  getLargePreview = (channel: string): boolean => {
+    return this.#msgMap[channel]?.config?.largePreview ?? false
   }
 
   /**
@@ -206,9 +229,10 @@ export class NekoilCpMsgService extends Service {
           const splitIndex = channel.indexOf(':')
           const platform = channel.slice(0, splitIndex)
           // const channelId = channel.slice(splitIndex + 1)
+          const largePreview = msgSessions.config?.largePreview ?? false
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.#process(platform, msgSessions.sessions)
+          this.#process(platform, msgSessions.sessions, largePreview)
         } else {
           if (options.notifyWhenEmpty) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -224,7 +248,11 @@ export class NekoilCpMsgService extends Service {
       }
     }
 
-  #process = async (platform: string, sessions: NekoilMsgSession[]) => {
+  #process = async (
+    platform: string,
+    sessions: NekoilMsgSession[],
+    largePreview = false,
+  ) => {
     let progressMsg: number | undefined = undefined
 
     const len = sessions.length
@@ -523,6 +551,7 @@ export class NekoilCpMsgService extends Service {
           bot: notifBot,
           cpwf,
           handle,
+          largePreview,
         })
       } catch (e) {
         this.#l.error(`cpssr err in cp create for cpid ${cpwf.cpid}`)

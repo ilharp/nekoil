@@ -42,13 +42,11 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
 
   try {
     await page.setExtraHTTPHeaders({
-      'Nekoil-Cpssr-Data': Buffer.from(
-        JSON.stringify(payload.cpwfData),
-      ).toString('base64'),
-      'Nekoil-Proxy-Token': payload.proxyToken,
-      'Nekoil-Internal-Token': payload.internalToken,
-      'Nekoil-SelfUrl-Internal': payload.selfUrlInternal,
-      'Nekoil-ShowMoreTip': payload.showMoreTip ? 'true' : '',
+      'Nekoil-Cpssr-Data': Buffer.from(JSON.stringify(payload)).toString(
+        'base64',
+      ),
+      // 'Nekoil-Proxy-Token': payload.proxyToken,
+      // 'Nekoil-Internal-Token': payload.internalToken,
     })
     if (!dev) await page.setJavaScriptEnabled(false)
     await page.goto(payload.cpssrUrl)

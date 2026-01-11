@@ -26,6 +26,12 @@ export const apply = async (ctx: Context) => {
           inline_keyboard: [
             [
               {
+                text: '❌ 允许长图预览',
+                callback_data: 'CCL',
+              },
+            ],
+            [
+              {
                 text: '创建',
                 callback_data: 'CN',
               },
@@ -67,6 +73,41 @@ export const apply = async (ctx: Context) => {
           bot.internal.answerCallbackQuery({
             callback_query_id: input.id,
             text: '正在创建聊天记录……',
+          })
+
+          return
+        }
+
+        case 'CCL': {
+          const newState = ctx.nekoilCpMsg.toggleLargePreview(channel)
+
+          // 更新按钮文字
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          bot.internal.editMessageReplyMarkup({
+            chat_id: user_id,
+            message_id: input.message!.message_id!,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: newState ? '✅ 允许长图预览' : '❌ 允许长图预览',
+                    callback_data: 'CCL',
+                  },
+                ],
+                [
+                  {
+                    text: '创建',
+                    callback_data: 'CN',
+                  },
+                ],
+              ],
+            },
+          })
+
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          bot.internal.answerCallbackQuery({
+            callback_query_id: input.id,
+            text: newState ? '已开启长图预览' : '已关闭长图预览',
           })
 
           return
@@ -127,6 +168,8 @@ export const apply = async (ctx: Context) => {
 const callbackQueryCmd = [
   // 创建
   'CN',
+  // 切换长图预览
+  'CCL',
   // 去主菜单
   'CM',
   // 去排版菜单

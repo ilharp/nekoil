@@ -7,4 +7,5 @@ export interface CpimgrPayload {
   internalToken: string
   selfUrlInternal: string
   showMoreTip: boolean
+  largePreview?: boolean
 }

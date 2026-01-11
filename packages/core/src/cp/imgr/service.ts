@@ -32,19 +32,25 @@ export class NekoilCpImgrService extends Service {
     this.#l = ctx.logger('nekoilCpImgr')
   }
 
-  public render = async (data: ContentPackWithFull) => {
-    const measure = (await this.ctx.http.post(
-      this.nekoilConfig.cpimgrUrl + '/measure',
-      {
-        cpssrUrl: this.nekoilConfig.cpssrUrl,
-        cpwfData: data,
-        proxyToken: this.nekoilConfig.proxyToken,
-        internalToken: this.nekoilConfig.internalToken,
-        selfUrlInternal: this.nekoilConfig.selfUrlInternal,
-        showMoreTip: false,
-      } satisfies CpimgrPayload,
-    )) as unknown as {
-      height: number
+  public render = async (data: ContentPackWithFull, largePreview = false) => {
+    let showMoreTip = false
+
+    if (!largePreview) {
+      // 非长图模式，执行 measure
+      const measure = (await this.ctx.http.post(
+        this.nekoilConfig.cpimgrUrl + '/measure',
+        {
+          cpssrUrl: this.nekoilConfig.cpssrUrl,
+          cpwfData: data,
+          proxyToken: this.nekoilConfig.proxyToken,
+          internalToken: this.nekoilConfig.internalToken,
+          selfUrlInternal: this.nekoilConfig.selfUrlInternal,
+          showMoreTip: false,
+        } satisfies CpimgrPayload,
+      )) as unknown as {
+        height: number
+      }
+      showMoreTip = measure.height === 960
     }
 
     const image = (
@@ -56,7 +62,8 @@ export class NekoilCpImgrService extends Service {
           proxyToken: this.nekoilConfig.proxyToken,
           internalToken: this.nekoilConfig.internalToken,
           selfUrlInternal: this.nekoilConfig.selfUrlInternal,
-          showMoreTip: measure.height === 960,
+          showMoreTip,
+          largePreview,
         } satisfies CpimgrPayload,
         responseType: 'arraybuffer',
       })
@@ -157,7 +164,7 @@ export class NekoilCpImgrService extends Service {
   }
 
   public sendCpssr = async (payload: NekoilCpImgrServiceCpssrPayload) => {
-    const { cpwf, handle: originalHandle } = payload
+    const { cpwf, handle: originalHandle, largePreview = false } = payload
 
     const handle =
       typeof originalHandle === 'string'
@@ -196,7 +203,7 @@ export class NekoilCpImgrService extends Service {
 
       const renderCpwf = await this.ctx.nekoilCp.parseExternal(cpwf)
 
-      const [image] = await this.render(renderCpwf)
+      const [image] = await this.render(renderCpwf, largePreview)
 
       const niaResult = await this.ctx.nekoilAssets.uploadImg({
         data: image!,
@@ -230,4 +237,5 @@ export interface NekoilCpImgrServiceCpssrPayload {
   handle: string | Pick<ContentPackHandleV1, 'handle' | 'handle_type'>
   chatId?: number | string | undefined
   replyParameters?: ReplyParameters | undefined
+  largePreview?: boolean
 }
