@@ -45,8 +45,8 @@ const controller = async (req: IncomingMessage, res: ServerResponse) => {
       'Nekoil-Cpssr-Data': Buffer.from(JSON.stringify(payload)).toString(
         'base64',
       ),
-      // 'Nekoil-Proxy-Token': payload.proxyToken,
-      // 'Nekoil-Internal-Token': payload.internalToken,
+      'Nekoil-Proxy-Token': payload.proxyToken,
+      'Nekoil-Internal-Token': payload.internalToken,
     })
     if (!dev) await page.setJavaScriptEnabled(false)
     await page.goto(payload.cpssrUrl)

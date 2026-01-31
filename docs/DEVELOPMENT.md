@@ -91,4 +91,18 @@ TODO
 
 TODO
 
+### 3.3 调试 cpssr 端
+
+#### 3.3.1 开发模式启动 cpssr
+
+```sh
+corepack yarn workspace nekoil-cpssr dev
+```
+
+#### 3.3.2 启动 cpimgr 的开发模式
+
+```sh
+corepack yarn workspace nekoil-cpimgr start --dev
+```
+
 ## 4. 提交代码
