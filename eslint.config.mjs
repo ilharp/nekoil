@@ -24,7 +24,7 @@ export default defineConfig(
       globals: globals.browser,
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.mjs'],
+          allowDefaultProject: ['eslint.config.mjs', 'scripts/*.mts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },

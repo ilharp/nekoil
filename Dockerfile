@@ -8,7 +8,7 @@ RUN ["corepack", "yarn"]
 RUN ["corepack", "yarn", "build"]
 RUN ["corepack", "yarn", "workspace", "@sym-app/components", "build"]
 RUN ["corepack", "yarn", "workspace", "nekoil-cpssr", "build"]
-# RUN ["corepack", "yarn", "node", "-r", "esbuild-register", "scripts/prepare.mts"]
+RUN ["corepack", "yarn", "node", "--loader", "ts-node/esm", "scripts/prepare.mts", "koishi.yml"]
 RUN ["rm", "-rf", "node_modules"]
 
 FROM ilharp/cordis-base:1.0.0
