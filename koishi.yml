@@ -64,14 +64,12 @@ plugins:
     theme-vanilla:sm47n0: {}
   group:storage:
     database-postgres:rb61b6:
-      $if: env.NEKOIL_ENV === 'production'
       host: ${{ env.POSTGRES_HOST }}
       port: 5432
       user: ${{ env.POSTGRES_USER }}
       password: ${{ env.POSTGRES_PASSWORD }}
       database: ${{ env.POSTGRES_DATABASE }}
-    database-sqlite:v9xs5g:
-      $if: env.NEKOIL_ENV !== 'production'
+    ~database-sqlite:v9xs5g:
       path: data/koishi.db
     assets-local:rk7cb2: {}
   group:adapter:
