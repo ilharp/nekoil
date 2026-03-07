@@ -1,10 +1,12 @@
 use std::fmt::Debug;
 
+use anyhow::Error;
 use axum::Json;
 use axum::extract::FromRequest;
 use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
+use axum::response::Response;
 use serde::Serialize;
 
 pub mod controller;
@@ -65,5 +67,26 @@ impl IntoResponse for ApiError {
 impl From<JsonRejection> for ApiError {
     fn from(value: JsonRejection) -> Self {
         ApiError::InvalidJsonError(value.body_text())
+    }
+}
+
+pub struct AppError(Error);
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Error: {}", self.0),
+        )
+            .into_response()
+    }
+}
+
+impl<E> From<E> for AppError
+where
+    E: Into<anyhow::Error>,
+{
+    fn from(err: E) -> Self {
+        Self(err.into())
     }
 }

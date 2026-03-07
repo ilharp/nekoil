@@ -3,12 +3,8 @@ use std::process::ExitCode;
 use std::sync::Arc;
 
 use anyhow::Context;
-use anyhow::Error;
 use anyhow::Result;
 use axum::Router;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::response::Response;
 use axum::routing::post;
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
@@ -70,11 +66,11 @@ async fn main_async_intl() -> Result<()> {
     let app_state = AppState::new(config, &shutdown_notify).await?;
 
     let app = Router::new()
-        .route("/cp.get", post(controller_cp_get))
+        .route("/v1/cp.get", post(controller_cp_get))
         .fallback(handler_notfound)
         .with_state(app_state.clone());
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5143")
         .await
         .context("Failed to bind tcp port")?;
 
@@ -125,27 +121,6 @@ impl AppState {
 
     fn shutdown(&self) {
         self.shutdown_notify.notify_one();
-    }
-}
-
-struct AppError(Error);
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-impl<E> From<E> for AppError
-where
-    E: Into<anyhow::Error>,
-{
-    fn from(err: E) -> Self {
-        Self(err.into())
     }
 }
 
