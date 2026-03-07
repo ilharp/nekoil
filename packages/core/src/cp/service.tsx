@@ -84,57 +84,17 @@ export class NekoilCpService extends Service {
       const isPlusHandle = queryHandle.startsWith('_')
       if (isPlusHandle) queryHandle = queryHandle.slice(1)
 
-      const [contentPack] = await this.ctx.database.get(
-        'cp_v1',
-        (cp_v1) =>
-          $.and(
-            $.eq(cp_v1.deleted, 0),
-            $.in(
-              cp_v1.cpid,
-              this.ctx.database
-                .select('cp_handle_v1', (cp_handle_v1) =>
-                  $.and(
-                    $.eq(cp_handle_v1.deleted, 0),
-                    $.eq(cp_handle_v1.handle, queryHandle),
-                    isPlusHandle
-                      ? $.or(
-                          $.eq(cp_handle_v1.handle_type, 1),
-                          $.eq(cp_handle_v1.handle_type, 4),
-                        )
-                      : $.or(
-                          $.eq(cp_handle_v1.handle_type, 2),
-                          $.eq(cp_handle_v1.handle_type, 3),
-                        ),
-                  ),
-                )
-                .evaluate('cpid'),
-            ),
-          ),
-        [
-          'cpid',
-          'cp_version',
-          'created_time',
-          'creator',
-          'owner',
-          'data_summary',
-          'platform',
-          'cpssr_version',
-          'cpssr_niaid',
-          full ? 'data_full_mode' : false,
-          full ? 'data_full' : false,
-        ].filter(
-          Boolean as unknown as (
-            value: string | boolean,
-          ) => value is FlatKeys<ContentPackV1>,
-        ),
-      )
+      const cpGetResponse = await this.ctx.http.post<
+        NekoilResponseBody<ContentPackV1>
+      >(`${this.nekoilConfig.dataServiceUrl}/v1/cp.get`, {
+        queryHandle,
+        isPlusHandle,
+      })
 
-      if (!contentPack) {
-        return {
-          code: 404,
-          msg: 'EXXXXX NOT FOUND',
-        }
-      }
+      if (cpGetResponse.code !== 200)
+        return cpGetResponse as NekoilResponseBody<ContentPackWithFull>
+
+      const contentPack = cpGetResponse.data!
 
       return {
         code: 200,

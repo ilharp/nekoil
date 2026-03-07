@@ -12,6 +12,7 @@ export interface Config {
   }
   cpimgrUrl: string
   cpssrUrl: string
+  dataServiceUrl: string
   sch: {
     listen: number[]
     admins: number[]
@@ -32,6 +33,7 @@ export const Config: Schema<Config> = Schema.object({
   }),
   cpimgrUrl: Schema.string().required(),
   cpssrUrl: Schema.string().required(),
+  dataServiceUrl: Schema.string().required(),
   sch: Schema.object({
     listen: Schema.array(Number).role('table').required(),
     admins: Schema.array(Number).role('table').required(),
