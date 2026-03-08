@@ -46,17 +46,17 @@ pub async fn controller_cp_get(
         .from_raw_sql(raw_sql!(
             Postgres,
             r#"
-SELECT *
-FROM cp_v1
-WHERE deleted = 0
-  AND cpid IN (
-    SELECT cpid
-    FROM cp_handle_v1
-    WHERE deleted = 0
-      AND handle = {query_handle}
-      AND handle_type IN ({..handle_types})
-  )
-"#
+SELECT "cp_v1".*
+FROM "cp_v1"
+WHERE "cp_v1"."deleted" = 0
+AND "cp_v1"."cpid" IN (
+SELECT "cp_handle_v1"."cpid"
+FROM "cp_handle_v1"
+WHERE "cp_handle_v1"."deleted" = 0
+AND "cp_handle_v1"."handle" = {query_handle}
+AND "cp_handle_v1"."handle_type" IN ({..handle_types})
+)
+    "#
         ))
         .all(&app_state.db)
         .await?;
