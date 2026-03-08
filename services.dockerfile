@@ -9,4 +9,4 @@ FROM alpine:3.23.3
 
 WORKDIR /app
 RUN ["apk", "add", "--no-cache", "openssl-dev"]
-COPY --from=0 /usr/src/nekoil/target/release/data-service /app/data-service
+COPY --from=0 /usr/src/nekoil/target/x86_64-unknown-linux-musl/release/data-service /app/data-service
