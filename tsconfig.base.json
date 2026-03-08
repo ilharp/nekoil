@@ -19,5 +19,7 @@
       "node",
       "yml-register/types",
     ],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
   }
 }
