@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "packages/data-service",
+    "packages/entity",
 ]
 
 [workspace.package]
