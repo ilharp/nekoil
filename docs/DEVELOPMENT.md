@@ -106,3 +106,12 @@ corepack yarn workspace nekoil-cpimgr start --dev
 ```
 
 ## 4. 提交代码
+
+## 5. 数据库相关
+
+### 5.1 DDL 同步到 Rust
+
+```sh
+cargo install sea-orm-cli@^2.0.0-rc.36
+sea-orm-cli generate entity -u postgres://postgres:password@127.0.0.1/nekoil -o packages/entity/src -l --with-serde both --entity-format dense
+```
