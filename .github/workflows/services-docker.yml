@@ -1,0 +1,36 @@
+name: Publish Services Docker Image
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  docker:
+    name: Docker
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: |
+          docker buildx build -t ghcr.io/ilharp/nekoil-svc:$(git rev-parse --abbrev-ref HEAD)-$(git rev-list --count HEAD) -f services.dockerfile --push .
+        shell: bash
