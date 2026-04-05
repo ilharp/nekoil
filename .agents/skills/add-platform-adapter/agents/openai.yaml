@@ -1,0 +1,7 @@
+interface:
+  display_name: 添加平台适配器
+  short_description: 为 nekoil 添加新的平台适配器。
+  default_prompt: 为这个 nekoil 仓库添加一个新的平台适配器，包括包骨架、配置接线，以及 core 中的平台分支更新。
+
+policy:
+  allow_implicit_invocation: false
