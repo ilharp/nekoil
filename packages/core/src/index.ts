@@ -23,6 +23,6 @@ export const apply = (ctx: Context, config: Config) => {
   // ctx.plugin(sch, config)
 
   ctx.on('before-send', (session) => {
-    return session.platform === 'onebot'
+    return ['onebot', 'milky'].includes(session.platform)
   })
 }

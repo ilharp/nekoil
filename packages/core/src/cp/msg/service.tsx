@@ -3,6 +3,8 @@
 import type { Event } from '@satorijs/protocol'
 import type { Bot, Context, User } from 'koishi'
 import { h, Service } from 'koishi'
+import type MilkyBot from 'koishi-plugin-nekoil-adapter-milky'
+import { Milky } from 'koishi-plugin-nekoil-adapter-milky'
 import type {
   CQCode,
   BaseBot as OneBotBaseBot,
@@ -10,6 +12,7 @@ import type {
 import { OneBot } from 'koishi-plugin-nekoil-adapter-onebot'
 import type TelegramBot from 'koishi-plugin-nekoil-adapter-telegram'
 import { debounce } from 'lodash-es'
+import type { ContentPackV1 } from 'nekoil-typedef'
 import type { Config } from '../../config'
 import { getHandle, regexResid, UserSafeError } from '../../utils'
 import type { CpCreateOptionId } from '../service'
@@ -64,6 +67,10 @@ type OneBotForwardMsg = {
     content: CQCode[]
   }
 }[]
+
+type MilkyForwardMsg = Awaited<
+  ReturnType<MilkyBot['internal']['getForwardedMessages']>
+>
 
 export class NekoilCpMsgService extends Service {
   static inject = ['nekoilCp', 'database', 'nekoilCpImgr', 'nekoilAssets']
@@ -272,6 +279,9 @@ export class NekoilCpMsgService extends Service {
     const tgBot = this.ctx.bots.find(
       (x) => x.platform === 'telegram',
     )! as unknown as TelegramBot
+    const milkyBot = this.ctx.bots.find(
+      (x) => x.platform === 'milky',
+    )! as MilkyBot
 
     const notifBot = tgBot
     const notifUserId = (
@@ -282,9 +292,25 @@ export class NekoilCpMsgService extends Service {
     )[0]?.pid
 
     try {
-      let contentType: 'forward' | 'satori' | 'onebot' | 'obForward' = 'forward'
+      /**
+       * 当前的内容模式。按顺序：
+       *
+       * - milkyForward：来自 Milky 的合并转发
+       * - obForward：来自 OneBot 的合并转发
+       * - satori：一段 Satori Element 纯文本
+       * - onebot：一段 OneBot Forward 纯文本
+       * - forward：默认模式，将这些消息视作一组聊天记录。如果当前内容没能被成功解析为任何其他模式，那么就会使用 forward 模式。因此，每段判定都要在前面加 contentType === 'forward'。
+       */
+      let contentType:
+        | 'forward'
+        | 'satori'
+        | 'onebot'
+        | 'obForward'
+        | 'milkyForward' = 'forward'
+
       let resid: string | undefined = undefined
       let oneBotForwardMsg: OneBotForwardMsg | undefined = undefined
+      let milkyForwardMsg: MilkyForwardMsg | undefined = undefined
       let content: string | undefined = undefined
       let satoriContent: h[] | undefined = undefined
       let parsedSatoriContent: h | undefined = undefined
@@ -305,11 +331,22 @@ export class NekoilCpMsgService extends Service {
         x.event.message!.elements = h.parse(x.event.message!.content!)
       })
 
-      // 判断是否为 obForward
-      if (
-        /* contentType === 'forward' && */ platform === 'onebot' &&
-        len === 1
-      ) {
+      // milkyForward
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (contentType === 'forward' && platform === 'milky' && len === 1) {
+        const elements = lastSession.event.message!.elements!
+        if (
+          elements.length === 1 &&
+          elements[0]!.type === 'forward' &&
+          elements[0]!.attrs['id']
+        ) {
+          contentType = 'milkyForward'
+          resid = elements[0]!.attrs['id']!
+        }
+      }
+
+      // obForward
+      if (contentType === 'forward' && platform === 'onebot' && len === 1) {
         const elements = lastSession.event.message!.elements!
         if (
           elements.length === 1 &&
@@ -333,8 +370,10 @@ export class NekoilCpMsgService extends Service {
           ).trim()
           if (regexResid.test(content)) {
             try {
-              oneBotForwardMsg ??= (await obBot.internal.getForwardMsg(content))
-                .message
+              milkyForwardMsg ??=
+                await milkyBot.internal.getForwardedMessages(content)
+              // oneBotForwardMsg ??= (await obBot.internal.getForwardMsg(content))
+              //   .message
               contentType = 'obForward'
               resid = content
             } catch (cause) {
@@ -396,6 +435,7 @@ export class NekoilCpMsgService extends Service {
 
       let loadingContent: string
       switch (contentType) {
+        case 'milkyForward':
         case 'obForward':
           loadingContent = '正在解析聊天记录…………'
           break
@@ -439,6 +479,23 @@ export class NekoilCpMsgService extends Service {
       let cpCreateOptionId: CpCreateOptionId
 
       switch (contentType) {
+        case 'milkyForward': {
+          milkyForwardMsg ??= await (
+            bot as MilkyBot
+          ).internal.getForwardedMessages(resid!)
+
+          parsedContent = await this.parseMilky(
+            milkyForwardMsg,
+            bot as MilkyBot,
+          )
+
+          cpCreateOptionId = {
+            idType: 'resid',
+            resid: resid!,
+          }
+
+          break
+        }
         case 'obForward': {
           oneBotForwardMsg ??= (
             await (bot as OneBotBaseBot).internal.getForwardMsg(resid!)
@@ -473,6 +530,14 @@ export class NekoilCpMsgService extends Service {
           break
         case 'forward':
           switch (platform) {
+            case 'milky': {
+              // 此时 platform 已经是 milky，可以直接传 bot 进去
+              parsedContent = await this.#parseMilkyForward(
+                sessions,
+                bot as MilkyBot,
+              )
+              break
+            }
             case 'onebot': {
               // 此时 platform 已经是 onebot，可以直接传 bot 进去
               parsedContent = await this.#parseOneBotForward(
@@ -497,6 +562,9 @@ export class NekoilCpMsgService extends Service {
           break
       }
 
+      /**
+       * @see {@link ContentPackV1}
+       */
       let cpPlatform: 1 | 2 | 3
 
       switch (contentType) {
@@ -505,6 +573,7 @@ export class NekoilCpMsgService extends Service {
             case 'telegram':
               cpPlatform = 2
               break
+            case 'milky':
             case 'onebot':
               cpPlatform = 3
               break
@@ -516,9 +585,8 @@ export class NekoilCpMsgService extends Service {
         case 'satori':
           cpPlatform = 1
           break
+        case 'milkyForward':
         case 'onebot':
-          cpPlatform = 3
-          break
         case 'obForward':
           cpPlatform = 3
           break
@@ -602,6 +670,125 @@ export class NekoilCpMsgService extends Service {
         progressMsg = undefined
       }
     }
+  }
+
+  public parseMilky = async (
+    content: MilkyForwardMsg,
+    bot: MilkyBot,
+  ): Promise<h[]> => {
+    return this.#parseMilkyIntl(content, bot, 0)
+  }
+
+  #parseMilkyIntl = async (
+    content: MilkyForwardMsg,
+    bot: MilkyBot,
+    createdCount: number,
+  ): Promise<h[]> => {
+    createdCount++
+
+    if (createdCount > 32) throw new UserSafeError('套娃层数超过限制。')
+
+    return Promise.all(
+      content.messages.map(async (incomingForwardedMessage) => {
+        const children = await Milky.adaptElement(bot, incomingForwardedMessage)
+
+        const elements = await this.#processMilkyMessages(
+          children,
+          bot,
+          createdCount,
+        )
+
+        const message: h = (
+          <message>
+            <author
+              // id={String(incomingForwardedMessage.user_id)}
+              name={incomingForwardedMessage.sender_name}
+              // avatar={`http://thirdqq.qlogo.cn/headimg_dl?dst_uin=${incomingForwardedMessage.user_id}&spec=640`}
+            />
+            {elements}
+          </message>
+        )
+
+        return message
+      }),
+    )
+  }
+
+  /**
+   * @returns 消息元素的数组，其中每个消息元素的类型都为 message，children 中首个元素为 author
+   */
+  #parseMilkyForward = async (
+    sessions: NekoilMsgSession[],
+    bot: MilkyBot,
+  ): Promise<h[]> => {
+    const result = await Promise.all(
+      sessions.map(async (session) => {
+        const author = h('author', {
+          id: session.event.user!.id,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          name: session.event.user!.nick || session.event.user!.name,
+          avatar: session.event.user!.avatar,
+        })
+
+        const elements = await this.#processMilkyMessages(
+          session.event.message!.elements!,
+          bot,
+          0,
+        )
+
+        const message: h = (
+          <message>
+            {author}
+            {elements}
+          </message>
+        )
+
+        return message
+      }),
+    )
+
+    return result
+  }
+
+  #processMilkyMessages = async (
+    elements: h[],
+    bot: MilkyBot,
+    createdCount: number,
+  ) => {
+    const result: h[] = []
+
+    for (const elem of elements) {
+      if (elem.type === 'forward' && elem.attrs['id']) {
+        try {
+          const milkyForwardMsg = await bot.internal.getForwardedMessages(
+            elem.attrs['id'],
+          )
+
+          const messages = await this.#parseMilkyIntl(
+            milkyForwardMsg,
+            bot,
+            createdCount,
+          )
+
+          result.push(
+            <message forward id={elem.attrs['id']}>
+              {messages}
+            </message>,
+          )
+        } catch (e) {
+          this.#l.error(`error processing milky forward ${elem.attrs['id']}`)
+          this.#l.error(e)
+
+          result.push(
+            <nekoil:failedfwd platform="milky" id={elem.attrs['id']} />,
+          )
+        }
+      } else {
+        result.push(elem)
+      }
+    }
+
+    return result
   }
 
   public parseOneBot = async (

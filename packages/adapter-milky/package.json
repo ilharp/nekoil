@@ -1,0 +1,44 @@
+{
+  "name": "koishi-plugin-nekoil-adapter-milky",
+  "description": "From 035f5f7e7a739685f9f71b7f11db98051dfc4545",
+  "version": "0.1.1",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "adapter",
+    "milky",
+    "bot",
+    "protocol",
+    "robotics"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idranme/koishi-plugin-adapter-milky.git"
+  },
+  "peerDependencies": {
+    "koishi": "^4.18.11"
+  },
+  "devDependencies": {
+    "@saltify/milky-types": "^1.2.2"
+  },
+  "koishi": {
+    "browser": true,
+    "description": {
+      "zh": "Milky 协议适配器",
+      "en": "Milky Protocol Adapter"
+    },
+    "service": {
+      "implements": [
+        "adapter"
+      ]
+    }
+  }
+}

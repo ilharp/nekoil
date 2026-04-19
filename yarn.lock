@@ -5386,6 +5386,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@saltify/milky-types@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@saltify/milky-types@npm:1.2.2"
+  dependencies:
+    zod: "npm:^4.3.6"
+  checksum: 10c0/771708f99e4690d18f282b5de099199dba89800e5a2f971cf7d40d92b34f026e209a7cd16166e5b4308d6bd5646b96447d8ebf04c30fedc1e1bdcb4ef25c5447
+  languageName: node
+  linkType: hard
+
 "@satorijs/core@npm:^4.5.0, @satorijs/core@npm:^4.5.1":
   version: 4.5.2
   resolution: "@satorijs/core@npm:4.5.2"
@@ -5402,22 +5411,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@satorijs/element@npm:^3.1.7, @satorijs/element@npm:^3.1.8":
-  version: 3.1.8
-  resolution: "@satorijs/element@npm:3.1.8"
+"@satorijs/element@npm:^3.1.7, @satorijs/element@npm:^3.1.8, @satorijs/element@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@satorijs/element@npm:3.2.0"
   dependencies:
-    cosmokit: "npm:^1.7.2"
-  checksum: 10c0/c3a988048aeb63c3fbe3ea7edaa0f41f02ae8a2e2edad4a70ca66e43d02335167b00279a9d8304741d04599f7b27bf1f29a8a1639657d322303d49c83f186823
+    cosmokit: "npm:^1.8.1"
+  checksum: 10c0/a866f97bd2094d3aea66b0190021ab918050bf40d4d899d5e10912f6351c47c33115d79b98911c0b7725eb5f06d0dc728aab3f56ab4e697d87b30603cafc2954
   languageName: node
   linkType: hard
 
 "@satorijs/protocol@npm:^1.6.1":
-  version: 1.6.1
-  resolution: "@satorijs/protocol@npm:1.6.1"
+  version: 1.7.0
+  resolution: "@satorijs/protocol@npm:1.7.0"
   dependencies:
-    "@satorijs/element": "npm:^3.1.8"
-    cosmokit: "npm:^1.7.2"
-  checksum: 10c0/36275e863198ef7c9c33225e16fe0c380d3a4816bd00d2ce07c3cac85cc8c597939155725a1d077c03a146355da7e726d23c4cae554a245af088b4a3692493a0
+    "@satorijs/element": "npm:^3.2.0"
+    cosmokit: "npm:^1.8.1"
+  checksum: 10c0/53a92c14fcc71fea6f30810b40398813dc938e174c30f103f067529c412e7dcc8f78b0f6b78576796d418b38715621297248d97e019caa7164603e4dda9d076b
   languageName: node
   linkType: hard
 
@@ -9760,6 +9769,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cosmokit@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "cosmokit@npm:1.8.1"
+  checksum: 10c0/56b0294572efc7793d5854b0022243fab9899d0ab6ce7da873839572b4dc8c6d3ba8d6ff5b61231dca2e9d821af73a2be5d502d9ea52af2671374711a93620aa
+  languageName: node
+  linkType: hard
+
 "create-jest@npm:^29.7.0":
   version: 29.7.0
   resolution: "create-jest@npm:29.7.0"
@@ -14043,6 +14059,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"koishi-plugin-nekoil-adapter-milky@workspace:^, koishi-plugin-nekoil-adapter-milky@workspace:packages/adapter-milky":
+  version: 0.0.0-use.local
+  resolution: "koishi-plugin-nekoil-adapter-milky@workspace:packages/adapter-milky"
+  dependencies:
+    "@saltify/milky-types": "npm:^1.2.2"
+  peerDependencies:
+    koishi: ^4.18.11
+  languageName: unknown
+  linkType: soft
+
 "koishi-plugin-nekoil-adapter-onebot@workspace:^, koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot"
@@ -14076,6 +14102,7 @@ __metadata:
     "@satorijs/element": "npm:^3.1.7"
     "@tma.js/types": "npm:^1.0.2"
     "@types/lodash-es": "npm:^4"
+    koishi-plugin-nekoil-adapter-milky: "workspace:^"
     koishi-plugin-nekoil-adapter-onebot: "workspace:^"
     koishi-plugin-nekoil-adapter-telegram: "workspace:^"
     lodash-es: "npm:^4.17.21"
@@ -19216,5 +19243,12 @@ __metadata:
   version: 4.1.12
   resolution: "zod@npm:4.1.12"
   checksum: 10c0/b64c1feb19e99d77075261eaf613e0b2be4dfcd3551eff65ad8b4f2a079b61e379854d066f7d447491fcf193f45babd8095551a9d47973d30b46b6d8e2c46774
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.3.6":
+  version: 4.3.6
+  resolution: "zod@npm:4.3.6"
+  checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
   languageName: node
   linkType: hard
