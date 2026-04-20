@@ -530,6 +530,8 @@ export interface Internal {
   deleteGroupFileFolder(group_id: id, folder_id: string): Promise<void>
   renameGroupFileFolder(group_id: id, folder_id: string, new_folder_name: string): Promise<void>
 
+  setMsgEmojiLike(message_id: id, emoji_id: id, set?: boolean): Promise<void>
+
   getForwardMsg(id: string): Promise<{
     message: {
       type: 'node'
@@ -735,5 +737,8 @@ Internal.define('move_group_file', 'group_id', 'file_id', 'parent_directory', 't
 // Internal.define('create_group_file_folder', 'group_id', 'name', 'parent_id')
 Internal.define('delete_group_file_folder', 'group_id', 'folder_id')
 Internal.define('rename_group_file_folder', 'group_id', 'folder_id', 'new_folder_name')
+
+// reaction
+Internal.define('set_msg_emoji_like', 'message_id', 'emoji_id', 'set')
 
 Internal.define('get_forward_msg', 'id')
