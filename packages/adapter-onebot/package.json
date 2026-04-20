@@ -1,5 +1,6 @@
 {
   "name": "koishi-plugin-nekoil-adapter-onebot",
+  "description": "From c2cda5dbe2cc9a227cd43c3c74e026229fafa7f3",
   "version": "6.8.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
