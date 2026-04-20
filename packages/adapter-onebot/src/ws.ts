@@ -107,14 +107,10 @@ export namespace WsServer {
 let counter = 0
 const listeners: Record<number, (response: Response) => void> = {}
 
-export function accept(
-  socket: Universal.WebSocket,
-  // @ts-expect-error
-  bot: OneBotBot<Context, OneBotBot.BaseConfig & SharedConfig>,
-) {
-  socket.addEventListener('message', ({ data }) => {
+export function accept(socket: Universal.WebSocket, bot: OneBotBot<Context, OneBotBot.BaseConfig & SharedConfig>) {
+  socket.addEventListener('message', (event) => {
     let parsed: any
-    data = data.toString()
+    const data = event.data.toString()
     try {
       parsed = JSON.parse(data)
     } catch (error) {
@@ -132,6 +128,7 @@ export function accept(
 
   socket.addEventListener('close', () => {
     delete bot.internal._request
+    bot.offline()
   })
 
   bot.internal._request = (action, params) => {
