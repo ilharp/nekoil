@@ -208,7 +208,6 @@ export async function adaptSession<C extends Context>(bot: BaseBot<C>, data: One
     session.type = 'message'
     session.subtype = data.message_type === 'guild' ? 'group' : data.message_type
     session.isDirect = data.message_type === 'private'
-    session.subsubtype = data.message_type
     if (data.sender?.user_id) session.userId = '' + data.sender.user_id
     if (data.message_type === 'private') {
       session.channelId = 'private:' + data.sender.user_id
@@ -286,8 +285,6 @@ export async function adaptSession<C extends Context>(bot: BaseBot<C>, data: One
         session.subtype = hyphenate(data.sub_type) as any
         if (session.subtype === 'poke') {
           session.channelId ||= `private:${session.userId}`
-        } else if (session.subtype === 'honor') {
-          session.subsubtype = hyphenate(data.honor_type) as any
         }
         break
       case 'message_reactions_updated':

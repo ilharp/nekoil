@@ -107,7 +107,7 @@ export namespace WsServer {
 let counter = 0
 const listeners: Record<number, (response: Response) => void> = {}
 
-export function accept<C extends Context>(socket: Universal.WebSocket, bot: OneBotBot<C, OneBotBot.BaseConfig & SharedConfig>) {
+export function accept<C extends Context, T extends OneBotBot.Config>(socket: Universal.WebSocket, bot: OneBotBot<C, T>) {
   socket.addEventListener('message', (event) => {
     let parsed: any
     const data = event.data.toString()
@@ -136,10 +136,11 @@ export function accept<C extends Context>(socket: Universal.WebSocket, bot: OneB
     data.echo = ++counter
     return new Promise((resolve, reject) => {
       listeners[data.echo] = resolve
+      const { responseTimeout = Time.minute } = bot.config as { responseTimeout?: number }
       setTimeout(() => {
         delete listeners[data.echo]
         reject(new TimeoutError(params, action))
-      }, bot.config.responseTimeout)
+      }, responseTimeout)
       socket.send(JSON.stringify(data))
     })
   }
