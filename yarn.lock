@@ -13706,7 +13706,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-adapter-onebot@workspace:packages/adapter-onebot"
   dependencies:
-    "@koishijs/plugin-server": "npm:^3.2.4"
+    "@koishijs/plugin-server": "npm:^3.2.9"
     koishi: "npm:^4.18.6"
     qface: "npm:^1.4.1"
   peerDependencies:
