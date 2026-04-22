@@ -73,7 +73,9 @@ plugins:
       path: data/koishi.db
     assets-local:rk7cb2: {}
   group:adapter:
-    nekoil-adapter-onebot:g0c6v4:
+    nekoil-adapter-milky:ymggx1:
+      endpoint: ${{ env.MILKY_ENDPOINT }}
+    ~nekoil-adapter-onebot:g0c6v4:
       selfId: ${{ env.ONEBOT_ID }}
       protocol: http
       endpoint: ${{ env.ONEBOT_ENDPOINT }}
