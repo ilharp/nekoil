@@ -13727,7 +13727,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"koishi-plugin-nekoil-core@workspace:packages/core":
+"koishi-plugin-nekoil-core@workspace:^, koishi-plugin-nekoil-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "koishi-plugin-nekoil-core@workspace:packages/core"
   dependencies:
@@ -14576,15 +14576,16 @@ __metadata:
     koishi: "npm:^4.18.7"
     koishi-plugin-assets-local: "npm:^3.3.2"
     koishi-plugin-dataview: "npm:^2.7.8"
+    koishi-plugin-nekoil-adapter-milky: "workspace:^"
     koishi-plugin-nekoil-adapter-onebot: "workspace:^"
     koishi-plugin-nekoil-adapter-telegram: "workspace:^"
+    koishi-plugin-nekoil-core: "workspace:^"
     koishi-plugin-puppeteer: "npm:^3.9.0"
     koishi-plugin-rate-limit: "npm:^2.0.4"
     koishi-plugin-telemetry: "npm:^0.2.3"
     koishi-plugin-theme-vanilla: "npm:^1.1.0"
     prettier: "npm:^3.6.2"
     ts-jest: "npm:^29.4.5"
-    ts-node: "npm:^10.9.2"
     tsx: "npm:^4.19.3"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.46.3"
