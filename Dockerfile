@@ -9,7 +9,7 @@ RUN ["corepack", "yarn", "build"]
 RUN ["corepack", "yarn", "workspace", "@sym-app/components", "build"]
 RUN ["corepack", "yarn", "workspace", "nekoil-cpssr", "build"]
 RUN ["corepack", "yarn", "tsx", "scripts/prepare.mts", "koishi.yml"]
-RUN ["rm", "-rf", "node_modules"]
+RUN find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
 
 FROM ilharp/cordis-base:1.0.0
 
