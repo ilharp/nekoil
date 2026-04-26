@@ -16,3 +16,8 @@ FROM ilharp/cordis-base:1.0.0
 WORKDIR /cordis
 COPY --from=0 /cordis /cordis
 RUN ["corepack", "yarn"]
+
+FROM ilharp/cordis-base:1.0.0
+
+WORKDIR /cordis
+COPY --from=1 /cordis /cordis
