@@ -1,13 +1,14 @@
 import { load } from 'js-yaml'
-import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { dirname, relative, resolve } from 'node:path'
 import { argv, exit } from 'node:process'
 
-// 固定白名单
 const DEP_WHITELIST = ['koishi']
 const DEV_DEP_WHITELIST = ['cross-env']
 
 interface PackageJson {
+  name?: string
+  workspaces?: string[] | { packages?: string[] }
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   optionalDependencies?: Record<string, string>
@@ -19,51 +20,39 @@ interface YamlConfig {
   [key: string]: unknown
 }
 
-// 插件名到包名的映射
+interface ManifestInfo {
+  path: string
+  dir: string
+  packageJson: PackageJson
+}
+
+const repoRoot = resolve(import.meta.dirname, '..')
+
 function getPackageNames(pluginName: string): string[] {
-  // 移除波浪线前缀（禁用标记）
   const cleanName = pluginName.startsWith('~')
     ? pluginName.slice(1)
     : pluginName
-
-  // 移除别名后缀（冒号后的部分）
   const nameWithoutAlias = cleanName.split(':')[0]
 
-  if (!nameWithoutAlias) return []
+  if (!nameWithoutAlias || nameWithoutAlias === 'group') return []
 
-  // 如果是 group，不是插件
-  if (nameWithoutAlias === 'group') return []
-
-  const packages: string[] = []
-
-  // 如果插件名以 @ 开头（scoped package）
   if (nameWithoutAlias.startsWith('@')) {
-    // @foo/bar -> @foo/koishi-plugin-bar
-    packages.push(
-      nameWithoutAlias.replace(/^(@[^/]+)\/(.+)$/, '$1/koishi-plugin-$2'),
-    )
-  } else {
-    // 普通插件名
-    // market -> @koishijs/plugin-market (官方)
-    packages.push(`@koishijs/plugin-${nameWithoutAlias}`)
-    // market -> koishi-plugin-market (社区)
-    packages.push(`koishi-plugin-${nameWithoutAlias}`)
+    return [nameWithoutAlias.replace(/^(@[^/]+)\/(.+)$/, '$1/koishi-plugin-$2')]
   }
 
-  return packages
+  return [
+    `@koishijs/plugin-${nameWithoutAlias}`,
+    `koishi-plugin-${nameWithoutAlias}`,
+  ]
 }
 
-// 递归提取配置中的所有插件名
 function extractPlugins(
   config: Record<string, unknown>,
   plugins: Set<string>,
 ): void {
   for (const [key, value] of Object.entries(config)) {
-    // 获取当前键对应的包名
-    const packageNames = getPackageNames(key)
-    packageNames.forEach((pkg) => plugins.add(pkg))
+    getPackageNames(key).forEach((pkg) => plugins.add(pkg))
 
-    // 如果是 group，递归处理其内容
     if (
       (key === 'group' || key.startsWith('group:')) &&
       typeof value === 'object' &&
@@ -75,7 +64,262 @@ function extractPlugins(
   }
 }
 
-// 主函数
+function normalizePath(filePath: string): string {
+  return resolve(filePath).replace(/\\/g, '/').toLowerCase()
+}
+
+function hasNodeModulesSegment(filePath: string): boolean {
+  return filePath.split(/[\\/]+/).includes('node_modules')
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[|\\{}()[\]^$+?.]/g, '\\$&')
+}
+
+function segmentToRegExp(segment: string): RegExp {
+  return new RegExp(`^${escapeRegExp(segment).replace(/\*/g, '[^/\\\\]*')}$`)
+}
+
+function getWorkspacePatterns(packageJson: PackageJson): string[] {
+  if (Array.isArray(packageJson.workspaces)) {
+    return packageJson.workspaces
+  }
+
+  if (
+    packageJson.workspaces &&
+    typeof packageJson.workspaces === 'object' &&
+    Array.isArray(packageJson.workspaces.packages)
+  ) {
+    return packageJson.workspaces.packages
+  }
+
+  return []
+}
+
+async function pathIsDirectory(filePath: string): Promise<boolean> {
+  try {
+    return (await stat(filePath)).isDirectory()
+  } catch {
+    return false
+  }
+}
+
+async function pathIsFile(filePath: string): Promise<boolean> {
+  try {
+    return (await stat(filePath)).isFile()
+  } catch {
+    return false
+  }
+}
+
+async function expandWorkspacePattern(
+  baseDir: string,
+  pattern: string,
+): Promise<string[]> {
+  const segments = pattern.split('/').filter(Boolean)
+
+  async function walk(currentDir: string, index: number): Promise<string[]> {
+    if (hasNodeModulesSegment(currentDir)) return []
+
+    if (index === segments.length) {
+      const manifestPath = resolve(currentDir, 'package.json')
+      return (await pathIsFile(manifestPath)) ? [manifestPath] : []
+    }
+
+    const segment = segments[index]
+    if (segment === 'node_modules') return []
+
+    if (!segment.includes('*')) {
+      const nextDir = resolve(currentDir, segment)
+      if (!(await pathIsDirectory(nextDir))) return []
+      return walk(nextDir, index + 1)
+    }
+
+    const entries = await readdir(currentDir, { withFileTypes: true }).catch(
+      () => [],
+    )
+    const matcher = segmentToRegExp(segment)
+    const matchedDirs = entries
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          entry.name !== 'node_modules' &&
+          matcher.test(entry.name),
+      )
+      .map((entry) => resolve(currentDir, entry.name))
+
+    const nested = await Promise.all(
+      matchedDirs.map((dir) => walk(dir, index + 1)),
+    )
+    return nested.flat()
+  }
+
+  return walk(baseDir, 0)
+}
+
+async function readManifest(manifestPath: string): Promise<ManifestInfo> {
+  const content = await readFile(manifestPath, 'utf-8')
+  return {
+    path: manifestPath,
+    dir: dirname(manifestPath),
+    packageJson: JSON.parse(content) as PackageJson,
+  }
+}
+
+async function discoverManifests(
+  rootManifest: ManifestInfo,
+): Promise<ManifestInfo[]> {
+  const manifests = [rootManifest]
+  const visitedManifestPaths = new Set([normalizePath(rootManifest.path)])
+  const visitedWorkspaceRoots = new Set([normalizePath(rootManifest.dir)])
+
+  async function visit(current: ManifestInfo): Promise<void> {
+    for (const pattern of getWorkspacePatterns(current.packageJson)) {
+      const manifestPaths = await expandWorkspacePattern(current.dir, pattern)
+
+      for (const manifestPath of manifestPaths) {
+        if (hasNodeModulesSegment(manifestPath)) continue
+
+        const normalizedManifestPath = normalizePath(manifestPath)
+        if (visitedManifestPaths.has(normalizedManifestPath)) continue
+
+        const manifest = await readManifest(manifestPath)
+        const normalizedWorkspaceRoot = normalizePath(manifest.dir)
+        if (visitedWorkspaceRoots.has(normalizedWorkspaceRoot)) continue
+
+        visitedManifestPaths.add(normalizedManifestPath)
+        visitedWorkspaceRoots.add(normalizedWorkspaceRoot)
+        manifests.push(manifest)
+        await visit(manifest)
+      }
+    }
+  }
+
+  await visit(rootManifest)
+  return manifests
+}
+
+function buildPackageIndex(
+  manifests: ManifestInfo[],
+): Map<string, ManifestInfo> {
+  const index = new Map<string, ManifestInfo>()
+
+  for (const manifest of manifests) {
+    const { name } = manifest.packageJson
+    if (!name) {
+      throw new Error(
+        `package.json 缺少 name 字段: ${relative(repoRoot, manifest.path)}`,
+      )
+    }
+
+    const existing = index.get(name)
+    if (existing) {
+      throw new Error(
+        `发现重复的 package name: ${name}\n- ${relative(repoRoot, existing.path)}\n- ${relative(repoRoot, manifest.path)}`,
+      )
+    }
+
+    index.set(name, manifest)
+  }
+
+  return index
+}
+
+function pickWhitelistedDependencies(
+  source: Record<string, string> | undefined,
+  whitelist: string[],
+): Record<string, string> | undefined {
+  if (!source) return undefined
+
+  const result: Record<string, string> = {}
+  for (const name of whitelist) {
+    const version = source[name]
+    if (version) result[name] = version
+  }
+  return result
+}
+
+function buildRootDependencies(
+  rootPackageJson: PackageJson,
+  pluginPackages: Set<string>,
+  packageIndex: Map<string, ManifestInfo>,
+): Record<string, string> {
+  if (!rootPackageJson.dependencies) {
+    throw new Error('根 package.json 中没有 dependencies 字段')
+  }
+
+  const result: Record<string, string> = {}
+
+  for (const name of DEP_WHITELIST) {
+    const version = rootPackageJson.dependencies[name]
+    if (version) result[name] = version
+  }
+
+  for (const name of Array.from(pluginPackages).sort()) {
+    if (packageIndex.has(name)) {
+      result[name] = 'workspace:^'
+      continue
+    }
+
+    const version = rootPackageJson.dependencies[name]
+    if (version) {
+      result[name] = version
+    }
+  }
+
+  return result
+}
+
+function rebuildRootManifest(
+  rootManifest: ManifestInfo,
+  pluginPackages: Set<string>,
+  packageIndex: Map<string, ManifestInfo>,
+): PackageJson {
+  const nextPackageJson = { ...rootManifest.packageJson }
+  delete nextPackageJson.optionalDependencies
+  nextPackageJson.dependencies = buildRootDependencies(
+    rootManifest.packageJson,
+    pluginPackages,
+    packageIndex,
+  )
+  nextPackageJson.devDependencies =
+    pickWhitelistedDependencies(
+      rootManifest.packageJson.devDependencies,
+      DEV_DEP_WHITELIST,
+    ) ?? {}
+  return nextPackageJson
+}
+
+function rebuildWorkspaceManifest(manifest: ManifestInfo): PackageJson {
+  const nextPackageJson = { ...manifest.packageJson }
+  nextPackageJson.dependencies = manifest.packageJson.dependencies
+  nextPackageJson.devDependencies = pickWhitelistedDependencies(
+    manifest.packageJson.devDependencies,
+    DEV_DEP_WHITELIST,
+  )
+
+  if (!nextPackageJson.devDependencies) {
+    delete nextPackageJson.devDependencies
+  }
+
+  return nextPackageJson
+}
+
+async function writeManifest(
+  manifestPath: string,
+  packageJson: PackageJson,
+): Promise<boolean> {
+  const nextContent = `${JSON.stringify(packageJson, null, 2)}\n`
+  const currentContent = await readFile(manifestPath, 'utf-8')
+
+  if (currentContent === nextContent) {
+    return false
+  }
+
+  await writeFile(manifestPath, nextContent, 'utf-8')
+  return true
+}
+
 async function main(): Promise<void> {
   const args = argv.slice(2)
 
@@ -84,90 +328,45 @@ async function main(): Promise<void> {
     exit(1)
   }
 
-  // 收集所有配置文件中的插件包名
   const allPluginPackages = new Set<string>()
 
-  // 遍历所有配置文件
   for (const arg of args) {
-    const configPath = resolve(import.meta.dirname, '..', arg)
+    const configPath = resolve(repoRoot, arg)
 
     try {
       const content = await readFile(configPath, 'utf-8')
       const config = load(content) as YamlConfig
-
-      // 提取 plugins 部分
       if (config.plugins) {
         extractPlugins(config.plugins, allPluginPackages)
       }
-    } catch (e) {
-      console.error(e)
-      continue
+    } catch (error) {
+      console.error(error)
     }
   }
 
-  // 读取 package.json
-  const packageJsonPath = resolve(import.meta.dirname, '../package.json')
-  const packageJsonContent = await readFile(packageJsonPath, 'utf-8')
-  const packageJson = JSON.parse(packageJsonContent) as PackageJson
+  const rootManifestPath = resolve(repoRoot, 'package.json')
+  const rootManifest = await readManifest(rootManifestPath)
+  const manifests = await discoverManifests(rootManifest)
+  const packageIndex = buildPackageIndex(manifests)
 
-  if (!packageJson.dependencies) {
-    console.error('错误：package.json 中没有 dependencies 字段')
-    process.exit(1)
-  }
+  let updatedCount = 0
 
-  // 构建新的 dependencies
-  const newDeps: Record<string, string> = {}
+  for (const manifest of manifests) {
+    const nextPackageJson =
+      manifest.path === rootManifestPath
+        ? rebuildRootManifest(manifest, allPluginPackages, packageIndex)
+        : rebuildWorkspaceManifest(manifest)
 
-  // 添加白名单包
-  for (const pkg of DEP_WHITELIST) {
-    const version = packageJson.dependencies[pkg]
-    if (version) {
-      newDeps[pkg] = version
-    } else {
-      console.error(
-        `错误：白名单包 ${pkg} 在 package.json 的 dependencies 中不存在`,
-      )
-      process.exit(1)
+    if (await writeManifest(manifest.path, nextPackageJson)) {
+      updatedCount += 1
     }
   }
 
-  // 添加插件包
-  for (const pkg of allPluginPackages) {
-    const version = packageJson.dependencies[pkg]
-    if (version) {
-      newDeps[pkg] = version
-    }
-    // 如果包不存在，不报错，因为可能有多个候选包名
-  }
-
-  // 构建新的 devDependencies
-  const newDevDeps: Record<string, string> = {}
-  for (const pkg of DEV_DEP_WHITELIST) {
-    const version = packageJson.devDependencies?.[pkg]
-    if (version) {
-      newDevDeps[pkg] = version
-    } else {
-      console.error(
-        `错误：白名单包 ${pkg} 在 package.json 的 devDependencies 中不存在`,
-      )
-      process.exit(1)
-    }
-  }
-
-  // 更新 package.json
-  delete packageJson.optionalDependencies
-  packageJson.dependencies = newDeps
-  packageJson.devDependencies = newDevDeps
-
-  // 写回 package.json
-  await writeFile(packageJsonPath, JSON.stringify(packageJson) + '\n', 'utf-8')
-
-  console.log('package.json 已更新')
-  console.log(`保留的 dependencies: ${Object.keys(newDeps).length} 个`)
-  console.log(`保留的 devDependencies: ${Object.keys(newDevDeps).length} 个`)
+  console.log(`已处理 ${manifests.length} 个 package.json`)
+  console.log(`已更新 ${updatedCount} 个 package.json`)
 }
 
 main().catch((error: unknown) => {
   console.error('发生错误:', error)
-  process.exit(1)
+  exit(1)
 })
