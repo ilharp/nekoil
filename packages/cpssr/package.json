@@ -11,6 +11,7 @@
     "@satorijs/element": "^3.1.7",
     "@satorijs/protocol": "^1.6.1",
     "@sym-app/components": "workspace:^",
+    "lucide-react": "^0.518.0",
     "nekoil-typedef": "workspace:^",
     "next": "15.3.3",
     "normalize.css": "^8.0.1",
@@ -19,7 +20,6 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "lucide-react": "^0.518.0",
     "sass": "^1.89.1"
   }
 }
