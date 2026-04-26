@@ -337,11 +337,11 @@ export class NekoilCpMsgService extends Service {
         const elements = lastSession.event.message!.elements!
         if (
           elements.length === 1 &&
-          elements[0]!.type === 'forward' &&
-          elements[0]!.attrs['id']
+          elements[0]!.type === 'milky:forward' &&
+          elements[0]!.attrs['forwardId']
         ) {
           contentType = 'milkyForward'
-          resid = elements[0]!.attrs['id']!
+          resid = elements[0]!.attrs['forwardId']!
         }
       }
 
