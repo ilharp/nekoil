@@ -32,11 +32,13 @@ export const apply = (ctx: Context, config: Config) => {
     traceExporter: new OTLPTraceExporter({
       url: env['OTEL_EXPORTER_OTLP_ENDPOINT'],
     }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({
-        url: env['OTEL_EXPORTER_OTLP_ENDPOINT'],
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({
+          url: env['OTEL_EXPORTER_OTLP_ENDPOINT'],
+        }),
       }),
-    }),
+    ],
     instrumentations: [getNodeAutoInstrumentations()],
   })
 
