@@ -374,7 +374,7 @@ export class NekoilCpMsgService extends Service {
                 await milkyBot.internal.getForwardedMessages(content)
               // oneBotForwardMsg ??= (await obBot.internal.getForwardMsg(content))
               //   .message
-              contentType = 'obForward'
+              contentType = 'milkyForward'
               resid = content
             } catch (cause) {
               throw new UserSafeError('获取聊天记录内容失败，可能已经过期。', {
