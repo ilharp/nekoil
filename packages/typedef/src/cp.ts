@@ -26,7 +26,10 @@ export interface ContentPackV1 extends DatabaseBase {
 
   cpssr_version: number
 
-  cpssr_niaid: number
+  /**
+   * purge 后为 null
+   */
+  cpssr_niaid: number | null
 }
 
 export interface ContentPackHandleV1 extends DatabaseBase {
