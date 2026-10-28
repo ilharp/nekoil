@@ -30,7 +30,7 @@ export class NekoilPermissionService extends Service {
       },
     })
 
-    ctx.permissions.define('authority:(value)', {
+    ctx.permissions.define('nekoil:(value)', {
       // check: ({ value }, { user }: Partial<Session<'nekoilAuthority'>>) => {
       //   return !user || user.nekoilAuthority >= +value
       // },
@@ -38,7 +38,7 @@ export class NekoilPermissionService extends Service {
       list: () =>
         Array(10)
           .fill(0)
-          .map((_, i) => `authority:${i}`),
+          .map((_, i) => `nekoil:${i}`),
     })
   }
 }
