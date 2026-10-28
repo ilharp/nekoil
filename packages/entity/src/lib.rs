@@ -4,6 +4,7 @@ pub mod prelude;
 
 pub mod binding;
 pub mod channel;
+pub mod cp_handle_deleted_v1;
 pub mod cp_handle_v1;
 pub mod cp_v1;
 pub mod group;

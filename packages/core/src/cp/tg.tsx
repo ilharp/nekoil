@@ -1,12 +1,18 @@
-import type { Context } from 'koishi'
+import type { Context, h, Session } from 'koishi'
 import type {
   InlineQueryResult,
   TelegramBot,
 } from 'koishi-plugin-nekoil-adapter-telegram'
 import { escape } from 'lodash-es'
+import { CP_DELETED_REASON } from 'nekoil-typedef'
 import type { Config } from '../config'
 import type { NekoilUser } from '../services/user'
 import { UserSafeError } from '../utils'
+import {
+  CP_NOT_FOUND_MSG,
+  MANUAL_DELETE_ENABLED,
+  NekoilCpDeleteError,
+} from './service'
 
 export const name = 'nekoil-cp-tg'
 
@@ -248,4 +254,81 @@ export const apply = (ctx: Context, config: Config) => {
       results,
     })
   })
+
+  const doDelete = async (
+    session: Session<'id' | 'nekoilAuthority'> | undefined,
+    handle: string | undefined,
+    reason: number,
+    authorityRequired: boolean,
+  ): Promise<h | string> => {
+    if (!session) return '删除失败，请稍后再试。'
+
+    if (!MANUAL_DELETE_ENABLED) return '删除失败，请稍后再试。'
+
+    if (!handle) return '请提供聊天记录链接或 ID。'
+
+    const user = session.user!
+
+    if (authorityRequired) {
+      return '没有权限执行该操作。'
+    }
+
+    const target = await ctx.nekoilCp.getCpByHandle(handle)
+
+    if (!target) return CP_NOT_FOUND_MSG
+
+    // if (!authorityRequired && target.owner !== user.id) {
+    //   return '没有权限执行该操作。'
+    // }
+
+    try {
+      await ctx.nekoilCp.cpDeleteByCpid(
+        target.cpid,
+        reason,
+        `tg user ${user.id} (pid ${session.userId})`,
+      )
+    } catch (e) {
+      l.error(`cp delete failed, handle ${handle}, operator ${user.id}`)
+      l.error(e)
+
+      return e instanceof NekoilCpDeleteError
+        ? CP_NOT_FOUND_MSG
+        : '删除失败，请稍后再试。'
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return (
+      <>
+        <quote id={String(session.messageId)} />
+        已删除。
+      </>
+    )
+  }
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpdel <handle:string>')
+    .userFields(['id', 'nekoilAuthority'])
+    .action(({ session }, handle) =>
+      doDelete(session, handle, CP_DELETED_REASON.USER, false),
+    )
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpdeladmin <handle:string>')
+    .userFields(['id', 'nekoilAuthority'])
+    .action(({ session }, handle) =>
+      doDelete(session, handle, CP_DELETED_REASON.ADMIN, true),
+    )
+
+  ctx
+    .platform('telegram')
+    .private()
+    .command('nekoilcpexpire <handle:string>')
+    .userFields(['id', 'nekoilAuthority'])
+    .action(({ session }, handle) =>
+      doDelete(session, handle, CP_DELETED_REASON.TTL, true),
+    )
 }

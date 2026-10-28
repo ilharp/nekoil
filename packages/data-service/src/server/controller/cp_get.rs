@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::debug_handler;
 use axum::extract::State;
+use entity::cp_handle_deleted_v1;
 use entity::cp_v1;
 use sea_orm::EntityTrait;
 use sea_orm::raw_sql;
@@ -62,6 +63,34 @@ AND "cp_handle_v1"."handle_type" IN ({..handle_types})
         .await?;
 
     if result.len() != 1 {
+        let tombstone: Vec<cp_handle_deleted_v1::Model> = cp_handle_deleted_v1::Entity::find()
+            .from_raw_sql(raw_sql!(
+                Postgres,
+                r#"
+SELECT "cp_handle_deleted_v1".*
+FROM "cp_handle_deleted_v1"
+WHERE "cp_handle_deleted_v1"."handle" = {query_handle}
+AND "cp_handle_deleted_v1"."handle_type" IN ({..handle_types})
+ORDER BY "cp_handle_deleted_v1"."deleted_time" DESC
+LIMIT 1
+    "#
+            ))
+            .all(&app_state.db)
+            .await?;
+
+        if let Some(tombstone) = tombstone.first() {
+            let code = match tombstone.deleted_reason {
+                1 => 3003,
+                3 => 3004,
+                _ => 3002,
+            };
+
+            return Ok(ApiJson(Response::Error(ErrorResponseBody {
+                code,
+                msg: "EXXXXX CP DELETED".to_owned(),
+            })));
+        }
+
         return Ok(ApiJson(Response::Error(ErrorResponseBody {
             code: 3001,
             msg: "EXXXXX NOT FOUND".to_owned(),

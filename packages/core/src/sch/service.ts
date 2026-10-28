@@ -199,7 +199,7 @@ export class NekoilSchService extends Service {
 
     const cpwf = await this.ctx.nekoilCp.parseIntl(cp!)
 
-    const [nia] = await this.ctx.database.get('niassets_v1', cp!.cpssr_niaid, [
+    const [nia] = await this.ctx.database.get('niassets_v1', cp!.cpssr_niaid!, [
       'tg_file_id',
     ])
 

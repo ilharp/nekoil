@@ -2,6 +2,7 @@
 
 pub use super::binding::Entity as Binding;
 pub use super::channel::Entity as Channel;
+pub use super::cp_handle_deleted_v1::Entity as CpHandleDeletedV1;
 pub use super::cp_handle_v1::Entity as CpHandleV1;
 pub use super::cp_v1::Entity as CpV1;
 pub use super::group::Entity as Group;

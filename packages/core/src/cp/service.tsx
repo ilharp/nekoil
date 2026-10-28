@@ -14,6 +14,7 @@ import type {
   NekoilSatoriMessage,
   NekoilSatoriUserExt,
 } from 'nekoil-typedef'
+import { CP_DELETED_REASON } from 'nekoil-typedef'
 import type { Config } from '../config'
 import type { NekoilAssetsUploadImgResult } from '../niassets/service'
 import { NekoilAssetsOversizedError } from '../niassets/service'
@@ -66,23 +67,7 @@ export class NekoilCpService extends Service {
     >
   > => {
     try {
-      let queryHandle = query
-
-      // Normal prefix
-      queryPrefixList.forEach(([prefix, length]) => {
-        if (queryHandle.startsWith(prefix))
-          queryHandle = decodeURIComponent(queryHandle.slice(length))
-      })
-
-      tgPrefixList.forEach(([prefix, length]) => {
-        if (queryHandle.startsWith(prefix))
-          queryHandle = decodeURIComponent(
-            Buffer.from(queryHandle.slice(length), 'base64').toString('utf-8'),
-          )
-      })
-
-      const isPlusHandle = queryHandle.startsWith('_')
-      if (isPlusHandle) queryHandle = queryHandle.slice(1)
+      const { handle: queryHandle, isPlusHandle } = stripQueryHandle(query)
 
       const cpGetResponse = await this.ctx.http.post<
         NekoilResponseBody<ContentPackV1>
@@ -133,23 +118,7 @@ export class NekoilCpService extends Service {
     >
   > => {
     try {
-      let queryHandle = query
-
-      // Normal prefix
-      queryPrefixList.forEach(([prefix, length]) => {
-        if (queryHandle.startsWith(prefix))
-          queryHandle = decodeURIComponent(queryHandle.slice(length))
-      })
-
-      tgPrefixList.forEach(([prefix, length]) => {
-        if (queryHandle.startsWith(prefix))
-          queryHandle = decodeURIComponent(
-            Buffer.from(queryHandle.slice(length), 'base64').toString('utf-8'),
-          )
-      })
-
-      const isPlusHandle = queryHandle.startsWith('_')
-      if (isPlusHandle) queryHandle = queryHandle.slice(1)
+      const { handle: queryHandle, isPlusHandle } = stripQueryHandle(query)
 
       const cpGetResponse = await this.ctx.http.post<
         NekoilResponseBody<ContentPackV1>
@@ -292,11 +261,13 @@ export class NekoilCpService extends Service {
       if (existedHandle) {
         // 看下 deleted
         if (existedHandle.deleted) {
-          // deleted 了的 handle 应该在 delete 的时候就被挪到另一张表里了，这里不该出现 deleted
-          // 总之先抛出异常吧
-          throw new Error(
+          // deleted 了的 handle 应该在 delete 的时候就被挪到墓碑表 cp_handle_deleted_v1 里了，这里不该出现 deleted
+          this.#l.warn(
             `deleted cp_handle found in table cp_handle_v1, id ${existedHandle.handle_id}`,
           )
+
+          // 如果未来真的想做宽限期恢复的话可以在这做，但其实我们遇不到非要从我们库里恢复的场景
+          throw new UserSafeError(CP_NOT_FOUND_MSG)
         }
 
         // 看下 handle_type
@@ -337,6 +308,21 @@ export class NekoilCpService extends Service {
         }
       } else {
         // 数据库里没有 existedHandle，那么继续往下走正常创建流程
+        // 但如果该 handle 曾被管理员删除（墓碑 reason=1），则拒绝重建
+        const [deletedHandle] = await this.ctx.database.get(
+          'cp_handle_deleted_v1',
+          {
+            handle,
+            handle_type,
+          },
+          ['deleted_reason'],
+        )
+
+        if (deletedHandle?.deleted_reason === CP_DELETED_REASON.ADMIN) {
+          this.#l.info(`blocking re-create of admin-deleted handle ${handle}`)
+
+          throw new UserSafeError('出现错误。')
+        }
       }
     }
 
@@ -758,6 +744,134 @@ export class NekoilCpService extends Service {
 
     return result
   }
+
+  /**
+   * 按 handle 查询聊天记录。
+   */
+  public getCpByHandle = async (query: string) => {
+    const { handle, isPlusHandle } = stripQueryHandle(query)
+
+    // handle_type 家族与 data-service cp.get 一致：1/4=_，2/3=公开
+    const handleTypes = isPlusHandle ? [1, 4] : [2, 3]
+
+    const [handleRow] = await this.ctx.database.get(
+      'cp_handle_v1',
+      {
+        handle,
+        handle_type: handleTypes,
+      },
+      ['cpid'],
+    )
+
+    if (!handleRow) return undefined
+
+    const [cp] = await this.ctx.database.get(
+      'cp_v1',
+      {
+        cpid: handleRow.cpid,
+        deleted: 0,
+      },
+      ['cpid', 'owner'],
+    )
+
+    if (!cp) return undefined
+
+    return {
+      cpid: cp.cpid,
+      owner: cp.owner,
+    }
+  }
+
+  /**
+   * 删除指定聊天记录，幂等。
+   */
+  public cpDeleteByCpid = async (
+    cpid: number,
+    reason: number,
+    operatorInfo: string,
+  ) => {
+    const [cp] = await this.ctx.database.get('cp_v1', cpid, [
+      'cpid',
+      'owner',
+      'deleted',
+      'deleted_time',
+      'cpssr_niaid',
+      'data_full',
+    ])
+
+    if (!cp) throw new NekoilCpDeleteNotFoundError(`cp ${cpid} not found`)
+
+    if (cp.owner === 0) throw new NekoilCpDeleteBuiltinError()
+
+    let deletedTime = cp.deleted_time
+    if (!cp.deleted) {
+      deletedTime = new Date()
+
+      await this.ctx.database.set('cp_v1', cpid, {
+        deleted: 1,
+        deleted_time: deletedTime,
+        deleted_reason: reason,
+      })
+    }
+
+    const handleRows = await this.ctx.database.get('cp_handle_v1', { cpid })
+
+    for (const handleRow of handleRows) {
+      const [tombstone] = await this.ctx.database.get(
+        'cp_handle_deleted_v1',
+        {
+          handle_id: handleRow.handle_id,
+        },
+        ['id'],
+      )
+
+      if (!tombstone) {
+        await this.ctx.database.create('cp_handle_deleted_v1', {
+          handle_id: handleRow.handle_id,
+          handle_type: handleRow.handle_type,
+          handle: handleRow.handle,
+          cpid,
+          created_time: handleRow.created_time,
+          deleted_time: deletedTime,
+          deleted_reason: reason,
+        })
+      }
+
+      await this.ctx.database.remove('cp_handle_v1', handleRow.handle_id)
+    }
+
+    const rcRows = await this.ctx.database.get(
+      'niassets_rc_v1',
+      {
+        ref: cpid,
+        ref_type: [
+          1, // cp
+          2, // cpssr
+        ],
+      },
+      ['id', 'niaid'],
+    )
+
+    if (rcRows.length) {
+      await this.ctx.database.remove(
+        'niassets_rc_v1',
+        rcRows.map((x) => x.id),
+      )
+      this.#l.info(
+        `cp ${cpid}: removed ${rcRows.length} asset refs (niaids: ${rcRows.map((x) => x.niaid).join(',')})`,
+      )
+    }
+
+    // TODO: 之后 niassets 服务那边做一个公开方法，删 S3 对象并清理 niassets_v1 表。
+    // 然后这个方法给两个人调用，一个是 command，一个是 cron-service。
+    // 这里是不清理 nia 的。
+
+    // 这里也不要清 cp_v1 里的数据。cp_v1 数据体积不会很大，目前就不清了。
+
+    this.#l.info(
+      `cp ${cpid} deleted (reason ${reason}) by ${operatorInfo}: data_full ${cp.data_full.length} chars, handles ${handleRows.length}, refs ${rcRows.length}, cpssr_niaid ${cp.cpssr_niaid ?? 'none'}`,
+    )
+  }
 }
 
 const buildOriginsStripper = (t: string) => (attrs: Dict, children: h[]) =>
@@ -766,6 +880,45 @@ const buildOriginsStripper = (t: string) => (attrs: Dict, children: h[]) =>
     attrs,
     children.filter((x) => x.type !== 'nekoil:origins'),
   )
+
+export const CP_NOT_FOUND_MSG =
+  '找不到对应的聊天记录，请检查链接或 ID 是否正确。'
+
+export const MANUAL_DELETE_ENABLED = false as boolean
+
+export class NekoilCpDeleteError extends Error {}
+
+export class NekoilCpDeleteNotFoundError extends NekoilCpDeleteError {}
+
+export class NekoilCpDeleteBuiltinError extends NekoilCpDeleteError {
+  constructor() {
+    super('出现错误。')
+  }
+}
+
+export const stripQueryHandle = (query: string) => {
+  let queryHandle = query
+
+  // Normal prefix
+  queryPrefixList.forEach(([prefix, length]) => {
+    if (queryHandle.startsWith(prefix))
+      queryHandle = decodeURIComponent(queryHandle.slice(length))
+  })
+
+  tgPrefixList.forEach(([prefix, length]) => {
+    if (queryHandle.startsWith(prefix))
+      queryHandle = decodeURIComponent(
+        Buffer.from(queryHandle.slice(length), 'base64').toString('utf-8'),
+      )
+  })
+
+  const isPlusHandle = queryHandle.startsWith('_')
+
+  return {
+    handle: isPlusHandle ? queryHandle.slice(1) : queryHandle,
+    isPlusHandle,
+  }
+}
 
 const queryPrefixList = [
   'http://390721.xyz/',
