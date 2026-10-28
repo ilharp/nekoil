@@ -4,6 +4,7 @@ import type {
   ContentPackHandleV1,
   ContentPackSummary,
   ContentPackV1,
+  CpHandleDeletedV1,
 } from 'nekoil-typedef'
 import { databaseBaseCreate, databaseBaseFields } from '../utils'
 
@@ -15,6 +16,7 @@ declare module 'koishi' {
   interface Tables {
     cp_v1: ContentPackV1
     cp_handle_v1: ContentPackHandleV1
+    cp_handle_deleted_v1: CpHandleDeletedV1
   }
 }
 
@@ -125,6 +127,61 @@ export const apply = async (ctx: Context) => {
       primary: 'handle_id',
       autoInc: true,
       unique: ['handle'],
+    },
+  )
+
+  ctx.model.extend(
+    'cp_handle_deleted_v1',
+    {
+      id: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
+
+      handle_id: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
+
+      handle_type: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
+
+      handle: {
+        type: 'string',
+        length: 64,
+        nullable: false,
+      },
+
+      cpid: {
+        type: 'unsigned',
+        length: 8,
+        nullable: false,
+      },
+
+      created_time: {
+        type: 'timestamp',
+        nullable: false,
+      },
+
+      deleted_time: {
+        type: 'timestamp',
+        nullable: false,
+      },
+
+      deleted_reason: {
+        type: 'unsigned',
+        length: 1,
+        nullable: false,
+      },
+    },
+    {
+      primary: 'id',
+      autoInc: true,
     },
   )
 

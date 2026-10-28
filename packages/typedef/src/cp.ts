@@ -64,7 +64,35 @@ export interface ContentPackWithFull extends ContentPackWithSummary {
   full: ContentPackFull
 }
 
+export interface CpHandleDeletedV1 {
+  id: number
+
+  handle_id: number
+
+  /**
+   * 1=unlisted(_) 2=public 3=resid 4=private(_)
+   */
+  handle_type: number
+
+  handle: string
+
+  cpid: number
+
+  created_time: Date
+
+  deleted_time: Date
+
+  /**
+   * 1=admin 2=user 3=TTL(过期)
+   */
+  deleted_reason: number
+}
+
 export interface NekoilCpCpGetRequest {
+  query: string
+}
+
+export interface NekoilCpCpDelRequest {
   query: string
 }
 

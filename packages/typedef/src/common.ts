@@ -12,7 +12,7 @@ export interface DatabaseBase {
   deleted_time: Date
 
   /**
-   * 1=admin 2=user
+   * 1=admin 2=user 3=TTL(过期)
    */
   deleted_reason: number
 }
