@@ -6,6 +6,16 @@ use anyhow::Context;
 use anyhow::Result;
 use axum::Router;
 use axum::routing::post;
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
+use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
+use opentelemetry::global;
+use opentelemetry::propagation::TextMapCompositePropagator;
+use opentelemetry::propagation::TextMapPropagator;
+use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::propagation::BaggagePropagator;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use sea_orm::Database;
 use sea_orm::DatabaseConnection;
 use tap::Tap;
@@ -16,6 +26,9 @@ use tokio_util::sync::CancellationToken;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
+use tracing_subscriber::EnvFilter;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::config::Config;
 use crate::config::load_config;
@@ -26,13 +39,6 @@ mod config;
 mod server;
 
 fn main() -> ExitCode {
-    unsafe { std::env::set_var("RUST_LOG", "debug") };
-
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_test_writer()
-        .init();
-
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
@@ -41,13 +47,69 @@ fn main() -> ExitCode {
 }
 
 async fn main_async() -> ExitCode {
-    match main_async_intl().await {
+    let provider = match init_telemetry() {
+        Ok(provider) => provider,
+        Err(err) => {
+            // 此时 tracing subscriber 尚未初始化，只能走 stderr
+            eprintln!("Failed to init telemetry: {err:?}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let code = match main_async_intl().await {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             error!("{err:?}");
             ExitCode::FAILURE
         }
-    }
+    };
+
+    // 退出前 flush 批量导出队列，否则尾部 span 会丢失
+    let _ = provider.shutdown();
+
+    code
+}
+
+fn init_telemetry() -> Result<SdkTracerProvider> {
+    // W3C traceparent/tracestate + baggage；不设置的话默认是 no-op propagator，无法接续上游 trace
+    let propagators: Vec<Box<dyn TextMapPropagator + Send + Sync>> = vec![
+        Box::new(TraceContextPropagator::new()),
+        Box::new(BaggagePropagator::new()),
+    ];
+    global::set_text_map_propagator(TextMapCompositePropagator::new(propagators));
+
+    // OTLP gRPC exporter；endpoint 等配置走标准 OTEL_EXPORTER_OTLP_* 环境变量
+    let exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_tonic()
+        .build()
+        .context("Failed to build OTLP span exporter")?;
+
+    let provider = SdkTracerProvider::builder()
+        .with_resource(
+            Resource::builder()
+                .with_service_name("nekoil-data-service")
+                .build(),
+        )
+        .with_batch_exporter(exporter)
+        .build();
+
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("debug"))
+        // OtelAxumLayer 产生的请求 span 是 TRACE 级、`otel::tracing` target，
+        // 必须显式放行，否则会被 RUST_LOG 过滤导致 span 静默消失
+        .add_directive(
+            "otel::tracing=trace"
+                .parse()
+                .context("Failed to parse EnvFilter directive 'otel::tracing=trace'")?,
+        );
+
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(tracing_subscriber::fmt::layer().with_test_writer())
+        .with(tracing_opentelemetry::layer().with_tracer(provider.tracer("nekoil-data-service")))
+        .init();
+
+    Ok(provider)
 }
 
 async fn main_async_intl() -> Result<()> {
@@ -68,7 +130,11 @@ async fn main_async_intl() -> Result<()> {
     let app = Router::new()
         .route("/v1/cp.get", post(controller_cp_get))
         .fallback(handler_notfound)
-        .with_state(app_state.clone());
+        .with_state(app_state.clone())
+        // OtelAxumLayer 需在最外层先建 span 并接续入站 trace，
+        // OtelInResponseLayer 在内层响应时回传 traceparent
+        .layer(OtelInResponseLayer)
+        .layer(OtelAxumLayer::default());
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5143")
         .await
