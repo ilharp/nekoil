@@ -4,7 +4,7 @@ import { CP_DELETED_REASON } from 'nekoil-typedef'
 import type { Config } from '../config'
 import type { NekoilUser } from '../services/user'
 import { setHeader } from '../utils'
-import { middlewareOTel, middlewareProxyToken } from '../utils/middlewares'
+import { middlewareProxyToken } from '../utils/middlewares'
 import { MANUAL_DELETE_ENABLED } from './service'
 
 export const name = 'nekoil-cp-controller'
@@ -38,7 +38,6 @@ export const apply = (ctx: Context, config: Config) => {
 
   ctx.server.post(
     '/nekoil/v0/cp/cp.get',
-    middlewareOTel('/nekoil/v0/cp/cp.get'),
     (c, next) => {
       c.status = 200
       setHeader(c)
@@ -72,7 +71,6 @@ export const apply = (ctx: Context, config: Config) => {
 
   ctx.server.post(
     '/nekoil/v0/cp/cp.del',
-    middlewareOTel('/nekoil/v0/cp/cp.del'),
     (c, next) => {
       c.status = 200
       setHeader(c)
