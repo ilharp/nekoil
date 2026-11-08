@@ -174,16 +174,21 @@ struct AppState {
     shutdown_notify: Arc<Notify>,
 
     db: DatabaseConnection,
+
+    http: reqwest::Client,
 }
 
 impl AppState {
     async fn new(config: Config, shutdown_notify: &Arc<Notify>) -> Result<Arc<AppState>> {
         let db = Database::connect(config.db_url.clone()).await?;
 
+        let http = reqwest::Client::new();
+
         anyhow::Ok(Arc::new_cyclic(|app_state| AppState {
             config,
             shutdown_notify: shutdown_notify.clone(),
             db,
+            http,
         }))
     }
 
