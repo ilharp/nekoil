@@ -84,7 +84,7 @@ fn init_telemetry() -> Result<SdkTracerProvider> {
     let provider = SdkTracerProvider::builder()
         .with_resource(
             Resource::builder()
-                .with_service_name("nekoil-data-service")
+                .with_service_name("nekoil-cron-service")
                 .build(),
         )
         .with_batch_exporter(exporter)
@@ -103,7 +103,7 @@ fn init_telemetry() -> Result<SdkTracerProvider> {
     tracing_subscriber::registry()
         .with(env_filter)
         .with(tracing_subscriber::fmt::layer().with_test_writer())
-        .with(tracing_opentelemetry::layer().with_tracer(provider.tracer("nekoil-data-service")))
+        .with(tracing_opentelemetry::layer().with_tracer(provider.tracer("nekoil-cron-service")))
         .init();
 
     Ok(provider)
@@ -132,7 +132,7 @@ async fn main_async_intl() -> Result<()> {
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default());
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:5143")
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5144")
         .await
         .context("Failed to bind tcp port")?;
 
