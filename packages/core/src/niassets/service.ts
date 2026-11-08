@@ -1,4 +1,5 @@
 import {
+  DeleteObjectsCommand,
   PutObjectCommand,
   S3Client,
   S3ServiceException,
@@ -201,6 +202,82 @@ export class NekoilAssetsService extends Service {
     }
     return result
   }
+
+  #assetsKey = (nia: Pick<NiAssetsV1, 'handle' | 'mime'>) =>
+    `v1/${nia.handle}.${mime.getExtension(nia.mime) ?? 'bin'}`
+
+  /**
+   * 清理无引用的资源：删 S3 对象并清理 niassets_v1 表。
+   *
+   * 给 command 与 cron-service 两个调用方使用。
+   */
+  public cleanup = async (): Promise<NekoilAssetsCleanupResult> => {
+    const [rcNiaids, cpssrRows, niaRows] = await Promise.all([
+      this.ctx.database.get('niassets_rc_v1', {}, ['niaid']),
+      // cp 删除时只移除引用行、不清 cp_v1（含 cpssr_niaid），
+      // 因此这里必须限定 deleted = 0，否则已删 cp 的 cpssr 图永远清理不掉
+      this.ctx.database.get('cp_v1', { deleted: 0 }, ['cpssr_niaid']),
+      this.ctx.database.get('niassets_v1', {}, ['niaid', 'handle', 'mime']),
+    ])
+
+    const refNiaids = new Set<number>(rcNiaids.map((x) => x.niaid))
+
+    // 防御：正常情况下 cpssr_niaid 都有引用行，这里兜底
+    for (const row of cpssrRows)
+      if (row.cpssr_niaid) refNiaids.add(row.cpssr_niaid)
+
+    const orphans = niaRows.filter((x) => !refNiaids.has(x.niaid))
+
+    // 先删 S3 对象、后删表行：反过来时 S3 删除失败会留下
+    // 行已删但对象仍在的永久孤儿；这个顺序下失败对象的行
+    // 保留在表里，等下次清理重试
+    const failedKeys = new Set<string>()
+
+    for (let i = 0; i < orphans.length; i += 1000) {
+      const chunk = orphans.slice(i, i + 1000)
+
+      try {
+        const result = await this.#s3.send(
+          new DeleteObjectsCommand({
+            Bucket: this.nekoilConfig.assets.bucketId,
+            Delete: {
+              Objects: chunk.map((nia) => ({ Key: this.#assetsKey(nia) })),
+            },
+          }),
+        )
+
+        for (const err of result.Errors ?? []) failedKeys.add(err.Key!)
+      } catch (e) {
+        if (e instanceof S3ServiceException)
+          this.#l.error('niassets cleanup: caused by S3ServiceException.')
+
+        this.#l.error(e)
+
+        for (const nia of chunk) failedKeys.add(this.#assetsKey(nia))
+      }
+    }
+
+    const removedNiaids = orphans
+      .filter((x) => !failedKeys.has(this.#assetsKey(x)))
+      .map((x) => x.niaid)
+
+    const failedNiaids = orphans
+      .filter((x) => failedKeys.has(this.#assetsKey(x)))
+      .map((x) => x.niaid)
+
+    await this.ctx.database.remove('niassets_v1', removedNiaids)
+
+    this.#l.info(
+      `niassets cleanup: scanned ${niaRows.length}, removed ${removedNiaids.length}, failed ${failedNiaids.length}` +
+        (failedNiaids.length ? ` (niaids: ${failedNiaids.join(',')})` : ''),
+    )
+
+    return {
+      scanned: niaRows.length,
+      removed: removedNiaids.length,
+      failed: failedNiaids,
+    }
+  }
 }
 
 export class NekoilAssetsError extends Error {}
@@ -220,4 +297,10 @@ export interface NekoilAssetsUploadImgResult {
   height: number
   thumbhash: string
   niaid: number
+}
+
+export interface NekoilAssetsCleanupResult {
+  scanned: number
+  removed: number
+  failed: number[]
 }

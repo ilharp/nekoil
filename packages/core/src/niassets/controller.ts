@@ -3,9 +3,14 @@
 import type {} from '@koishijs/plugin-server'
 import type { Context } from 'koishi'
 import mime from 'mime'
+import type { NekoilResponseBody } from 'nekoil-typedef'
 import type { Config } from '../config'
 import { setHeader } from '../utils'
-import { middlewareProxyToken } from '../utils/middlewares'
+import {
+  middlewareInternalToken,
+  middlewareProxyToken,
+} from '../utils/middlewares'
+import type { NekoilAssetsCleanupResult } from './service'
 
 export const name = 'nekoil-assets-controller'
 
@@ -18,7 +23,7 @@ export const inject = [
 ]
 
 export const apply = (ctx: Context, config: Config) => {
-  // const l = ctx.logger('nekoilAssetsController')
+  const l = ctx.logger('nekoilAssetsController')
 
   ctx.server.all(
     '/nekoil/v0/proxy/internal\\:nekoil/2/:filename+',
@@ -62,6 +67,38 @@ export const apply = (ctx: Context, config: Config) => {
 
       if (['HEAD', 'GET'].includes(c.method))
         c.set('Cache-Control', 'public, max-age=1800')
+    },
+  )
+
+  ctx.server.post(
+    '/nekoil/v0/internal/niassets.cleanup',
+    (c, next) => {
+      c.status = 200
+      setHeader(c)
+      c.set('Content-Type', 'application/json')
+      c.flushHeaders()
+
+      return next()
+    },
+    middlewareInternalToken(config),
+    async (c) => {
+      try {
+        const result: NekoilAssetsCleanupResult =
+          await ctx.nekoilAssets.cleanup()
+
+        c.body = {
+          code: 200,
+          data: result,
+        } satisfies NekoilResponseBody<NekoilAssetsCleanupResult>
+      } catch (e) {
+        l.error('niassets.cleanup failed')
+        l.error(e)
+
+        c.body = {
+          code: 500,
+          msg: 'EXXXXX INTERNAL SERVER ERROR',
+        }
+      }
     },
   )
 }

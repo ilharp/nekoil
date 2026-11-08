@@ -1,4 +1,4 @@
-import type { Context, h, Session } from 'koishi'
+import type { Context, h, Session, User } from 'koishi'
 import type {
   InlineQueryResult,
   TelegramBot,
@@ -256,7 +256,7 @@ export const apply = (ctx: Context, config: Config) => {
   })
 
   const doDelete = async (
-    session: Session<'id' | 'nekoilAuthority'> | undefined,
+    session: Session | undefined,
     handle: string | undefined,
     reason: number,
     authorityRequired: boolean,
@@ -267,7 +267,8 @@ export const apply = (ctx: Context, config: Config) => {
 
     if (!handle) return '请提供聊天记录链接或 ID。'
 
-    const user = session.user!
+    // id 在 koishi attach 默认字段集内，见 NekoilPermissionService 的 attach-user 注释
+    const user = session.user! as User.Observed<'id'>
 
     if (authorityRequired) {
       return '没有权限执行该操作。'
@@ -309,7 +310,6 @@ export const apply = (ctx: Context, config: Config) => {
     .platform('telegram')
     .private()
     .command('nekoilcpdel <handle:string>')
-    .userFields(['id', 'nekoilAuthority'])
     .action(({ session }, handle) =>
       doDelete(session, handle, CP_DELETED_REASON.USER, false),
     )
@@ -318,7 +318,6 @@ export const apply = (ctx: Context, config: Config) => {
     .platform('telegram')
     .private()
     .command('nekoilcpdeladmin <handle:string>')
-    .userFields(['id', 'nekoilAuthority'])
     .action(({ session }, handle) =>
       doDelete(session, handle, CP_DELETED_REASON.ADMIN, true),
     )
@@ -327,7 +326,6 @@ export const apply = (ctx: Context, config: Config) => {
     .platform('telegram')
     .private()
     .command('nekoilcpexpire <handle:string>')
-    .userFields(['id', 'nekoilAuthority'])
     .action(({ session }, handle) =>
       doDelete(session, handle, CP_DELETED_REASON.TTL, true),
     )
