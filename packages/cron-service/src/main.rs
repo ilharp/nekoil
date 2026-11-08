@@ -5,7 +5,6 @@ use std::sync::Arc;
 use anyhow::Context;
 use anyhow::Result;
 use axum::Router;
-use axum::routing::post;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
 use opentelemetry::propagation::TextMapCompositePropagator;
@@ -21,6 +20,7 @@ use tap::Tap;
 use tokio::select;
 use tokio::spawn;
 use tokio::sync::Notify;
+use tokio_cron_scheduler::JobScheduler;
 use tokio_util::sync::CancellationToken;
 use tracing::debug;
 use tracing::error;
@@ -31,9 +31,11 @@ use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::config::Config;
 use crate::config::load_config;
+use crate::job::cleanup_niassets::cleanup_niassets;
 use crate::server::controller::notfound::handler_notfound;
 
 mod config;
+mod job;
 mod server;
 
 fn main() -> ExitCode {
@@ -137,7 +139,7 @@ async fn main_async_intl() -> Result<()> {
     // Write daemon.lock only after port bound
 
     // Start Server
-    let app_state = app_state.clone();
+    let server_app_state = app_state.clone();
     let shutdown_token = CancellationToken::new();
     let server_shutdown_token = shutdown_token.clone();
 
@@ -150,9 +152,15 @@ async fn main_async_intl() -> Result<()> {
 
         if let Err(err) = result {
             error!("{err}");
-            app_state.shutdown();
+            server_app_state.shutdown();
         }
     });
+
+    let mut sched = JobScheduler::new().await?;
+
+    sched.add(cleanup_niassets(app_state.clone())).await?;
+
+    sched.start().await?;
 
     // Graceful shutdown on main thread
     graceful_shutdown(shutdown_notify, shutdown_token).await;
