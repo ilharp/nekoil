@@ -38,3 +38,26 @@ export const middlewareCfCountry = () =>
 
     return next()
   }) satisfies Middleware
+
+export const isValidInternalToken = (
+  config: Config,
+  nekoilInternalToken: string | string[] | undefined,
+) =>
+  typeof nekoilInternalToken === 'string' &&
+  nekoilInternalToken.length > 0 &&
+  nekoilInternalToken === config.internalToken
+
+export const middlewareInternalToken = (config: Config) =>
+  ((c, next) => {
+    if (
+      !isValidInternalToken(config, c.request.header['nekoil-internal-token'])
+    ) {
+      c.body = {
+        code: 2007,
+        msg: 'EXXXXX FORBIDDEN',
+      }
+      return
+    }
+
+    return next()
+  }) satisfies Middleware

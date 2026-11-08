@@ -6,6 +6,7 @@ import type { TelegramBot } from 'koishi-plugin-nekoil-adapter-telegram'
 import type { BinaryLike } from 'node:crypto'
 import { createHmac } from 'node:crypto'
 import type { Config } from '../config'
+import { isValidInternalToken } from '../utils/middlewares'
 
 declare module 'koishi' {
   interface Context {
@@ -75,12 +76,11 @@ export class NekoilTgService extends Service {
 
   public middlewareInitData = () =>
     ((c, next) => {
-      const nekoilInternalToken = c.request.header['nekoil-internal-token']
       if (
-        nekoilInternalToken &&
-        !Array.isArray(nekoilInternalToken) &&
-        nekoilInternalToken.length &&
-        nekoilInternalToken === this.nekoilConfig.internalToken
+        isValidInternalToken(
+          this.nekoilConfig,
+          c.request.header['nekoil-internal-token'],
+        )
       )
         return next()
 
