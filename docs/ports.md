@@ -6,3 +6,4 @@ Koishi|5140
 cpimgr|5141
 cpssr|5142
 data|5143
+cron|5144
