@@ -6,6 +6,11 @@ use dotenvy::EnvSequence;
 
 pub struct Config {
     pub db_url: String,
+
+    /// core 的内网地址
+    pub core_url: String,
+
+    pub internal_token: String,
 }
 
 pub fn load_config(exe_dir: PathBuf) -> Result<Config> {
@@ -22,5 +27,7 @@ pub fn load_config(exe_dir: PathBuf) -> Result<Config> {
 
     Ok(Config {
         db_url: env_map.var("POSTGRES_URL")?,
+        core_url: env_map.var("NEKOIL_CORE_URL")?,
+        internal_token: env_map.var("NEKOIL_INTERNAL_TOKEN")?,
     })
 }
