@@ -8,7 +8,6 @@ use axum::Router;
 use axum::routing::post;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
-use opentelemetry::global;
 use opentelemetry::propagation::TextMapCompositePropagator;
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry::trace::TracerProvider as _;
@@ -71,16 +70,13 @@ async fn main_async() -> ExitCode {
 }
 
 fn init_telemetry() -> Result<SdkTracerProvider> {
-    // W3C traceparent/tracestate + baggage；不设置的话默认是 no-op propagator，无法接续上游 trace
     let propagators: Vec<Box<dyn TextMapPropagator + Send + Sync>> = vec![
         Box::new(TraceContextPropagator::new()),
         Box::new(BaggagePropagator::new()),
     ];
-    global::set_text_map_propagator(TextMapCompositePropagator::new(propagators));
+    opentelemetry::global::set_text_map_propagator(TextMapCompositePropagator::new(propagators));
 
-    // OTLP gRPC exporter；endpoint 等配置走标准 OTEL_EXPORTER_OTLP_* 环境变量
     let exporter = opentelemetry_otlp::SpanExporter::builder()
-        .with_tonic()
         .build()
         .context("Failed to build OTLP span exporter")?;
 
